@@ -89,4 +89,19 @@ class DiscAssessmentSession extends Model
     {
         return $this->status === 'IN_PROGRESS';
     }
+
+    public function getRemainingSecondsAttribute(): int
+    {
+        if ($this->isCompleted()) {
+            return 0;
+        }
+
+        $durationSeconds = ((int) ($this->assessment?->duration_minutes ?: 10)) * 60;
+        if (!$this->started_at) {
+            return $durationSeconds;
+        }
+
+        $elapsed = max(0, now()->timestamp - $this->started_at->timestamp);
+        return max(0, $durationSeconds - $elapsed);
+    }
 }

@@ -91,6 +91,107 @@ class AdminDiscQuestionBankController extends Controller
         return redirect()->route('admin.disc.banks.edit', $bank)->with('success', 'Informasi Bank Soal berhasil diperbarui.');
     }
 
+    public function storeQuestion(Request $request, QuestionBank $bank): RedirectResponse
+    {
+        $data = $request->validate([
+            'question_number' => ['required', 'integer', 'min:1', 'max:50'],
+            'instruction' => ['nullable', 'string', 'max:255'],
+            'options' => ['required', 'array', 'size:4'],
+            'options.*.label' => ['required', 'string', 'max:5'],
+            'options.*.statement' => ['required', 'string', 'max:255'],
+            'options.*.most_mapping' => ['required', 'string', 'in:D,I,S,C,*'],
+            'options.*.least_mapping' => ['required', 'string', 'in:D,I,S,C,*'],
+        ]);
+
+        DB::transaction(function () use ($data, $bank) {
+            $question = DiscQuestion::create([
+                'question_bank_id' => $bank->id,
+                'question_number' => $data['question_number'],
+                'instruction' => $data['instruction'] ?? 'Pilihlah satu pernyataan yang PALING menggambarkan diri Anda (P), dan satu pernyataan yang PALING TIDAK menggambarkan diri Anda (T).',
+                'active' => true,
+                'created_by' => auth()->id(),
+            ]);
+
+            foreach ($data['options'] as $idx => $opt) {
+                DiscQuestionOption::create([
+                    'disc_question_id' => $question->id,
+                    'option_number' => $idx + 1,
+                    'option_label' => strtoupper($opt['label']),
+                    'statement' => $opt['statement'],
+                    'most_mapping' => strtoupper($opt['most_mapping']),
+                    'least_mapping' => strtoupper($opt['least_mapping']),
+                    'display_order' => $idx + 1,
+                    'active' => true,
+                ]);
+            }
+        });
+
+        AuditLogger::log('ADD_QUESTION_TO_BANK', 'DISC', $bank, ['question_number' => $data['question_number']]);
+
+        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', "Butir Soal No. {$data['question_number']} berhasil ditambahkan ke bank soal.");
+    }
+
+    public function deleteQuestion(QuestionBank $bank, DiscQuestion $question): RedirectResponse
+    {
+        if ($question->question_bank_id !== $bank->id) {
+            abort(404);
+        }
+
+        $num = $question->question_number;
+        $question->options()->delete();
+        $question->delete();
+
+        AuditLogger::log('DELETE_QUESTION_FROM_BANK', 'DISC', $bank, ['question_number' => $num]);
+
+        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', "Butir Soal No. {$num} berhasil dihapus.");
+    }
+
+    public function importStandardQuestions(QuestionBank $bank): RedirectResponse
+    {
+        $sourceBank = QuestionBank::where('code', 'DISC-ISP')->orWhere('status', 'PUBLISHED')->first();
+        if (!$sourceBank || $sourceBank->questions()->count() < 24) {
+            return back()->withErrors(['error' => 'Master Bank Soal standar belum ditemukan di database.']);
+        }
+
+        $existingNumbers = $bank->questions()->pluck('question_number')->toArray();
+        $importedCount = 0;
+
+        DB::transaction(function () use ($bank, $sourceBank, $existingNumbers, &$importedCount) {
+            foreach ($sourceBank->questions()->with('options')->get() as $q) {
+                if (in_array($q->question_number, $existingNumbers)) {
+                    continue;
+                }
+
+                $newQ = DiscQuestion::create([
+                    'question_bank_id' => $bank->id,
+                    'question_number' => $q->question_number,
+                    'instruction' => $q->instruction,
+                    'active' => true,
+                    'created_by' => auth()->id(),
+                ]);
+
+                foreach ($q->options as $opt) {
+                    DiscQuestionOption::create([
+                        'disc_question_id' => $newQ->id,
+                        'option_number' => $opt->option_number,
+                        'option_label' => $opt->option_label,
+                        'statement' => $opt->statement,
+                        'most_mapping' => $opt->most_mapping,
+                        'least_mapping' => $opt->least_mapping,
+                        'display_order' => $opt->display_order,
+                        'active' => true,
+                    ]);
+                }
+
+                $importedCount++;
+            }
+        });
+
+        AuditLogger::log('IMPORT_STANDARD_QUESTIONS', 'DISC', $bank, ['imported_count' => $importedCount]);
+
+        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', "Berhasil menyalin {$importedCount} butir soal standar DISC ke Bank Soal ini.");
+    }
+
     public function scoringKeys(QuestionBank $bank): View
     {
         $bank->load(['questions.options']);

@@ -9,8 +9,24 @@
                 </a>
 
                 <div class="flex items-center gap-3">
+                    @if ($assessment->status === 'PUBLISHED')
+                        <form action="{{ route('admin.disc.assessments.close', $assessment) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menutup asesmen ini? Peserta baru tidak dapat memulai sesi.')">
+                            @csrf
+                            <button type="submit" class="rounded-full border border-rose-200 bg-rose-50 px-5 py-2.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 shadow-sm">
+                                ✕ Tutup Asesmen
+                            </button>
+                        </form>
+                    @else
+                        <form action="{{ route('admin.disc.assessments.publish', $assessment) }}" method="POST" class="inline" onsubmit="return confirm('Buka asesmen ini sekarang? Kandidat yang diundang akan dapat langsung mengerjakan tes.')">
+                            @csrf
+                            <button type="submit" class="rounded-full border border-emerald-300 bg-emerald-50 px-5 py-2.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 shadow-sm">
+                                ✓ Buka Asesmen (Publish)
+                            </button>
+                        </form>
+                    @endif
+
                     <a href="{{ route('admin.disc.assessments.monitor', $assessment) }}"
-                       class="rounded-full border border-blue-200 bg-blue-50 px-5 py-2.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
+                       class="rounded-full border border-blue-200 bg-blue-50 px-5 py-2.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 shadow-sm">
                         🛰 Live Monitoring Sesi & Keamanan
                     </a>
                 </div>
@@ -75,6 +91,7 @@
                             <tr>
                                 <th class="px-6 py-4">Nama Peserta</th>
                                 <th class="px-6 py-4">Status Sesi</th>
+                                <th class="px-6 py-4">Kesempatan Tes (HRD)</th>
                                 <th class="px-6 py-4">Profil DISC</th>
                                 <th class="px-6 py-4">Indeks Keamanan</th>
                                 <th class="px-6 py-4">Waktu Selesai</th>
@@ -85,6 +102,8 @@
                             @forelse ($assessment->participants as $part)
                                 @php
                                     $session = $part->latestSession;
+                                    $completedSessionsCount = \App\Models\DiscAssessmentSession::where('disc_assessment_id', $assessment->id)->where('participant_id', $part->user_id)->where('status', 'COMPLETED')->count();
+                                    $maxAttempts = $part->max_attempts ?: 1;
                                 @endphp
                                 <tr class="transition hover:bg-slate-50/50">
                                     <td class="px-6 py-4">
@@ -105,6 +124,76 @@
                                                 BELUM MULAI
                                             </span>
                                         @endif
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        @php
+                                            $candidateName = $part->user->name ?? 'Bapak/Ibu/Saudara/i';
+                                            $candidateEmail = $part->user->email ?? '';
+                                            $rawPhone = $part->user->candidateProfile?->phone ?? '';
+                                            $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+                                            if (str_starts_with($cleanPhone, '0')) {
+                                                $cleanPhone = '62' . substr($cleanPhone, 1);
+                                            }
+
+                                            $daysMap = [
+                                                'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
+                                                'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'
+                                            ];
+                                            $monthsMap = [
+                                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                            ];
+
+                                            $nowDt = now();
+                                            $dayIndo = $daysMap[$nowDt->format('l')] ?? $nowDt->format('l');
+                                            $monthIndo = $monthsMap[(int)$nowDt->format('n')] ?? $nowDt->format('F');
+                                            $hariTanggal = "{$dayIndo}, " . $nowDt->format('d') . " {$monthIndo} " . $nowDt->format('Y');
+
+                                            $assessmentUrl = route('disc.assessment.instruction', $assessment);
+                                            $waktuTeks = "Batas waktu 5 jam sejak undangan ini dikirim (Waktu pengerjaan soal: 10 menit)";
+
+                                            $waMessage = "Yth. " . $candidateName . ",\n\nSelamat! 🎉\n\nKami dari PT Indodata Solusi Persada menginformasikan bahwa Anda lolos ke tahap Psikotes.\n\nSilakan mengerjakan soal yang telah kami siapkan dengan detail sebagai berikut:\n\n📅 Hari/Tanggal: " . $hariTanggal . "\n⏰ Waktu: " . $waktuTeks . "\n🔗 Link Akses Soal: " . $assessmentUrl . "\n\nMohon mengerjakan soal sesuai dengan waktu dan ketentuan yang telah ditentukan.\n\nApabila terdapat kendala dalam mengakses soal, silakan menghubungi kami.\n\nTerima kasih atas perhatian dan kerja samanya.\n\nHormat kami,\nPT Indodata Solusi Persada";
+
+                                            $waUrl = "https://api.whatsapp.com/send?phone=" . $cleanPhone . "&text=" . rawurlencode($waMessage);
+
+                                            $mailSubject = "Undangan Tahap Psikotes - PT Indodata Solusi Persada";
+                                            $mailBody = "Yth. " . $candidateName . ",\n\nSelamat!\n\nKami dari PT Indodata Solusi Persada menginformasikan bahwa Anda lolos ke tahap Psikotes.\n\nSilakan mengerjakan soal yang telah kami siapkan dengan detail sebagai berikut:\n\nHari/Tanggal: " . $hariTanggal . "\nWaktu: " . $waktuTeks . "\nLink Akses Soal: " . $assessmentUrl . "\n\nMohon mengerjakan soal sesuai dengan waktu dan ketentuan yang telah ditentukan.\n\nApabila terdapat kendala dalam mengakses soal, silakan menghubungi kami.\n\nTerima kasih.\n\nHormat kami,\nPT Indodata Solusi Persada";
+
+                                            $gmailUrl = "https://mail.google.com/mail/?view=cm&fs=1&to=" . urlencode($candidateEmail) . "&su=" . rawurlencode($mailSubject) . "&body=" . rawurlencode($mailBody);
+                                        @endphp
+
+                                        <div class="flex flex-col gap-2">
+                                            <span class="text-xs font-semibold {{ $completedSessionsCount >= $maxAttempts ? 'text-slate-600' : 'text-emerald-700' }}">
+                                                {{ $completedSessionsCount }} dari {{ $maxAttempts }} Kesempatan Terpakai
+                                            </span>
+                                            <form action="{{ route('admin.disc.assessments.participants.attempts', [$assessment, $part]) }}" method="POST" class="flex items-center gap-1.5">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="flex items-center rounded-xl border border-slate-200 bg-white p-0.5 shadow-xs">
+                                                    <input type="number" name="max_attempts" value="{{ $maxAttempts }}" min="1" max="20" class="w-12 border-0 bg-transparent px-2 py-1 text-center font-mono text-xs font-bold text-slate-800 focus:outline-none" title="Ubah batas kesempatan tes">
+                                                    <span class="pr-2 text-[10px] text-slate-400 font-medium">kali</span>
+                                                </div>
+                                                <button type="submit" class="rounded-xl border border-orange-200 bg-orange-50 px-2.5 py-1.5 text-[11px] font-bold text-[#f97316] transition hover:bg-[#f97316] hover:text-white" title="Simpan batas kesempatan">
+                                                    Simpan
+                                                </button>
+                                            </form>
+
+                                            {{-- BROADCAST BUTTONS --}}
+                                            <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">
+                                                <span class="text-[10px] uppercase font-bold text-slate-400">Undang:</span>
+                                                <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer"
+                                                   class="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700 transition hover:bg-emerald-600 hover:text-white shadow-xs"
+                                                   title="Kirim Undangan Soal via WhatsApp">
+                                                    <span>💬 WhatsApp</span>
+                                                </a>
+                                                <a href="{{ $gmailUrl }}" target="_blank" rel="noopener noreferrer"
+                                                   class="inline-flex items-center gap-1 rounded-lg border border-rose-300 bg-rose-50 px-2 py-1 text-[11px] font-bold text-rose-700 transition hover:bg-rose-600 hover:text-white shadow-xs"
+                                                   title="Kirim Undangan Soal via Gmail">
+                                                    <span>✉️ Gmail</span>
+                                                </a>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4">
                                         @if ($session && $session->disc_profile_code)
@@ -148,7 +237,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+                                    <td colspan="7" class="px-6 py-12 text-center text-slate-500">
                                         Belum ada peserta yang diundang ke asesmen ini.
                                     </td>
                                 </tr>

@@ -57,6 +57,17 @@ class DashboardController extends Controller
             return redirect()->route('candidate.profile')->with('success', 'Silakan lengkapi seluruh data diri wajib sebelum masuk dashboard kandidat.');
         }
 
+        $technicalTestApp = $profile?->applications()->where('status', 'TECHNICAL_TEST')->with('job')->first();
+        if ($technicalTestApp) {
+            $defaultAssessment = \App\Models\DiscAssessment::query()->where('status', 'PUBLISHED')->latest()->first();
+            if ($defaultAssessment) {
+                \App\Models\DiscAssessmentParticipant::firstOrCreate(
+                    ['disc_assessment_id' => $defaultAssessment->id, 'user_id' => $user->id],
+                    ['application_id' => $technicalTestApp->id, 'status' => 'ASSIGNED', 'invited_at' => now(), 'max_attempts' => 1]
+                );
+            }
+        }
+
         $discAssessments = \App\Models\DiscAssessmentParticipant::query()
             ->where('user_id', $user->id)
             ->with(['assessment', 'latestSession'])
@@ -70,6 +81,7 @@ class DashboardController extends Controller
             'upcomingInterviews' => Interview::query()->whereHas('application', fn ($q) => $q->where('candidate_profile_id', $profile?->id))->whereIn('status', ['SCHEDULED', 'CONFIRMED'])->latest()->limit(3)->get(),
             'offers' => Offer::query()->whereHas('application', fn ($q) => $q->where('candidate_profile_id', $profile?->id))->latest()->limit(3)->get(),
             'discAssessments' => $discAssessments,
+            'technicalTestApp' => $technicalTestApp,
         ]);
     }
 }

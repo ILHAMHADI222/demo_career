@@ -229,6 +229,41 @@ class AdminDiscAssessmentController extends Controller
         return view('admin.disc.results.show', compact('session'));
     }
 
+    public function publish(DiscAssessment $assessment): RedirectResponse
+    {
+        $old = ['status' => $assessment->status];
+        $assessment->update(['status' => 'PUBLISHED']);
+        AuditLogger::log('PUBLISH_ASSESSMENT', 'DISC', $assessment, $old, ['status' => 'PUBLISHED']);
+
+        return back()->with('success', "Asesmen '{$assessment->title}' berhasil dibuka (Status: Aktif / Published). Kandidat dapat mulai mengerjakan.");
+    }
+
+    public function close(DiscAssessment $assessment): RedirectResponse
+    {
+        $old = ['status' => $assessment->status];
+        $assessment->update(['status' => 'CLOSED']);
+        AuditLogger::log('CLOSE_ASSESSMENT', 'DISC', $assessment, $old, ['status' => 'CLOSED']);
+
+        return back()->with('success', "Asesmen '{$assessment->title}' berhasil ditutup (Status: Closed). Peserta baru tidak dapat mengerjakan asesmen ini.");
+    }
+
+    public function updateParticipantAttempts(Request $request, DiscAssessment $assessment, DiscAssessmentParticipant $participant): RedirectResponse
+    {
+        $data = $request->validate([
+            'max_attempts' => ['required', 'integer', 'min:1', 'max:50'],
+        ]);
+
+        $oldAttempts = $participant->max_attempts ?: 1;
+        $participant->update([
+            'max_attempts' => $data['max_attempts'],
+            'status' => 'ASSIGNED',
+        ]);
+
+        AuditLogger::log('UPDATE_PARTICIPANT_ATTEMPTS', 'DISC', $assessment, ['old_max_attempts' => $oldAttempts], ['new_max_attempts' => $data['max_attempts']]);
+
+        return back()->with('success', "Batas kesempatan tes untuk peserta '{$participant->user->name}' berhasil diubah menjadi {$data['max_attempts']} kali.");
+    }
+
     public function exportSessionCsv(DiscAssessmentSession $session, DiscReportExporter $exporter): StreamedResponse
     {
         return $exporter->exportSessionCsv($session);

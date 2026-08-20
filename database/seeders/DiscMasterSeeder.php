@@ -396,5 +396,21 @@ class DiscMasterSeeder extends Seeder
                 ]
             );
         }
+
+        // 6. Seed Default Active 10-Minute Assessment
+        \App\Models\DiscAssessment::query()->updateOrCreate(
+            ['code' => 'DISC-RECRUIT-ISP'],
+            [
+                'title' => 'Psikotest DISC Rekrutmen ISP',
+                'question_bank_id' => $bank->id,
+                'question_bank_version' => $bank->version,
+                'duration_minutes' => 10,
+                'randomize_questions' => false,
+                'randomize_options' => false,
+                'result_visibility' => 'HRD_ONLY',
+                'status' => 'PUBLISHED',
+                'created_by' => $superadminUser?->id,
+            ]
+        );
     }
 }

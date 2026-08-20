@@ -65,6 +65,48 @@
                 </div>
             </div>
 
+            @php
+                $activeDisc = $discAssessments->first(function($p) {
+                    $completedCount = \App\Models\DiscAssessmentSession::where('disc_assessment_id', $p->disc_assessment_id)
+                        ->where('participant_id', $p->user_id)
+                        ->where('status', 'COMPLETED')
+                        ->count();
+                    $max = (int) ($p->max_attempts ?: 1);
+                    return $completedCount < $max;
+                });
+            @endphp
+
+            @if ($technicalTestApp || $activeDisc)
+                @php
+                    $targetDisc = $activeDisc?->assessment ?? \App\Models\DiscAssessment::query()->where('status', 'PUBLISHED')->latest()->first();
+                @endphp
+                <div class="mt-6 overflow-hidden rounded-[40px] border-2 border-[#f97316] bg-gradient-to-br from-[#fff3e8] via-white to-orange-50/50 p-6 md:p-8 shadow-xl shadow-orange-500/10">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                        <div class="space-y-2">
+                            <div class="inline-flex items-center gap-2 rounded-full bg-[#f97316] px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow-sm">
+                                <span class="h-2 w-2 rounded-full bg-white animate-ping"></span>
+                                Tahap Psikotest / Test Terbuka
+                            </div>
+                            <h2 class="text-2xl md:text-3xl font-light text-[#322d2a]">
+                                Soal Psikotest DISC Sudah Siap Dikerjakan
+                            </h2>
+                            <p class="max-w-2xl text-sm leading-relaxed text-[#6f6b67]">
+                                Status lamaran Anda telah diperbarui ke tahap <strong>Psikotest / Test</strong>{{ $technicalTestApp ? ' untuk posisi ' . $technicalTestApp->job->title : '' }}. 
+                                Waktu pengerjaan adalah <strong class="text-rose-600 font-bold">10 Menit</strong> dengan jam berjalan otomatis. Soal akan otomatis ditutup dan jawaban dikunci setelah waktu berakhir.
+                            </p>
+                        </div>
+                        <div class="shrink-0 flex flex-col sm:flex-row gap-3 items-center">
+                            @if ($targetDisc)
+                                <a href="{{ route('disc.assessment.instruction', $targetDisc) }}"
+                                   class="inline-flex items-center justify-center gap-2 rounded-full bg-[#f97316] px-7 py-4 text-sm font-semibold tracking-wide text-white shadow-lg shadow-orange-500/30 transition hover:bg-[#ea580c] hover:scale-105 active:scale-95">
+                                    <span>Mulai Kerjakan Soal Psikotest (10 Menit)</span>
+                                    <span>→</span>
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             {{-- KPI --}}
             <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -288,40 +330,53 @@
                                 @php
                                     $assess = $discPart->assessment;
                                     $session = $discPart->latestSession;
+                                    $completedCount = \App\Models\DiscAssessmentSession::where('disc_assessment_id', $assess->id)
+                                        ->where('participant_id', $discPart->user_id)
+                                        ->where('status', 'COMPLETED')
+                                        ->count();
+                                    $maxAttempts = (int) ($discPart->max_attempts ?: 1);
+                                    $canTake = $completedCount < $maxAttempts;
                                 @endphp
-                                <div class="rounded-[28px] border {{ $session && $session->isCompleted() ? 'border-emerald-200 bg-emerald-50/50' : 'border-[#f97316]/30 bg-[#fff3e8]' }} p-5">
+                                <div class="rounded-[28px] border {{ !$canTake ? 'border-emerald-200 bg-emerald-50/50' : 'border-[#f97316]/30 bg-[#fff3e8]' }} p-5">
 
                                     <div class="flex items-start justify-between gap-4">
 
                                         <div>
-                                            <span class="rounded-md bg-white px-2 py-0.5 font-mono text-[11px] font-bold text-slate-700">{{ $assess->code }}</span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="rounded-md bg-white px-2 py-0.5 font-mono text-[11px] font-bold text-slate-700">{{ $assess->code }}</span>
+                                                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                                                    Kesempatan: {{ $completedCount }}/{{ $maxAttempts }} Selesai
+                                                </span>
+                                            </div>
                                             <p class="mt-2 font-normal tracking-[0.16px] text-[#322d2a]">
                                                 {{ $assess->title }}
                                             </p>
 
                                             <p class="mt-1 text-xs text-[#6f6b67]">
                                                 Durasi: {{ $assess->duration_minutes }} Menit • Status: 
-                                                <strong class="{{ $session && $session->isCompleted() ? 'text-emerald-700' : 'text-[#f97316]' }}">
-                                                    {{ $session ? $session->status : 'BELUM MULAI' }}
+                                                <strong class="{{ !$canTake ? 'text-emerald-700' : 'text-[#f97316]' }}">
+                                                    {{ !$canTake ? 'COMPLETED (SELESAI)' : ($session && $session->isInProgress() ? 'IN PROGRESS' : 'SIAP DIKERJAKAN') }}
                                                 </strong>
                                             </p>
 
-                                            <div class="mt-4">
-                                                @if ($session && $session->isCompleted())
-                                                    <a href="{{ route('disc.assessment.completed', $session->session_token) }}"
-                                                       class="inline-flex rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700">
-                                                        Lihat Konfirmasi Selesai ✓
-                                                    </a>
-                                                @else
+                                            <div class="mt-4 flex flex-wrap items-center gap-2">
+                                                @if ($canTake)
                                                     <a href="{{ route('disc.assessment.instruction', $assess) }}"
                                                        class="inline-flex rounded-full bg-[#f97316] px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-orange-500/20 transition hover:bg-[#ea580c]">
-                                                        {{ $session ? 'Lanjutkan Tes DISC →' : 'Mulai Kerjakan Tes DISC →' }}
+                                                        {{ $completedCount > 0 ? "Mulai Percobaan ke-" . ($completedCount + 1) . " →" : ($session && $session->isInProgress() ? 'Lanjutkan Tes DISC →' : 'Mulai Kerjakan Tes DISC →') }}
                                                     </a>
+                                                @else
+                                                    @if ($session)
+                                                        <a href="{{ route('disc.assessment.completed', $session->session_token) }}"
+                                                           class="inline-flex rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700">
+                                                            Lihat Konfirmasi Selesai ✓
+                                                        </a>
+                                                    @endif
                                                 @endif
                                             </div>
                                         </div>
 
-                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[16px] {{ $session && $session->isCompleted() ? 'bg-emerald-100 text-emerald-600' : 'bg-[#fff3e8] text-[#f97316]' }} text-sm font-bold font-mono">
+                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[16px] {{ !$canTake ? 'bg-emerald-100 text-emerald-600' : 'bg-[#fff3e8] text-[#f97316]' }} text-sm font-bold font-mono">
                                             DISC
                                         </div>
 

@@ -49,7 +49,7 @@ Route::middleware('auth')->group(function (): void {
     Route::prefix('api/disc/session/{token}')->name('api.disc.')->group(function (): void {
         Route::get('/question', [ParticipantDiscAssessmentController::class, 'getQuestionApi'])->name('question');
         Route::post('/answer', [ParticipantDiscAssessmentController::class, 'saveAnswerApi'])->name('answer');
-        Route::post('/security-event', [ParticipantDiscAssessmentController::class, 'logSecurityEventApi'])->name('security-event');
+        Route::post('/security-event', [ParticipantDiscAssessmentController::class, 'logSecurityEventApi'])->name('security');
         Route::post('/submit', [ParticipantDiscAssessmentController::class, 'submitSessionApi'])->name('submit');
     });
 
@@ -88,6 +88,9 @@ Route::middleware('auth')->group(function (): void {
         // DISC Question Bank Management
         Route::prefix('disc')->name('disc.')->group(function (): void {
             Route::resource('banks', AdminDiscQuestionBankController::class);
+            Route::post('banks/{bank}/questions', [AdminDiscQuestionBankController::class, 'storeQuestion'])->name('banks.questions.store');
+            Route::delete('banks/{bank}/questions/{question}', [AdminDiscQuestionBankController::class, 'deleteQuestion'])->name('banks.questions.destroy');
+            Route::post('banks/{bank}/import-standard', [AdminDiscQuestionBankController::class, 'importStandardQuestions'])->name('banks.import-standard');
             Route::get('banks/{bank}/scoring-keys', [AdminDiscQuestionBankController::class, 'scoringKeys'])->name('banks.scoring-keys');
             Route::put('banks/{bank}/scoring-keys', [AdminDiscQuestionBankController::class, 'updateScoringKeys'])->name('banks.scoring-keys.update');
             Route::post('banks/{bank}/publish', [AdminDiscQuestionBankController::class, 'publish'])->name('banks.publish');
@@ -95,7 +98,10 @@ Route::middleware('auth')->group(function (): void {
 
             // DISC Assessment Management
             Route::resource('assessments', AdminDiscAssessmentController::class);
+            Route::post('assessments/{assessment}/publish', [AdminDiscAssessmentController::class, 'publish'])->name('assessments.publish');
+            Route::post('assessments/{assessment}/close', [AdminDiscAssessmentController::class, 'close'])->name('assessments.close');
             Route::post('assessments/{assessment}/assign', [AdminDiscAssessmentController::class, 'assignParticipants'])->name('assessments.assign');
+            Route::put('assessments/{assessment}/participants/{participant}/attempts', [AdminDiscAssessmentController::class, 'updateParticipantAttempts'])->name('assessments.participants.attempts');
             Route::get('assessments/{assessment}/monitor', [AdminDiscAssessmentController::class, 'monitor'])->name('assessments.monitor');
             Route::get('results/{session}', [AdminDiscAssessmentController::class, 'resultShow'])->name('results.show');
             Route::get('sessions/{session}/export-csv', [AdminDiscAssessmentController::class, 'exportSessionCsv'])->name('sessions.export-csv');

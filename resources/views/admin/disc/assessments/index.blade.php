@@ -141,6 +141,22 @@
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <div class="inline-flex items-center gap-2">
+                                            @if ($assess->status === 'PUBLISHED')
+                                                <form action="{{ route('admin.disc.assessments.close', $assess) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menutup asesmen \'{{ $assess->title }}\'? Peserta baru tidak akan dapat memulai sesi.')">
+                                                    @csrf
+                                                    <button type="submit" class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100" title="Tutup Asesmen">
+                                                        ✕ Tutup
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <form action="{{ route('admin.disc.assessments.publish', $assess) }}" method="POST" class="inline" onsubmit="return confirm('Buka asesmen \'{{ $assess->title }}\' sekarang? Kandidat yang terdaftar akan dapat langsung mengerjakan.')">
+                                                    @csrf
+                                                    <button type="submit" class="rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100" title="Buka Asesmen">
+                                                        ✓ Buka Asesmen
+                                                    </button>
+                                                </form>
+                                            @endif
+
                                             <a href="{{ route('admin.disc.assessments.monitor', $assess) }}"
                                                class="rounded-xl border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
                                                title="Live Security Monitoring">

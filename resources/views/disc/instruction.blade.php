@@ -47,14 +47,28 @@
                         ← Kembali ke Dashboard
                     </a>
 
-                    <form method="POST" action="{{ route('disc.assessment.start', $assessment) }}">
-                        @csrf
-                        <button type="submit"
-                                class="inline-flex items-center gap-2 rounded-full bg-[#f97316] px-8 py-4 text-sm font-semibold text-white shadow-xl shadow-[#f97316]/30 transition hover:-translate-y-0.5 hover:bg-[#ea580c]">
-                            <span>Mulai Asesmen DISC Sekarang</span>
-                            <span>→</span>
-                        </button>
-                    </form>
+                    @if ($canStartNew)
+                        <form method="POST" action="{{ route('disc.assessment.start', $assessment) }}">
+                            @csrf
+                            <button type="submit"
+                                    class="inline-flex items-center gap-2 rounded-full bg-[#f97316] px-8 py-4 text-sm font-semibold text-white shadow-xl shadow-[#f97316]/30 transition hover:-translate-y-0.5 hover:bg-[#ea580c]">
+                                <span>{{ $completedAttempts > 0 ? 'Mulai Percobaan ke-' . ($completedAttempts + 1) . ' (Kesempatan: ' . ($completedAttempts) . '/' . $maxAttempts . ')' : 'Mulai Asesmen DISC Sekarang (10 Menit)' }}</span>
+                                <span>→</span>
+                            </button>
+                        </form>
+                    @else
+                        <div class="flex items-center gap-3">
+                            <span class="rounded-full bg-slate-100 px-5 py-3 text-xs font-semibold text-slate-600">
+                                Batas Kesempatan Tercapai ({{ $completedAttempts }}/{{ $maxAttempts }} Selesai)
+                            </span>
+                            @if ($latestSession)
+                                <a href="{{ route('disc.assessment.completed', $latestSession->session_token) }}"
+                                   class="rounded-full bg-emerald-600 px-5 py-3 text-xs font-semibold text-white shadow-md hover:bg-emerald-700">
+                                    Lihat Konfirmasi Selesai ✓
+                                </a>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
 

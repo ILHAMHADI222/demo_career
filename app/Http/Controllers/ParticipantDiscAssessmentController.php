@@ -41,7 +41,16 @@ class ParticipantDiscAssessmentController extends Controller
 
         $latestSession = $participant->latestSession;
 
-        return view('disc.instruction', compact('assessment', 'participant', 'latestSession'));
+        $completedAttempts = DiscAssessmentSession::query()
+            ->where('disc_assessment_id', $assessment->id)
+            ->where('participant_id', auth()->id())
+            ->where('status', 'COMPLETED')
+            ->count();
+
+        $maxAttempts = (int) ($participant->max_attempts ?: 1);
+        $canStartNew = $completedAttempts < $maxAttempts;
+
+        return view('disc.instruction', compact('assessment', 'participant', 'latestSession', 'completedAttempts', 'maxAttempts', 'canStartNew'));
     }
 
     public function startSession(DiscAssessment $assessment): RedirectResponse
@@ -158,8 +167,9 @@ class ParticipantDiscAssessmentController extends Controller
         }
 
         $assessment = $session->assessment;
+        $remainingSeconds = $session->remaining_seconds;
 
-        return view('disc.take', compact('session', 'assessment'));
+        return view('disc.take', compact('session', 'assessment', 'remainingSeconds'));
     }
 
     /**
@@ -225,17 +235,22 @@ class ParticipantDiscAssessmentController extends Controller
             ->where('disc_question_id', $questionId)
             ->first();
 
-        // Calculate answered questions count
-        $answeredCount = DiscAssessmentAnswer::query()
+        // Fetch all answers for this session to map answered indices
+        $allAnswers = DiscAssessmentAnswer::query()
             ->where('disc_assessment_session_id', $session->id)
-            ->whereNotNull('most_option_id')
-            ->whereNotNull('least_option_id')
-            ->count();
+            ->get()
+            ->keyBy('disc_question_id');
+
+        $answeredIndices = [];
+        foreach ($questionOrder as $i => $qId) {
+            $ans = $allAnswers->get($qId);
+            if ($ans && $ans->most_option_id && $ans->least_option_id) {
+                $answeredIndices[] = $i;
+            }
+        }
 
         // Calculate remaining seconds
-        $durationSeconds = $session->assessment->duration_minutes * 60;
-        $elapsedSeconds = $session->started_at ? now()->diffInSeconds($session->started_at) : 0;
-        $remainingSeconds = max(0, $durationSeconds - $elapsedSeconds);
+        $remainingSeconds = $session->remaining_seconds;
 
         return response()->json([
             'index' => $index,
@@ -248,7 +263,8 @@ class ParticipantDiscAssessmentController extends Controller
                 'most_option_id' => $answer?->most_option_id,
                 'least_option_id' => $answer?->least_option_id,
             ],
-            'answered_count' => $answeredCount,
+            'answered_count' => count($answeredIndices),
+            'answered_indices' => $answeredIndices,
             'time_remaining_seconds' => $remainingSeconds,
         ]);
     }
@@ -256,7 +272,7 @@ class ParticipantDiscAssessmentController extends Controller
     /**
      * Autosave Answer API
      */
-    public function saveAnswerApi(string $token, Request $request): JsonResponse
+    public function saveAnswerApi(string $token, Request $request, DiscScoringEngine $scoringEngine): JsonResponse
     {
         $session = DiscAssessmentSession::query()
             ->where('session_token', $token)
@@ -264,7 +280,34 @@ class ParticipantDiscAssessmentController extends Controller
             ->firstOrFail();
 
         if ($session->isCompleted()) {
-            return response()->json(['error' => 'Asesmen sudah selesai dan tidak dapat diubah.'], 403);
+            return response()->json(['error' => 'Asesmen sudah selesai dan tidak dapat diubah.', 'is_completed' => true], 403);
+        }
+
+        // Server-side check for 10-minute duration expiry (+15s network grace period)
+        $durationSeconds = ((int) ($session->assessment->duration_minutes ?: 10)) * 60;
+        $elapsedSeconds = $session->started_at ? max(0, now()->timestamp - $session->started_at->timestamp) : 0;
+
+        if ($elapsedSeconds > ($durationSeconds + 15)) {
+            // Auto-lock and seal session on timeout
+            $result = $scoringEngine->processSession($session);
+            $session->update([
+                'status' => 'COMPLETED',
+                'completed_at' => now(),
+                'raw_scores_json' => $result['raw_scores'],
+                'normalized_scores_json' => $result['normalized_scores'],
+                'disc_profile_code' => $result['profile_code'],
+                'disc_profile_name' => $result['profile_name'],
+                'interpretation_json' => $result['interpretation'],
+            ]);
+            if ($session->assessmentParticipant) {
+                $session->assessmentParticipant->update(['status' => 'COMPLETED']);
+            }
+
+            return response()->json([
+                'error' => 'Waktu pengerjaan telah habis. Sesi asesmen otomatis ditutup dan dikunci.',
+                'expired' => true,
+                'redirect_url' => route('disc.assessment.completed', $token),
+            ], 403);
         }
 
         $data = $request->validate([
@@ -344,7 +387,7 @@ class ParticipantDiscAssessmentController extends Controller
     /**
      * Submit and Seal Completed Assessment
      */
-    public function submitSessionApi(string $token, DiscScoringEngine $scoringEngine): JsonResponse
+    public function submitSessionApi(string $token, Request $request, DiscScoringEngine $scoringEngine): JsonResponse
     {
         $session = DiscAssessmentSession::query()
             ->where('session_token', $token)
@@ -358,13 +401,22 @@ class ParticipantDiscAssessmentController extends Controller
             ]);
         }
 
-        $answers = $session->answers;
-        $validAnswersCount = $answers->filter(fn ($a) => $a->most_option_id && $a->least_option_id && $a->most_option_id !== $a->least_option_id)->count();
+        $isTimeout = $request->boolean('force_timeout');
+        $durationSeconds = ((int) ($session->assessment->duration_minutes ?: 10)) * 60;
+        $elapsedSeconds = $session->started_at ? max(0, now()->timestamp - $session->started_at->timestamp) : 0;
+        if ($elapsedSeconds >= $durationSeconds) {
+            $isTimeout = true;
+        }
 
-        if ($validAnswersCount < 24) {
-            return response()->json([
-                'error' => "Harap lengkapi semua 24 butir pertanyaan dengan memilih 1 Paling (Most) dan 1 Paling Tidak (Least). (Saat ini terisi: {$validAnswersCount}/24)",
-            ], 422);
+        if (!$isTimeout) {
+            $answers = $session->answers;
+            $validAnswersCount = $answers->filter(fn ($a) => $a->most_option_id && $a->least_option_id && $a->most_option_id !== $a->least_option_id)->count();
+
+            if ($validAnswersCount < 24) {
+                return response()->json([
+                    'error' => "Harap lengkapi semua 24 butir pertanyaan dengan memilih 1 Paling (Most) dan 1 Paling Tidak (Least). (Saat ini terisi: {$validAnswersCount}/24)",
+                ], 422);
+            }
         }
 
         // Process Deterministic Scoring Server-Side

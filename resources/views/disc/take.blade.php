@@ -20,7 +20,7 @@
             -webkit-touch-callout: none !important;
         }
 
-        /* Moving Dynamic Watermark */
+        /* Subtle Dynamic Watermark */
         .watermark-overlay {
             position: fixed;
             top: 0;
@@ -28,13 +28,13 @@
             width: 100vw;
             height: 100vh;
             pointer-events: none;
-            z-index: 9999;
-            opacity: 0.14;
+            z-index: 1;
+            opacity: 0.035;
             display: flex;
             flex-wrap: wrap;
             align-content: space-around;
             justify-content: space-around;
-            transform: rotate(-20deg) scale(1.2);
+            transform: rotate(-15deg) scale(1.1);
             overflow: hidden;
             font-family: monospace;
             font-weight: 700;
@@ -42,11 +42,71 @@
             color: #0f0e12;
             transition: transform 10s ease-in-out;
         }
+
+        /* Custom Radio Buttons */
+        .custom-radio {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .custom-radio-most {
+            border: 2px solid #93c5fd;
+            background-color: #ffffff;
+        }
+        .custom-radio-most:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .custom-radio-most:checked {
+            border-color: #2563eb;
+            background-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+        }
+        .custom-radio-most:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .custom-radio-least {
+            border: 2px solid #fca5a5;
+            background-color: #ffffff;
+        }
+        .custom-radio-least:hover {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+        .custom-radio-least:checked {
+            border-color: #dc2626;
+            background-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25);
+        }
+        .custom-radio-least:checked::after {
+            content: '✕';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: bold;
+        }
     </style>
 </head>
-<body class="min-h-screen bg-[#f0efe9] font-sans text-slate-900 antialiased" oncontextmenu="return false;">
+<body class="min-h-screen bg-[#f0efe9] font-sans text-slate-900 antialiased relative" oncontextmenu="return false;">
 
-    {{-- DYNAMIC WATERMARK OVERLAY --}}
+    {{-- DYNAMIC WATERMARK OVERLAY (Subtle Background) --}}
     <div id="watermarkOverlay" class="watermark-overlay">
         @for ($i = 0; $i < 20; $i++)
             <div class="p-8 text-center leading-tight">
@@ -59,7 +119,7 @@
     </div>
 
     {{-- HEADER BAR --}}
-    <header class="sticky top-0 z-40 border-b border-white/70 bg-white/90 shadow-sm backdrop-blur-md">
+    <header class="sticky top-0 z-40 border-b border-white/70 bg-white/95 shadow-sm backdrop-blur-md">
         <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
             <div class="flex items-center gap-3">
                 <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#322d2a] font-mono text-sm font-bold text-white shadow-sm">
@@ -67,7 +127,7 @@
                 </span>
                 <div>
                     <h1 class="text-sm font-bold text-[#322d2a] sm:text-base">{{ $assessment->title }}</h1>
-                    <p class="text-xs text-slate-500">{{ auth()->user()->name }} • Attempt #{{ $session->attempt_number }}</p>
+                    <p class="text-xs text-slate-500">{{ auth()->user()->name }} • Percobaan #{{ $session->attempt_number }}</p>
                 </div>
             </div>
 
@@ -88,13 +148,13 @@
     </header>
 
     {{-- MAIN ASSESSMENT CONTAINER --}}
-    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+    <main class="relative z-20 mx-auto max-w-4xl px-4 py-8 sm:px-6">
 
-        {{-- PROGRESS BAR --}}
-        <div class="mb-6 rounded-3xl border border-white/80 bg-white p-4 shadow-sm">
+        {{-- PROGRESS BAR & PALETTE --}}
+        <div class="mb-6 rounded-3xl border border-white/80 bg-white p-5 shadow-sm">
             <div class="flex items-center justify-between text-xs font-semibold text-slate-600 mb-2">
-                <span>Progres Pengerjaan: <strong id="progressText" class="text-[#f97316]">0 / 24 Soal</strong></span>
-                <span id="progressPercent">0%</span>
+                <span>Progres Pengerjaan: <strong id="progressText" class="text-[#f97316]">0 / 24 Soal Terisi Lengkap</strong></span>
+                <span id="progressPercent" class="font-mono font-bold text-slate-800">0%</span>
             </div>
             <div class="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
                 <div id="progressBarFill" class="h-full bg-[#f97316] transition-all duration-300" style="width: 0%"></div>
@@ -115,28 +175,41 @@
             </div>
         </div>
 
-        {{-- QUESTION CARD (LOADED VIA AJAX) --}}
-        <div id="questionCard" class="overflow-hidden rounded-[40px] border border-white/80 bg-white p-6 shadow-xl shadow-slate-900/5 sm:p-10 transition-all duration-200">
-            <div class="border-b border-slate-100 pb-4 flex items-center justify-between">
+        {{-- QUESTION CARD --}}
+        <div id="questionCard" class="overflow-hidden rounded-[40px] border border-white/90 bg-white p-6 shadow-xl shadow-slate-900/5 sm:p-10 transition-all duration-200">
+            <div class="border-b border-slate-100 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                    <span class="rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-[#f97316]">
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-3.5 py-1 text-xs font-bold text-[#f97316]">
+                        <span class="h-2 w-2 rounded-full bg-[#f97316]"></span>
                         Pertanyaan <span id="displayQuestionNumber">1</span> dari 24
                     </span>
                     <p class="mt-2 text-xs font-medium text-slate-600" id="displayInstruction">
-                        Pilih satu yang PALING dan satu yang PALING TIDAK menggambarkan Anda.
+                        Pilih satu pernyataan <strong>PALING</strong> dan satu pernyataan <strong>PALING TIDAK</strong> menggambarkan diri Anda.
                     </p>
+                </div>
+
+                {{-- STATUS PILL OF CURRENT QUESTION --}}
+                <div id="questionStatusPill" class="flex items-center gap-2 text-xs">
+                    <span id="badgeMost" class="rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-500">Paling (M): Belum</span>
+                    <span id="badgeLeast" class="rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-500">Tidak (L): Belum</span>
                 </div>
             </div>
 
             {{-- OPTIONS MATRIX TABLE --}}
             <div class="mt-6">
-                <div class="grid grid-cols-12 gap-2 border-b border-slate-200 bg-slate-50/70 p-3 text-xs font-bold uppercase tracking-wider text-slate-700 rounded-2xl">
-                    <div class="col-span-8 sm:col-span-8">Pernyataan</div>
-                    <div class="col-span-2 sm:col-span-2 text-center text-blue-700">PALING (M)</div>
-                    <div class="col-span-2 sm:col-span-2 text-center text-rose-700">TIDAK (L)</div>
+                <div class="grid grid-cols-12 gap-2 border-b border-slate-200 bg-slate-50 p-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 rounded-2xl">
+                    <div class="col-span-8 sm:col-span-8">Karakteristik / Pernyataan</div>
+                    <div class="col-span-2 sm:col-span-2 text-center text-blue-700 flex flex-col items-center">
+                        <span>PALING (M)</span>
+                        <span class="text-[10px] font-normal text-blue-500">Pilih 1</span>
+                    </div>
+                    <div class="col-span-2 sm:col-span-2 text-center text-rose-700 flex flex-col items-center">
+                        <span>TIDAK (L)</span>
+                        <span class="text-[10px] font-normal text-rose-500">Pilih 1</span>
+                    </div>
                 </div>
 
-                <div id="optionsList" class="mt-2 divide-y divide-slate-100">
+                <div id="optionsList" class="mt-3 space-y-2">
                     {{-- Rendered dynamically by JS --}}
                 </div>
             </div>
@@ -207,10 +280,11 @@
         let currentIndex = 0;
         let totalQuestions = 24;
         let currentQuestionId = null;
+        let currentOptionsData = [];
         let selectedMost = null;
         let selectedLeast = null;
         let timerInterval = null;
-        let timeRemaining = {{ $session->assessment->duration_minutes * 60 }};
+        let timeRemaining = {{ (int) ($remainingSeconds ?? (($session->assessment->duration_minutes ?: 10) * 60)) }};
         let answeredQuestionsMap = {};
 
         // Security listeners
@@ -239,14 +313,14 @@
             }
         });
 
-        // Periodic watermark motion
+        // Watermark subtle shift
         setInterval(() => {
             const wm = document.getElementById('watermarkOverlay');
             if (wm) {
-                const rot = -20 + (Math.random() * 4 - 2);
-                wm.style.transform = `rotate(${rot}deg) scale(1.2)`;
+                const rot = -15 + (Math.random() * 4 - 2);
+                wm.style.transform = `rotate(${rot}deg) scale(1.1)`;
             }
-        }, 8000);
+        }, 10000);
 
         function logSecurityEvent(eventType, metadata = {}) {
             fetch(`${BASE_API}/security-event`, {
@@ -265,7 +339,7 @@
                 const res = await fetch(`${BASE_API}/question?index=${index}`);
                 const data = await res.json();
 
-                if (data.completed) {
+                if (data.completed && data.redirect) {
                     window.location.href = data.redirect;
                     return;
                 }
@@ -273,52 +347,28 @@
                 currentIndex = data.index;
                 totalQuestions = data.total_questions;
                 currentQuestionId = data.question_id;
+                currentOptionsData = data.options || [];
                 selectedMost = data.current_answer?.most_option_id || null;
                 selectedLeast = data.current_answer?.least_option_id || null;
 
+                if (data.answered_indices && Array.isArray(data.answered_indices)) {
+                    answeredQuestionsMap = {};
+                    data.answered_indices.forEach(idx => answeredQuestionsMap[idx] = true);
+                }
+
+                if (data.time_remaining_seconds !== undefined && timerInterval === null) {
+                    startTimer(data.time_remaining_seconds);
+                }
+
                 document.getElementById('displayQuestionNumber').innerText = data.question_number;
-                document.getElementById('displayInstruction').innerText = data.instruction || 'Pilih satu yang PALING dan satu yang PALING TIDAK menggambarkan Anda.';
+                document.getElementById('displayInstruction').innerText = data.instruction || 'Pilih satu pernyataan PALING dan satu pernyataan PALING TIDAK menggambarkan diri Anda.';
 
-                // Render options
-                const container = document.getElementById('optionsList');
-                container.innerHTML = '';
-
-                data.options.forEach((opt, idx) => {
-                    const row = document.createElement('div');
-                    row.className = 'grid grid-cols-12 gap-2 items-center p-3.5 hover:bg-slate-50/80 rounded-2xl transition';
-                    row.innerHTML = `
-                        <div class="col-span-8 sm:col-span-8 flex items-start gap-3">
-                            <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
-                                ${opt.label}
-                            </span>
-                            <span class="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">${opt.statement}</span>
-                        </div>
-                        <div class="col-span-2 sm:col-span-2 flex justify-center">
-                            <input
-                                type="radio"
-                                name="most_choice"
-                                value="${opt.id}"
-                                ${selectedMost == opt.id ? 'checked' : ''}
-                                onchange="selectMost(${opt.id})"
-                                class="h-5 w-5 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                            >
-                        </div>
-                        <div class="col-span-2 sm:col-span-2 flex justify-center">
-                            <input
-                                type="radio"
-                                name="least_choice"
-                                value="${opt.id}"
-                                ${selectedLeast == opt.id ? 'checked' : ''}
-                                onchange="selectLeast(${opt.id})"
-                                class="h-5 w-5 text-rose-600 focus:ring-rose-500 cursor-pointer"
-                            >
-                        </div>
-                    `;
-                    container.appendChild(row);
-                });
+                renderOptions();
+                updateQuestionStatusBadges();
 
                 // Update UI state
                 document.getElementById('prevBtn').disabled = (currentIndex === 0);
+                updateProgressBar();
                 updateNavigationPalette();
                 showSaveStatus('Tersimpan', 'emerald');
             } catch (err) {
@@ -327,23 +377,101 @@
             }
         }
 
+        function renderOptions() {
+            const container = document.getElementById('optionsList');
+            container.innerHTML = '';
+
+            currentOptionsData.forEach((opt) => {
+                const isMost = (selectedMost == opt.id);
+                const isLeast = (selectedLeast == opt.id);
+
+                const row = document.createElement('div');
+                let rowBg = 'border border-slate-100 bg-white hover:bg-slate-50/80';
+                if (isMost) rowBg = 'border border-blue-200 bg-blue-50/70 ring-1 ring-blue-300';
+                if (isLeast) rowBg = 'border border-rose-200 bg-rose-50/70 ring-1 ring-rose-300';
+
+                row.className = `grid grid-cols-12 gap-2 items-center p-3.5 rounded-2xl transition-all duration-150 ${rowBg}`;
+                row.id = `optRow_${opt.id}`;
+
+                row.innerHTML = `
+                    <div class="col-span-8 sm:col-span-8 flex items-start gap-3">
+                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl ${isMost ? 'bg-blue-600 text-white' : (isLeast ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-700')} text-xs font-bold shadow-xs">
+                            ${opt.label}
+                        </span>
+                        <div>
+                            <p class="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">${opt.statement}</p>
+                            ${isMost ? '<span class="inline-block mt-1 text-[11px] font-bold text-blue-700">✓ Paling Menggambarkan Diri (Most)</span>' : ''}
+                            ${isLeast ? '<span class="inline-block mt-1 text-[11px] font-bold text-rose-700">✕ Paling Tidak Menggambarkan (Least)</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="col-span-2 sm:col-span-2 flex justify-center">
+                        <input
+                            type="radio"
+                            name="most_choice"
+                            value="${opt.id}"
+                            ${isMost ? 'checked' : ''}
+                            onchange="selectMost(${opt.id})"
+                            class="custom-radio custom-radio-most"
+                            title="Paling (Most)"
+                        >
+                    </div>
+                    <div class="col-span-2 sm:col-span-2 flex justify-center">
+                        <input
+                            type="radio"
+                            name="least_choice"
+                            value="${opt.id}"
+                            ${isLeast ? 'checked' : ''}
+                            onchange="selectLeast(${opt.id})"
+                            class="custom-radio custom-radio-least"
+                            title="Paling Tidak (Least)"
+                        >
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function updateQuestionStatusBadges() {
+            const bMost = document.getElementById('badgeMost');
+            const bLeast = document.getElementById('badgeLeast');
+
+            const optMost = currentOptionsData.find(o => o.id == selectedMost);
+            const optLeast = currentOptionsData.find(o => o.id == selectedLeast);
+
+            if (optMost) {
+                bMost.className = 'rounded-full bg-blue-100 px-3 py-1 font-bold text-blue-700';
+                bMost.innerText = `Paling (M): ${optMost.label} ✓`;
+            } else {
+                bMost.className = 'rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-500';
+                bMost.innerText = 'Paling (M): Belum';
+            }
+
+            if (optLeast) {
+                bLeast.className = 'rounded-full bg-rose-100 px-3 py-1 font-bold text-rose-700';
+                bLeast.innerText = `Tidak (L): ${optLeast.label} ✕`;
+            } else {
+                bLeast.className = 'rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-500';
+                bLeast.innerText = 'Tidak (L): Belum';
+            }
+        }
+
         async function selectMost(optionId) {
             if (selectedLeast == optionId) {
-                alert('Pilihan PALING (Most) dan PALING TIDAK (Least) tidak boleh pada baris yang sama.');
-                loadQuestion(currentIndex);
-                return;
+                selectedLeast = null; // Auto uncheck Least on same row
             }
             selectedMost = optionId;
+            renderOptions();
+            updateQuestionStatusBadges();
             await autosave();
         }
 
         async function selectLeast(optionId) {
             if (selectedMost == optionId) {
-                alert('Pilihan PALING (Most) dan PALING TIDAK (Least) tidak boleh pada baris yang sama.');
-                loadQuestion(currentIndex);
-                return;
+                selectedMost = null; // Auto uncheck Most on same row
             }
             selectedLeast = optionId;
+            renderOptions();
+            updateQuestionStatusBadges();
             await autosave();
         }
 
@@ -364,12 +492,17 @@
                 });
                 const data = await res.json();
                 if (res.ok && data.saved) {
-                    showSaveStatus('Tersimpan', 'emerald');
                     if (selectedMost && selectedLeast) {
                         answeredQuestionsMap[currentIndex] = true;
+                        showSaveStatus('Lengkap & Tersimpan ✓', 'emerald');
+                    } else {
+                        delete answeredQuestionsMap[currentIndex];
+                        showSaveStatus('Tersimpan Sebagian', 'blue');
                     }
                     updateProgressBar();
                     updateNavigationPalette();
+                } else if (data.expired && data.redirect_url) {
+                    window.location.href = data.redirect_url;
                 } else {
                     showSaveStatus(data.error || 'Gagal menyimpan', 'rose');
                 }
@@ -381,8 +514,8 @@
         function showSaveStatus(text, color) {
             const badge = document.getElementById('saveStatus');
             if (!badge) return;
-            badge.className = `flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold bg-${color}-50 text-${color}-700`;
-            badge.innerHTML = `<span class="h-1.5 w-1.5 rounded-full bg-${color}-500"></span><span>${text}</span>`;
+            badge.className = `flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-semibold bg-${color}-50 text-${color}-700 border border-${color}-200`;
+            badge.innerHTML = `<span class="h-2 w-2 rounded-full bg-${color}-500"></span><span>${text}</span>`;
         }
 
         function prevQuestion() {
@@ -403,7 +536,7 @@
 
         function updateProgressBar() {
             const answeredCount = Object.keys(answeredQuestionsMap).length;
-            document.getElementById('progressText').innerText = `${answeredCount} / 24 Soal`;
+            document.getElementById('progressText').innerText = `${answeredCount} / 24 Soal Terisi Lengkap`;
             const pct = Math.round((answeredCount / 24) * 100);
             document.getElementById('progressPercent').innerText = `${pct}%`;
             document.getElementById('progressBarFill').style.width = `${pct}%`;
@@ -416,7 +549,7 @@
                 if (i === currentIndex) {
                     btn.className = 'flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#f97316] bg-[#322d2a] text-xs font-mono font-bold text-white shadow-sm';
                 } else if (answeredQuestionsMap[i]) {
-                    btn.className = 'flex h-7 w-7 items-center justify-center rounded-lg border border-emerald-300 bg-emerald-50 text-xs font-mono font-bold text-emerald-700';
+                    btn.className = 'flex h-7 w-7 items-center justify-center rounded-lg border border-emerald-300 bg-emerald-100 text-xs font-mono font-bold text-emerald-800';
                 } else {
                     btn.className = 'flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-xs font-mono font-bold text-slate-700 hover:border-[#f97316]';
                 }
@@ -424,8 +557,10 @@
         }
 
         function startTimer(seconds) {
-            timeRemaining = seconds;
+            timeRemaining = Math.max(0, Math.floor(seconds));
             updateTimerDisplay();
+
+            if (timerInterval) clearInterval(timerInterval);
 
             timerInterval = setInterval(() => {
                 timeRemaining--;
@@ -433,25 +568,63 @@
 
                 if (timeRemaining <= 0) {
                     clearInterval(timerInterval);
-                    alert('Waktu pengerjaan asesmen telah habis. Sistem akan otomatis mengirimkan jawaban Anda.');
-                    executeSubmit();
+                    handleAutoCloseTimeout();
                 }
             }, 1000);
         }
 
         function updateTimerDisplay() {
-            const m = Math.floor(timeRemaining / 60);
-            const s = timeRemaining % 60;
-            document.getElementById('timerDisplay').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            const total = Math.max(0, Math.floor(timeRemaining));
+            const m = Math.floor(total / 60);
+            const s = total % 60;
+            const timerEl = document.getElementById('timerDisplay');
+            if (timerEl) {
+                timerEl.innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                if (total <= 120) {
+                    timerEl.className = 'font-mono text-sm font-bold text-rose-500 animate-pulse';
+                } else {
+                    timerEl.className = 'font-mono text-sm font-bold text-[#f97316]';
+                }
+            }
+        }
+
+        async function handleAutoCloseTimeout() {
+            document.querySelectorAll('input[type="radio"], button').forEach(el => el.disabled = true);
+
+            const summary = document.getElementById('submitSummaryText');
+            summary.innerHTML = `<span class="text-rose-600 font-bold">Waktu 10 menit pengerjaan telah habis!</span><br>Sistem sedang mengunci jawaban Anda secara otomatis...`;
+            document.getElementById('submitModal').classList.remove('hidden');
+            document.getElementById('submitModal').classList.add('flex');
+
+            showSaveStatus('Waktu habis, mengunci...', 'rose');
+
+            try {
+                const res = await fetch(`${BASE_API}/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': CSRF_TOKEN
+                    },
+                    body: JSON.stringify({ force_timeout: true })
+                });
+                const data = await res.json();
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    window.location.reload();
+                }
+            } catch (err) {
+                window.location.reload();
+            }
         }
 
         function confirmSubmit() {
             const answeredCount = Object.keys(answeredQuestionsMap).length;
             const summary = document.getElementById('submitSummaryText');
             if (answeredCount < 24) {
-                summary.innerHTML = `<span class="text-rose-600 font-bold">Perhatian: Anda baru menjawab ${answeredCount} dari 24 soal.</span><br>Harap lengkapi semua soal sebelum submit.`;
+                summary.innerHTML = `<span class="text-rose-600 font-bold">Perhatian: Anda baru menjawab ${answeredCount} dari 24 soal secara lengkap.</span><br>Harap lengkapi pilihan Most dan Least di semua butir soal sebelum submit.`;
             } else {
-                summary.innerHTML = `Anda telah menjawab seluruh <strong>24 butir soal</strong> dengan lengkap. Apakah Anda yakin ingin mengakhiri asesmen?`;
+                summary.innerHTML = `Anda telah menjawab seluruh <strong>24 butir soal</strong> secara lengkap. Apakah Anda yakin ingin mengakhiri asesmen?`;
             }
             document.getElementById('submitModal').classList.remove('hidden');
             document.getElementById('submitModal').classList.add('flex');
@@ -470,7 +643,8 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': CSRF_TOKEN
-                    }
+                    },
+                    body: JSON.stringify({ force_timeout: false })
                 });
                 const data = await res.json();
                 if (res.ok && data.success) {
@@ -487,8 +661,8 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
-            loadQuestion(0);
             startTimer(timeRemaining);
+            loadQuestion(0);
         });
     </script>
 </body>

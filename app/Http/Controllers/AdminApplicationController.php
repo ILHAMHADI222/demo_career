@@ -69,6 +69,49 @@ class AdminApplicationController extends Controller
             ]);
         }
 
+        // When application enters Psikotest / Test (TECHNICAL_TEST), auto-assign the 10-minute DISC assessment
+        if ($data['status'] === 'TECHNICAL_TEST') {
+            $discAssessment = \App\Models\DiscAssessment::query()->where('status', 'PUBLISHED')->latest()->first();
+            if (!$discAssessment) {
+                $bank = \App\Models\QuestionBank::query()->where('status', 'PUBLISHED')->first();
+                if ($bank) {
+                    $discAssessment = \App\Models\DiscAssessment::create([
+                        'title' => 'Psikotest DISC Rekrutmen ISP',
+                        'code' => 'DISC-RECRUIT-ISP',
+                        'question_bank_id' => $bank->id,
+                        'question_bank_version' => $bank->version,
+                        'duration_minutes' => 10,
+                        'result_visibility' => 'HRD_ONLY',
+                        'status' => 'PUBLISHED',
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+            }
+
+            if ($discAssessment) {
+                $userId = $application->candidateProfile?->user_id;
+                if ($userId) {
+                    \App\Models\DiscAssessmentParticipant::firstOrCreate(
+                        ['disc_assessment_id' => $discAssessment->id, 'user_id' => $userId],
+                        ['application_id' => $application->id, 'status' => 'ASSIGNED', 'invited_at' => now(), 'max_attempts' => 1]
+                    );
+
+                    \App\Models\CandidateTest::firstOrCreate(
+                        ['application_id' => $application->id, 'test_type' => 'DISC_ASSESSMENT'],
+                        [
+                            'title' => 'Psikotest DISC Kepribadian (10 Menit)',
+                            'instruction' => 'Silakan kerjakan 24 butir soal DISC dalam durasi waktu 10 menit.',
+                            'test_url' => route('disc.assessment.instruction', $discAssessment),
+                            'scheduled_at' => now(),
+                            'deadline_at' => now()->addDays(3),
+                            'maximum_score' => 100,
+                            'result' => 'PENDING',
+                        ]
+                    );
+                }
+            }
+        }
+
         return back()->with('success', 'Status lamaran berhasil diperbarui.');
     }
 
