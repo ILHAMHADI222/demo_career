@@ -16,6 +16,12 @@ class AdminJobController extends Controller
 {
     public function index(Request $request): View
     {
+        Job::query()
+            ->where('status', 'PUBLISHED')
+            ->whereNotNull('deadline_at')
+            ->where('deadline_at', '<', now())
+            ->update(['status' => 'CLOSED']);
+
         $jobs = Job::query()
             ->with(['department', 'recruiter'])
             ->when($request->string('keyword')->toString(), fn ($query, $keyword) => $query->where(fn ($q) => $q->where('title', 'like', "%{$keyword}%")->orWhere('job_code', 'like', "%{$keyword}%")->orWhere('location', 'like', "%{$keyword}%")))
@@ -38,6 +44,7 @@ class AdminJobController extends Controller
     public function store(Request $request, NumberGenerator $numberGenerator): RedirectResponse
     {
         $data = $this->validated($request);
+        $data = $this->resolveDepartment($data);
         $data['slug'] = $this->uniqueSlug($data['title']);
         $data['job_code'] = $numberGenerator->jobCode();
         $data['recruiter_id'] = auth()->id();
@@ -56,6 +63,7 @@ class AdminJobController extends Controller
     public function update(Request $request, Job $job): RedirectResponse
     {
         $data = $this->validated($request);
+        $data = $this->resolveDepartment($data);
         $data['required_skills'] = $this->skillsToArray($data['required_skills'] ?? null);
 
         $job->update($data);
@@ -98,6 +106,8 @@ class AdminJobController extends Controller
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'department_id' => ['nullable', 'exists:departments,id'],
+            'new_department_name' => ['nullable', 'string', 'max:255', 'unique:departments,name'],
+            'new_department_code' => ['nullable', 'string', 'max:50', 'unique:departments,code'],
             'location' => ['required', 'string', 'max:255'],
             'employment_type' => ['required', 'string', 'max:80'],
             'work_arrangement' => ['required', 'string', 'max:80'],
@@ -113,10 +123,28 @@ class AdminJobController extends Controller
             'salary_max' => ['nullable', 'numeric', 'min:0'],
             'show_salary' => ['nullable', 'boolean'],
             'registration_start_at' => ['nullable', 'date'],
-            'deadline_at' => ['nullable', 'date'],
+            'deadline_at' => ['nullable', 'date', 'after_or_equal:registration_start_at'],
             'recruiter_id' => ['nullable', 'exists:users,id'],
             'status' => ['required', Rule::in(CareerEnums::JOB_STATUSES)],
         ]);
+    }
+
+    private function resolveDepartment(array $data): array
+    {
+        if (! empty($data['new_department_name'])) {
+            $code = $data['new_department_code'] ?: Str::upper(Str::slug($data['new_department_name'], '_'));
+
+            $department = Department::query()->create([
+                'name' => $data['new_department_name'],
+                'code' => $code,
+            ]);
+
+            $data['department_id'] = $department->id;
+        }
+
+        unset($data['new_department_name'], $data['new_department_code']);
+
+        return $data;
     }
 
     private function uniqueSlug(string $title): string

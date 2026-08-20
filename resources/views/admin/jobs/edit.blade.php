@@ -1,16 +1,36 @@
 <x-layouts.app title="Edit Lowongan - Career Indodata">
-    <section class="min-h-screen bg-slate-50 py-10 md:py-14">
-        <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <div class="rounded-[2rem] bg-slate-950 p-8 text-white shadow-2xl md:p-10">
-                <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-300">HRD Job Management</p>
-                <h1 class="mt-4 text-4xl font-black tracking-tight md:text-5xl">Edit lowongan pekerjaan.</h1>
-                <p class="mt-4 max-w-3xl text-sm leading-7 text-slate-200">Perbarui informasi lowongan, status publikasi, deadline, dan detail kebutuhan kandidat.</p>
-            </div>
+    <section class="min-h-screen bg-[#f0efe9] px-4 pb-12 pt-28 text-[#322d2a] sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-[1240px]">
+            <div class="overflow-hidden rounded-[56px] border border-white bg-white">
+                <div class="relative overflow-hidden bg-[#322d2a] p-8 text-white md:p-10">
+                    <div class="absolute -left-20 top-10 h-72 w-72 rounded-full bg-[#f97316]/20 blur-3xl"></div>
+                    <div class="absolute -right-16 bottom-0 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl"></div>
+                    <div class="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                        <div>
+                            <a href="{{ route('admin.jobs.index') }}" class="inline-flex items-center gap-2 text-sm font-normal text-white/70 transition hover:text-[#f97316]">
+                                <span>←</span>
+                                Kembali ke daftar lowongan
+                            </a>
+                            <p class="mt-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-normal uppercase tracking-[0.22em] text-white backdrop-blur">
+                                <span class="h-2 w-2 rounded-full bg-[#f97316]"></span>
+                                Job Update
+                            </p>
+                            <h1 class="mt-4 text-4xl font-light tracking-tight md:text-5xl">Edit Lowongan</h1>
+                            <p class="mt-4 max-w-2xl text-sm leading-7 text-white/75">Perbarui informasi posisi, periode buka tutup pendaftaran, serta detail kebutuhan kandidat.</p>
+                        </div>
 
-            <form method="POST" action="{{ route('admin.jobs.update', $job) }}" class="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-                @method('PUT')
-                @include('admin.jobs.form')
-            </form>
+                        <div class="rounded-[28px] border border-white/15 bg-white/10 px-5 py-4 text-sm backdrop-blur">
+                            <p class="font-normal text-white">{{ $job->job_code ?? 'Kode otomatis' }}</p>
+                            <p class="mt-1 font-normal text-white/75">Status: {{ $job->status ?? 'DRAFT' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ route('admin.jobs.update', $job) }}" class="p-6 md:p-8">
+                    @method('PUT')
+                    @include('admin.jobs.form')
+                </form>
+            </div>
         </div>
     </section>
 </x-layouts.app>

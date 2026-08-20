@@ -156,93 +156,106 @@
 
     <main class="min-h-[calc(100vh-20rem)]">{{ $slot }}</main>
 
-<footer class="mt-20 border-t border-slate-200 bg-slate-950 text-white">
-    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4 lg:px-8">
+<footer class="mt-20 border-t border-white/70 bg-white/85 text-slate-900 shadow-[0_-8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl">
+    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
 
-        {{-- Brand --}}
-        <div class="md:col-span-2">
-            <a href="{{ route('career.home') }}" class="group inline-flex items-center gap-3">
-                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/5 p-1">
-                    <img
-                        src="{{ asset('assets/images/logo2.png') }}"
-                        alt="Logo PT Indodata Solusi Persada"
-                        class="h-full w-full object-contain transition duration-300 group-hover:scale-105"
-                    >
-                </div>
+        <div class="grid gap-8 rounded-[2rem] border border-slate-200 bg-white/80 p-6 shadow-sm md:grid-cols-4 md:p-8">
 
-                <div class="leading-tight">
-                    <span class="block text-base font-black tracking-tight text-white">
-                        Career Indodata
-                    </span>
-                    <span class="block text-xs font-semibold uppercase tracking-[0.18em] text-orange-400">
-                        PT INDODATA SOLUSI PERSADA
-                    </span>
-                </div>
-            </a>
+            {{-- Brand --}}
+            <div class="md:col-span-2">
+                <a href="{{ route('career.home') }}" class="group inline-flex items-center gap-3">
+                    <div class="flex h-14 w-14 shrink-0 items-center justify-center">
+                        <img
+                            src="{{ asset('assets/images/logo2.png') }}"
+                            alt="Logo PT Indodata Solusi Persada"
+                            class="h-full w-full object-contain transition duration-300 group-hover:scale-105"
+                        >
+                    </div>
 
-            <p class="mt-4 max-w-xl text-sm leading-6 text-slate-300">
-                Platform rekrutmen terpadu PT INDODATA SOLUSI PERSADA untuk
-                pendaftaran calon karyawan, unggah berkas PDF, review HRD,
-                dan tracking progres seleksi.
-            </p>
-        </div>
-
-        {{-- Portal --}}
-        <div>
-            <h3 class="font-black text-white">
-                Portal
-            </h3>
-
-            <div class="mt-4 grid gap-3 text-sm text-slate-300">
-                <a
-                    href="{{ route('career.home') }}"
-                    class="transition hover:text-orange-400"
-                >
-                    Beranda
+                    <div class="leading-tight">
+                        <span class="block text-base font-black tracking-tight text-slate-950">
+                            Career Indodata
+                        </span>
+                        <span class="block text-xs font-semibold uppercase tracking-[0.18em] text-orange-500">
+                            PT INDODATA SOLUSI PERSADA
+                        </span>
+                    </div>
                 </a>
 
-                <a
-                    href="{{ route('jobs.index') }}"
-                    class="transition hover:text-orange-400"
-                >
-                    Lowongan
-                </a>
-
-                <a
-                    href="{{ route('register') }}"
-                    class="transition hover:text-orange-400"
-                >
-                    Daftar Kandidat
-                </a>
+                <p class="mt-4 max-w-xl text-sm leading-6 text-slate-500">
+                    Platform rekrutmen terpadu PT INDODATA SOLUSI PERSADA untuk
+                    pendaftaran calon karyawan, unggah berkas PDF, review HRD,
+                    dan tracking progres seleksi.
+                </p>
             </div>
+
+            {{-- Portal --}}
+            <div>
+                <h3 class="font-black text-slate-950">
+                    Portal
+                </h3>
+
+                <div class="mt-4 grid gap-2 text-sm font-semibold text-slate-600">
+                    <a
+                        href="{{ route('career.home') }}"
+                        class="rounded-xl px-3 py-2 transition hover:bg-orange-50 hover:text-orange-500"
+                    >
+                        Beranda
+                    </a>
+
+                    <a
+                        href="{{ route('jobs.index') }}"
+                        class="rounded-xl px-3 py-2 transition hover:bg-orange-50 hover:text-orange-500"
+                    >
+                        Lowongan
+                    </a>
+
+                    <a
+                        href="{{ route('register') }}"
+                        class="rounded-xl px-3 py-2 transition hover:bg-orange-50 hover:text-orange-500"
+                    >
+                        Daftar Kandidat
+                    </a>
+                </div>
+            </div>
+
+            {{-- Kontak --}}
+            <div>
+                <h3 class="font-black text-slate-950">
+                    Kontak
+                </h3>
+
+                <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <p class="text-sm leading-6 text-slate-600">
+                        HR Recruitment<br>
+                        PT INDODATA SOLUSI PERSADA
+                    </p>
+
+                    <a
+                        href="mailto:career@indodata.test"
+                        class="mt-2 inline-block text-sm font-semibold text-slate-700 transition hover:text-orange-500"
+                    >
+                        career@indodata.test
+                    </a>
+                </div>
+            </div>
+
         </div>
 
-        {{-- Kontak --}}
-        <div>
-            <h3 class="font-black text-white">
-                Kontak
-            </h3>
-
-            <p class="mt-4 text-sm leading-6 text-slate-300">
-                HR Recruitment<br>
-                PT INDODATA SOLUSI PERSADA
-            </p>
+        {{-- Copyright --}}
+        <div class="mt-5 flex flex-col items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 text-xs font-semibold text-slate-500 shadow-sm sm:flex-row">
+            <span>
+                © {{ date('Y') }} Career Indodata. By Hallolabs Team.
+            </span>
 
             <a
-                href="mailto:career@indodata.test"
-                class="mt-2 inline-block text-sm text-slate-300 transition hover:text-orange-400"
+                href="{{ route('career.home') }}"
+                class="rounded-full border border-slate-200 bg-white px-4 py-2 font-bold text-slate-600 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-500"
             >
-                career@indodata.test
+                Career Indodata
             </a>
         </div>
 
-    </div>
-
-    {{-- Copyright --}}
-    <div class="border-t border-white/10">
-        <div class="mx-auto max-w-7xl px-4 py-5 text-center text-xs font-semibold text-slate-400 sm:px-6 lg:px-8">
-            © {{ date('Y') }} Career Indodata. By Hallolabs Team.
-        </div>
     </div>
 </footer>
 </body>

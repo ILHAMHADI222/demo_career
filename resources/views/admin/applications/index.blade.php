@@ -1,25 +1,25 @@
 <x-layouts.app title="Daftar Pelamar - Career Indodata">
 
-    <section class="min-h-screen bg-slate-50 py-10 md:py-14">
+    <section class="min-h-screen bg-[#f0efe9] px-4 pb-12 pt-28 sm:px-6 lg:px-8">
 
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-[1240px]">
 
             {{-- ========================================================= --}}
             {{-- HERO --}}
             {{-- ========================================================= --}}
             <div
-                class="relative overflow-hidden rounded-[2rem] bg-cover bg-center text-white shadow-2xl shadow-slate-300/30"
+                class="relative overflow-hidden rounded-[56px] bg-cover bg-center text-white "
                 style="background-image: url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1800&q=85');"
             >
 
                 {{-- Overlay --}}
-                <div class="absolute inset-0 bg-slate-950/70"></div>
+                <div class="absolute inset-0 bg-[#322d2a]/70"></div>
 
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-orange-950/30"></div>
+                <div class="absolute inset-0 bg-[#0f0e12]/55"></div>
 
 
                 {{-- Decoration --}}
-                <div class="absolute -left-20 top-10 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl"></div>
+                <div class="absolute -left-20 top-10 h-72 w-72 rounded-full bg-[#f97316]/20 blur-3xl"></div>
 
                 <div class="absolute -right-16 bottom-0 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl"></div>
 
@@ -27,27 +27,27 @@
                 {{-- Hero Content --}}
                 <div class="relative z-10 p-8 md:p-10 lg:p-12">
 
-                    <span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-orange-300 backdrop-blur">
+                    <span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-normal uppercase tracking-[0.22em] text-white backdrop-blur">
 
-                        <span class="h-2 w-2 rounded-full bg-orange-400"></span>
+                        <span class="h-2 w-2 rounded-full bg-[#f97316]"></span>
 
                         HRD Applicant Tracking
 
                     </span>
 
 
-                    <h1 class="mt-5 max-w-4xl text-4xl font-black leading-tight tracking-tight md:text-5xl">
+                    <h1 class="mt-5 max-w-4xl text-4xl font-normal leading-tight tracking-tight md:text-5xl">
 
                         Kelola seluruh
 
-                        <span class="text-orange-400">
+                        <span class="text-[#f97316]">
                             pelamar dan proses seleksi.
                         </span>
 
                     </h1>
 
 
-                    <p class="mt-5 max-w-3xl text-sm font-semibold leading-7 text-slate-200 md:text-base">
+                    <p class="mt-5 max-w-3xl text-sm font-normal leading-7 text-white/75 md:text-base">
 
                         Lihat kandidat, posisi yang dilamar, divisi tujuan,
                         status proses, jumlah dokumen, dan detail lamaran
@@ -63,21 +63,21 @@
             {{-- ========================================================= --}}
             {{-- FILTER --}}
             {{-- ========================================================= --}}
-            <div class="relative z-20 mt-6 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-xl shadow-slate-300/20 md:p-6">
+            <div class="relative z-20 mt-6 rounded-[40px] border border-white bg-white p-5  md:p-6">
 
                 <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 
                     <div>
 
-                        <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-500">
+                        <p class="text-xs font-normal uppercase tracking-[0.22em] text-[#f97316]">
                             Filter Pelamar
                         </p>
 
-                        <h2 class="mt-2 text-xl font-black text-slate-950 md:text-2xl">
+                        <h2 class="mt-2 text-xl font-normal text-[#322d2a] md:text-2xl">
                             Cari kandidat dengan cepat
                         </h2>
 
-                        <p class="mt-1 text-sm leading-6 text-slate-500">
+                        <p class="mt-1 text-sm leading-6 text-[#6f6b67]">
                             Gunakan keyword, status, dan rentang tanggal untuk mempersempit hasil pencarian.
                         </p>
 
@@ -88,7 +88,7 @@
 
                         <a
                             href="{{ route('admin.applications.index') }}"
-                            class="inline-flex items-center gap-2 text-sm font-black text-orange-500 transition hover:text-orange-600"
+                            class="inline-flex items-center gap-2 text-sm font-normal text-[#f97316] transition hover:text-[#f97316]"
                         >
                             Reset Filter
 
@@ -114,7 +114,7 @@
 
                         <label
                             for="keyword"
-                            class="text-xs font-black uppercase tracking-[0.16em] text-slate-500"
+                            class="text-xs font-normal uppercase tracking-[0.16em] text-[#6f6b67]"
                         >
                             Keyword
                         </label>
@@ -126,7 +126,7 @@
                             <div class="pointer-events-none absolute inset-y-0 left-4 flex items-center">
 
                                 <svg
-                                    class="h-5 w-5 text-slate-400"
+                                    class="h-5 w-5 text-[#6f6b67]/70"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
@@ -148,7 +148,7 @@
                                 name="keyword"
                                 value="{{ request('keyword') }}"
                                 placeholder="Nama, email, lowongan, nomor lamaran"
-                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                                class="w-full rounded-[24px] border border-white bg-[#f0efe9] py-3 pl-12 pr-4 text-sm font-normal text-[#322d2a] outline-none transition placeholder:text-[#6f6b67]/70 focus:border-[#f97316] focus:bg-white focus:ring-4 focus:ring-[#f97316]/20"
                             >
 
                         </div>
@@ -161,7 +161,7 @@
 
                         <label
                             for="status"
-                            class="text-xs font-black uppercase tracking-[0.16em] text-slate-500"
+                            class="text-xs font-normal uppercase tracking-[0.16em] text-[#6f6b67]"
                         >
                             Status
                         </label>
@@ -170,20 +170,20 @@
                         <select
                             id="status"
                             name="status"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                            class="mt-2 w-full rounded-[24px] border border-white bg-[#f0efe9] px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white focus:ring-4 focus:ring-[#f97316]/20"
                         >
 
                             <option value="">
                                 Semua Status
                             </option>
 
-                            @foreach($statuses as $status)
+                            @foreach($statuses as $key => $status)
 
                                 <option
-                                    value="{{ $status }}"
-                                    @selected(request('status') === $status)
+                                    value="{{ $key }}"
+                                    @selected(request('status') === $key)
                                 >
-                                    {{ str($status)->headline() }}
+                                    {{ $status['label'] }}
                                 </option>
 
                             @endforeach
@@ -198,7 +198,7 @@
 
                         <label
                             for="date_from"
-                            class="text-xs font-black uppercase tracking-[0.16em] text-slate-500"
+                            class="text-xs font-normal uppercase tracking-[0.16em] text-[#6f6b67]"
                         >
                             Dari Tanggal
                         </label>
@@ -209,7 +209,7 @@
                             type="date"
                             name="date_from"
                             value="{{ request('date_from') }}"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                            class="mt-2 w-full rounded-[24px] border border-white bg-[#f0efe9] px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white focus:ring-4 focus:ring-[#f97316]/20"
                         >
 
                     </div>
@@ -220,7 +220,7 @@
 
                         <label
                             for="date_to"
-                            class="text-xs font-black uppercase tracking-[0.16em] text-slate-500"
+                            class="text-xs font-normal uppercase tracking-[0.16em] text-[#6f6b67]"
                         >
                             Sampai Tanggal
                         </label>
@@ -231,7 +231,7 @@
                             type="date"
                             name="date_to"
                             value="{{ request('date_to') }}"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                            class="mt-2 w-full rounded-[24px] border border-white bg-[#f0efe9] px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white focus:ring-4 focus:ring-[#f97316]/20"
                         >
 
                     </div>
@@ -242,7 +242,7 @@
 
                         <button
                             type="submit"
-                            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 px-6 py-3 text-sm font-black text-white shadow-lg shadow-orange-500/20 transition duration-300 hover:-translate-y-0.5 hover:bg-orange-600 lg:w-auto"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-[24px] bg-[#f97316] px-6 py-3 text-sm font-normal text-white  transition duration-300  hover:bg-[#ea580c] lg:w-auto"
                         >
 
                             Filter
@@ -267,25 +267,25 @@
 
                 <div>
 
-                    <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-500">
+                    <p class="text-xs font-normal uppercase tracking-[0.22em] text-[#f97316]">
                         Applicant List
                     </p>
 
-                    <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950 md:text-3xl">
+                    <h2 class="mt-2 text-2xl font-normal tracking-tight text-[#322d2a] md:text-3xl">
                         Daftar Pelamar
                     </h2>
 
-                    <p class="mt-2 text-sm leading-6 text-slate-500">
+                    <p class="mt-2 text-sm leading-6 text-[#6f6b67]">
 
                         Menampilkan
 
-                        <span class="font-black text-slate-700">
+                        <span class="font-normal text-[#322d2a]">
                             {{ $applications->count() }}
                         </span>
 
                         dari
 
-                        <span class="font-black text-slate-700">
+                        <span class="font-normal text-[#322d2a]">
                             {{ $applications->total() }}
                         </span>
 
@@ -293,7 +293,7 @@
 
                     </p>
 
-                    <p class="mt-1 text-xs font-bold text-slate-400">
+                    <p class="mt-1 text-xs font-normal text-[#6f6b67]/70">
                         @if(request('date_from') || request('date_to'))
                             Filter tanggal:
                             {{ request('date_from') ? \Illuminate\Support\Carbon::parse(request('date_from'))->format('d M Y') : 'awal data' }}
@@ -310,7 +310,7 @@
                 <div class="flex flex-wrap gap-3">
                     <a
                         href="{{ route('admin.applications.export.excel', request()->query()) }}"
-                        class="inline-flex w-fit items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-emerald-700"
+                        class="inline-flex w-fit items-center gap-2 rounded-[24px] bg-[#f97316] px-5 py-3 text-sm font-normal text-white transition hover:bg-[#ea580c]"
                     >
                         Export Excel
                         <span>↓</span>
@@ -318,9 +318,9 @@
 
                 @if($applications->total() > 0)
 
-                    <div class="inline-flex w-fit items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-600 shadow-sm">
+                    <div class="inline-flex w-fit items-center gap-2 rounded-[24px] border border-white bg-white px-4 py-2.5 text-sm font-normal text-[#6f6b67]">
 
-                        <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                        <span class="h-2 w-2 rounded-full bg-[#f97316]"></span>
 
                         Halaman {{ $applications->currentPage() }}
                         dari {{ $applications->lastPage() }}
@@ -336,10 +336,10 @@
             {{-- ========================================================= --}}
             {{-- DESKTOP TABLE --}}
             {{-- ========================================================= --}}
-            <div class="mt-6 hidden overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm lg:block">
+            <div class="mt-6 hidden overflow-hidden rounded-[40px] border border-white bg-white  lg:block">
 
                 {{-- Header --}}
-                <div class="grid grid-cols-[1.25fr_1.1fr_0.9fr_0.8fr_0.65fr_auto] gap-4 bg-slate-950 px-6 py-4 text-xs font-black uppercase tracking-[0.14em] text-white">
+                <div class="grid grid-cols-[1.25fr_1.1fr_0.9fr_0.8fr_auto] gap-4 bg-[#322d2a] px-6 py-4 text-xs font-normal uppercase tracking-[0.14em] text-white">
 
                     <div>
                         Pelamar
@@ -369,7 +369,7 @@
 
 
                 {{-- Rows --}}
-                <div class="divide-y divide-slate-200">
+                <div class="divide-y divide-[#322d2a]/10">
 
                     @forelse($applications as $application)
 
@@ -388,15 +388,15 @@
                         @endphp
 
 
-                        <div class="grid grid-cols-[1.25fr_1.1fr_0.9fr_0.8fr_0.65fr_auto] items-center gap-4 px-6 py-5 transition duration-200 hover:bg-slate-50">
+                        <div class="grid grid-cols-[1.25fr_1.1fr_0.9fr_0.8fr_auto] items-center gap-4 px-6 py-5 transition duration-200 hover:bg-[#f0efe9]">
 
                             {{-- Candidate --}}
                             <div class="flex min-w-0 items-start gap-3">
 
                                 @if($application->candidateProfile?->photo)
-                                    <img src="{{ asset('storage/'.$application->candidateProfile->photo) }}" alt="Foto {{ $candidateName }}" class="h-14 w-14 shrink-0 rounded-xl object-cover ring-1 ring-orange-100">
+                                    <img src="{{ asset('storage/'.$application->candidateProfile->photo) }}" alt="Foto {{ $candidateName }}" class="h-14 w-14 shrink-0 rounded-[16px] object-cover ring-1 ring-[#f97316]/20">
                                 @else
-                                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-sm font-black text-orange-600 ring-1 ring-orange-100">
+                                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-[16px] bg-[#fff3e8] text-sm font-normal text-[#f97316] ring-1 ring-[#f97316]/20">
 
                                         {{ strtoupper(substr($candidateName, 0, 1)) }}
 
@@ -406,11 +406,11 @@
 
                                 <div class="min-w-0">
 
-                                    <p class="truncate text-sm font-black text-slate-950">
+                                    <p class="truncate text-sm font-normal text-[#322d2a]">
                                         {{ $candidateName }}
                                     </p>
 
-                                    <p class="mt-1 truncate text-xs font-semibold text-slate-500">
+                                    <p class="mt-1 truncate text-xs font-normal text-[#6f6b67]">
                                         {{ $candidateEmail }}
                                     </p>
 
@@ -422,11 +422,11 @@
                             {{-- Job --}}
                             <div class="min-w-0">
 
-                                <p class="text-sm font-black text-slate-800">
+                                <p class="text-sm font-normal text-[#322d2a]">
                                     {{ $application->job?->title ?? '-' }}
                                 </p>
 
-                                <p class="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                                <p class="mt-1 text-[10px] font-normal uppercase tracking-[0.12em] text-[#6f6b67]/70">
                                     {{ $application->application_number }}
                                 </p>
 
@@ -436,11 +436,11 @@
                             {{-- Division --}}
                             <div>
 
-                                <p class="text-sm font-black text-slate-800">
+                                <p class="text-sm font-normal text-[#322d2a]">
                                     {{ $application->job?->division?->name ?? '-' }}
                                 </p>
 
-                                <p class="mt-1 text-xs font-semibold text-slate-500">
+                                <p class="mt-1 text-xs font-normal text-[#6f6b67]">
                                     {{ $application->job?->department?->name ?? 'General' }}
                                 </p>
 
@@ -457,7 +457,7 @@
 
                                 @if(in_array($status, ['hired', 'accepted']))
 
-                                    <span class="inline-flex rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-700 ring-1 ring-emerald-100">
+                                    <span class="inline-flex rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-normal text-emerald-700 ring-1 ring-emerald-100">
 
                                         {{ str($application->status)->headline() }}
 
@@ -466,7 +466,7 @@
 
                                 @elseif(in_array($status, ['rejected', 'declined']))
 
-                                    <span class="inline-flex rounded-full bg-red-50 px-3 py-1.5 text-xs font-black text-red-600 ring-1 ring-red-100">
+                                    <span class="inline-flex rounded-full bg-red-50 px-3 py-1.5 text-xs font-normal text-red-600 ring-1 ring-red-100">
 
                                         {{ str($application->status)->headline() }}
 
@@ -475,7 +475,7 @@
 
                                 @elseif(in_array($status, ['interview', 'technical_test', 'test']))
 
-                                    <span class="inline-flex rounded-full bg-violet-50 px-3 py-1.5 text-xs font-black text-violet-700 ring-1 ring-violet-100">
+                                    <span class="inline-flex rounded-full bg-violet-50 px-3 py-1.5 text-xs font-normal text-violet-700 ring-1 ring-violet-100">
 
                                         {{ str($application->status)->headline() }}
 
@@ -484,7 +484,7 @@
 
                                 @elseif(in_array($status, ['offering', 'offer']))
 
-                                    <span class="inline-flex rounded-full bg-blue-50 px-3 py-1.5 text-xs font-black text-blue-700 ring-1 ring-blue-100">
+                                    <span class="inline-flex rounded-full bg-blue-50 px-3 py-1.5 text-xs font-normal text-blue-700 ring-1 ring-blue-100">
 
                                         {{ str($application->status)->headline() }}
 
@@ -493,7 +493,7 @@
 
                                 @else
 
-                                    <span class="inline-flex rounded-full bg-orange-50 px-3 py-1.5 text-xs font-black text-orange-600 ring-1 ring-orange-100">
+                                    <span class="inline-flex rounded-full bg-[#fff3e8] px-3 py-1.5 text-xs font-normal text-[#f97316] ring-1 ring-[#f97316]/20">
 
                                         {{ str($application->status)->headline() }}
 
@@ -509,7 +509,7 @@
 
                                 @if($documentCount > 0)
 
-                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-700 ring-1 ring-emerald-100">
+                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-normal text-emerald-700 ring-1 ring-emerald-100">
 
                                         {{ $documentCount }}
 
@@ -519,7 +519,7 @@
 
                                 @else
 
-                                    <span class="inline-flex rounded-full bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-500">
+                                    <span class="inline-flex rounded-full bg-[#f0efe9] px-3 py-1.5 text-xs font-normal text-[#6f6b67]">
 
                                         0 PDF
 
@@ -535,7 +535,7 @@
 
                                 <a
                                     href="{{ route('admin.applications.show', $application) }}"
-                                    class="group inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition duration-300 hover:bg-orange-500"
+                                    class="group inline-flex items-center gap-2 rounded-[16px] bg-[#322d2a] px-4 py-2.5 text-sm font-normal text-white transition duration-300 hover:bg-[#f97316]"
                                 >
 
                                     Detail
@@ -555,7 +555,7 @@
 
                         <div class="px-6 py-16 text-center">
 
-                            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 text-orange-500">
+                            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-[24px] bg-[#fff3e8] text-[#f97316]">
 
                                 <svg
                                     class="h-7 w-7"
@@ -574,12 +574,12 @@
                             </div>
 
 
-                            <h3 class="mt-5 text-xl font-black text-slate-950">
+                            <h3 class="mt-5 text-xl font-normal text-[#322d2a]">
                                 Belum ada pelamar
                             </h3>
 
 
-                            <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                            <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-[#6f6b67]">
 
                                 Data pelamar akan muncul secara otomatis setelah
                                 kandidat mengirimkan lamaran.
@@ -619,7 +619,7 @@
                     @endphp
 
 
-                    <div class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="rounded-[28px] border border-white bg-white p-5 ">
 
                         {{-- Candidate Header --}}
                         <div class="flex items-start justify-between gap-4">
@@ -627,9 +627,9 @@
                             <div class="flex min-w-0 gap-3">
 
                                 @if($application->candidateProfile?->photo)
-                                    <img src="{{ asset('storage/'.$application->candidateProfile->photo) }}" alt="Foto {{ $candidateName }}" class="h-12 w-12 shrink-0 rounded-xl object-cover ring-1 ring-orange-100">
+                                    <img src="{{ asset('storage/'.$application->candidateProfile->photo) }}" alt="Foto {{ $candidateName }}" class="h-12 w-12 shrink-0 rounded-[16px] object-cover ring-1 ring-[#f97316]/20">
                                 @else
-                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-sm font-black text-white">
+                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-[#f97316] text-sm font-normal text-white">
 
                                         {{ strtoupper(substr($candidateName, 0, 1)) }}
 
@@ -639,11 +639,11 @@
 
                                 <div class="min-w-0">
 
-                                    <p class="truncate font-black text-slate-950">
+                                    <p class="truncate font-normal text-[#322d2a]">
                                         {{ $candidateName }}
                                     </p>
 
-                                    <p class="mt-1 truncate text-xs font-semibold text-slate-500">
+                                    <p class="mt-1 truncate text-xs font-normal text-[#6f6b67]">
                                         {{ $candidateEmail }}
                                     </p>
 
@@ -655,19 +655,19 @@
                             {{-- Mobile Status --}}
                             @if(in_array($status, ['hired', 'accepted']))
 
-                                <span class="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700">
+                                <span class="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-normal text-emerald-700">
                                     {{ str($application->status)->headline() }}
                                 </span>
 
                             @elseif(in_array($status, ['rejected', 'declined']))
 
-                                <span class="shrink-0 rounded-full bg-red-50 px-3 py-1 text-[10px] font-black text-red-600">
+                                <span class="shrink-0 rounded-full bg-red-50 px-3 py-1 text-[10px] font-normal text-red-600">
                                     {{ str($application->status)->headline() }}
                                 </span>
 
                             @else
 
-                                <span class="shrink-0 rounded-full bg-orange-50 px-3 py-1 text-[10px] font-black text-orange-600">
+                                <span class="shrink-0 rounded-full bg-[#fff3e8] px-3 py-1 text-[10px] font-normal text-[#f97316]">
                                     {{ str($application->status)->headline() }}
                                 </span>
 
@@ -677,20 +677,20 @@
 
 
                         {{-- Information --}}
-                        <div class="mt-5 grid gap-4 border-t border-slate-100 pt-5 sm:grid-cols-2">
+                        <div class="mt-5 grid gap-4 border-t border-[#322d2a]/10 pt-5 sm:grid-cols-2">
 
                             {{-- Job --}}
                             <div>
 
-                                <p class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">
+                                <p class="text-[10px] font-normal uppercase tracking-[0.15em] text-[#6f6b67]/70">
                                     Lowongan
                                 </p>
 
-                                <p class="mt-1 text-sm font-black text-slate-800">
+                                <p class="mt-1 text-sm font-normal text-[#322d2a]">
                                     {{ $application->job?->title ?? '-' }}
                                 </p>
 
-                                <p class="mt-1 text-xs font-semibold text-slate-500">
+                                <p class="mt-1 text-xs font-normal text-[#6f6b67]">
                                     {{ $application->application_number }}
                                 </p>
 
@@ -700,15 +700,15 @@
                             {{-- Division --}}
                             <div>
 
-                                <p class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">
+                                <p class="text-[10px] font-normal uppercase tracking-[0.15em] text-[#6f6b67]/70">
                                     Divisi
                                 </p>
 
-                                <p class="mt-1 text-sm font-black text-slate-800">
+                                <p class="mt-1 text-sm font-normal text-[#322d2a]">
                                     {{ $application->job?->division?->name ?? '-' }}
                                 </p>
 
-                                <p class="mt-1 text-xs font-semibold text-slate-500">
+                                <p class="mt-1 text-xs font-normal text-[#6f6b67]">
                                     {{ $application->job?->department?->name ?? 'General' }}
                                 </p>
 
@@ -718,11 +718,11 @@
 
 
                         {{-- Card Footer --}}
-                        <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
+                        <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#322d2a]/10 pt-5">
 
                             @if($documentCount > 0)
 
-                                <span class="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-700 ring-1 ring-emerald-100">
+                                <span class="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-normal text-emerald-700 ring-1 ring-emerald-100">
 
                                     {{ $documentCount }} PDF
 
@@ -730,7 +730,7 @@
 
                             @else
 
-                                <span class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-500">
+                                <span class="rounded-full bg-[#f0efe9] px-3 py-1.5 text-xs font-normal text-[#6f6b67]">
 
                                     0 PDF
 
@@ -741,7 +741,7 @@
 
                             <a
                                 href="{{ route('admin.applications.show', $application) }}"
-                                class="group inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-orange-500"
+                                class="group inline-flex items-center gap-2 rounded-[16px] bg-[#322d2a] px-4 py-2.5 text-sm font-normal text-white transition hover:bg-[#f97316]"
                             >
 
                                 Detail Pelamar
@@ -759,9 +759,9 @@
 
                 @empty
 
-                    <div class="rounded-[1.5rem] border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
+                    <div class="rounded-[28px] border border-dashed border-[#322d2a]/20 bg-white px-6 py-12 text-center">
 
-                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-orange-500">
+                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-[24px] bg-[#fff3e8] text-[#f97316]">
 
                             <svg
                                 class="h-6 w-6"
@@ -779,11 +779,11 @@
 
                         </div>
 
-                        <h3 class="mt-4 text-lg font-black text-slate-950">
+                        <h3 class="mt-4 text-lg font-normal text-[#322d2a]">
                             Belum ada pelamar
                         </h3>
 
-                        <p class="mt-2 text-sm leading-6 text-slate-500">
+                        <p class="mt-2 text-sm leading-6 text-[#6f6b67]">
                             Data pelamar akan muncul setelah kandidat mengirim lamaran.
                         </p>
 
@@ -799,7 +799,7 @@
             {{-- ========================================================= --}}
             @if($applications->hasPages())
 
-                <div class="mt-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="mt-8 rounded-[24px] border border-white bg-white p-4 ">
 
                     {{ $applications->withQueryString()->links() }}
 
@@ -811,21 +811,21 @@
             {{-- ========================================================= --}}
             {{-- BOTTOM INFO --}}
             {{-- ========================================================= --}}
-            <div class="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+            <div class="mt-8 rounded-[40px] border border-white bg-white p-6  md:p-8">
 
                 <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
 
                     <div>
 
-                        <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-500">
+                        <p class="text-xs font-normal uppercase tracking-[0.22em] text-[#f97316]">
                             Recruitment Management
                         </p>
 
-                        <h3 class="mt-2 text-xl font-black text-slate-950">
+                        <h3 class="mt-2 text-xl font-normal text-[#322d2a]">
                             Kelola proses kandidat secara terpusat
                         </h3>
 
-                        <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                        <p class="mt-2 max-w-2xl text-sm leading-6 text-[#6f6b67]">
                             Buka detail pelamar untuk melihat informasi kandidat,
                             dokumen yang diunggah, dan progres proses rekrutmen.
                         </p>
@@ -835,7 +835,7 @@
 
                     <a
                         href="{{ route('dashboard') }}"
-                        class="inline-flex w-fit items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600"
+                        class="inline-flex w-fit items-center gap-2 rounded-[24px] border border-[#322d2a]/10 bg-[#f0efe9] px-5 py-3 text-sm font-normal text-[#322d2a] transition hover:border-[#f97316]/30 hover:bg-[#fff3e8] hover:text-[#f97316]"
                     >
 
                         ←

@@ -1,92 +1,92 @@
 <x-layouts.app title="Verifikasi OTP - Career Indodata">
-    <section class="relative min-h-[calc(100vh-80px)] overflow-hidden bg-slate-50">
-        <div class="absolute -left-32 top-20 h-96 w-96 rounded-full bg-orange-200/30 blur-3xl"></div>
-        <div class="absolute -right-32 bottom-10 h-96 w-96 rounded-full bg-amber-200/30 blur-3xl"></div>
+    <section class="min-h-[calc(100vh-80px)] bg-[#f0efe9] px-4 pb-12 pt-28 text-[#322d2a] sm:px-6 lg:px-8">
+        <div class="mx-auto grid max-w-[1200px] gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-stretch">
+            <div class="relative min-h-[520px] overflow-hidden rounded-[56px] bg-[#322d2a] p-8 text-white sm:p-10 lg:p-12">
+                <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#f97316]/25 blur-3xl"></div>
+                <div class="absolute -bottom-24 left-10 h-56 w-56 rounded-full bg-[#f97316]/10 blur-3xl"></div>
 
-        <div class="relative mx-auto flex min-h-[calc(100vh-80px)] max-w-3xl items-center px-4 py-12 sm:px-6 lg:px-8">
-            <div class="w-full overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-300/30 sm:p-8 md:p-10">
-                <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-100 text-2xl font-black text-orange-600">
-                    ✉
-                </div>
-
-                <div class="mt-6 text-center">
-                    <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-500">
-                        Email Verification
-                    </p>
-                    <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
-                        Masukkan Kode OTP
-                    </h1>
-                    <p class="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">
-                        Kami sudah mengirimkan kode OTP 6 digit ke email
-                        <span class="font-black text-slate-700">{{ $user->email }}</span>.
-                        Kode berlaku selama 10 menit.
-                    </p>
-                </div>
-
-                @if (session('success'))
-                    <div class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold leading-6 text-emerald-700">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if ($errors->any())
-                    <div class="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold leading-6 text-red-700">
-                        Silakan periksa kode OTP yang Anda masukkan.
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('register.otp.verify') }}" class="mt-8 space-y-5">
-                    @csrf
-
+                <div class="relative z-10 flex h-full flex-col justify-between">
                     <div>
-                        <label for="otp" class="text-sm font-black text-slate-700">
-                            Kode OTP
-                        </label>
-                        <input
-                            id="otp"
-                            name="otp"
-                            type="text"
-                            inputmode="numeric"
-                            pattern="[0-9]{6}"
-                            maxlength="6"
-                            value="{{ old('otp') }}"
-                            required
-                            autofocus
-                            placeholder="123456"
-                            class="mt-2 w-full rounded-2xl border @error('otp') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-5 py-4 text-center text-2xl font-black tracking-[0.35em] text-slate-800 outline-none transition placeholder:text-slate-300 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100"
-                        >
-
-                        @error('otp')
-                            <p class="mt-2 text-xs font-semibold text-red-600">
-                                {{ $message }}
-                            </p>
-                        @enderror
+                        <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-white">
+                            <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                            Email Verification
+                        </div>
+                        <h1 class="mt-8 text-[44px] font-light leading-none tracking-[0.52px] md:text-[52px]">
+                            Satu langkah sebelum akses portal.
+                        </h1>
+                        <p class="mt-6 max-w-md text-sm font-normal leading-[1.5] tracking-[0.14px] text-white/75">
+                            Kode OTP memastikan akun kandidat terhubung ke email yang benar dan aman digunakan untuk proses rekrutmen Hallonet.
+                        </p>
                     </div>
 
-                    <button
-                        type="submit"
-                        class="flex w-full items-center justify-center gap-3 rounded-2xl bg-orange-500 px-5 py-3.5 font-black text-white shadow-lg shadow-orange-500/25 transition duration-300 hover:-translate-y-0.5 hover:bg-orange-600"
-                    >
-                        Verifikasi & Masuk
-                        <span>→</span>
-                    </button>
-                </form>
+                    <div class="mt-10 rounded-[32px] border border-white/15 bg-white/10 p-6 backdrop-blur-md">
+                        <p class="text-xs font-normal uppercase tracking-[0.12em] text-white/60">Kode dikirim ke</p>
+                        <p class="mt-3 break-all text-base font-normal tracking-[0.16px] text-white">{{ $user->email }}</p>
+                        <div class="mt-5 flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#f97316]">
+                            <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                            Berlaku 10 menit
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                <form method="POST" action="{{ route('register.otp.resend') }}" class="mt-4">
-                    @csrf
-                    <button
-                        type="submit"
-                        class="flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-black text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600"
-                    >
-                        Kirim Ulang Kode OTP
-                    </button>
-                </form>
+            <div class="rounded-[56px] border border-white bg-white px-6 py-10 sm:px-10 md:px-12">
+                <div class="mx-auto max-w-xl">
+                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-[24px] bg-[#fff3e8] text-[28px] font-light text-[#f97316]">
+                        ✉
+                    </div>
 
-                <div class="mt-6 text-center">
-                    <a href="{{ route('register') }}" class="inline-flex items-center gap-2 text-xs font-black text-slate-500 transition hover:text-orange-500">
-                        <span>←</span>
-                        Kembali ke Form Registrasi
-                    </a>
+                    <div class="mt-8 text-center">
+                        <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
+                            <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                            OTP Code
+                        </div>
+                        <h2 class="mt-6 text-[40px] font-light leading-none tracking-[0.52px] text-[#322d2a] md:text-[52px]">
+                            Masukkan Kode OTP
+                        </h2>
+                        <p class="mx-auto mt-5 max-w-lg text-sm font-normal leading-[1.5] tracking-[0.14px] text-[#6f6b67]">
+                            Kami sudah mengirimkan kode OTP 6 digit ke email <span class="text-[#f97316]">{{ $user->email }}</span>.
+                        </p>
+                    </div>
+
+                    @if (session('success'))
+                        <div class="mt-6 rounded-[24px] border border-[#f97316]/30 bg-[#fff3e8] p-4 text-sm font-normal leading-[1.5] text-[#322d2a]">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="mt-6 rounded-[24px] border border-[#f97316]/40 bg-[#fff3e8] p-4 text-sm font-normal leading-[1.5] text-[#322d2a]">
+                            Silakan periksa kode OTP yang Anda masukkan.
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('register.otp.verify') }}" class="mt-8 space-y-5">
+                        @csrf
+
+                        <div>
+                            <label for="otp" class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">Kode OTP</label>
+                            <input id="otp" name="otp" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" value="{{ old('otp') }}" required autofocus placeholder="123456" class="mt-2 w-full rounded-[28px] border @error('otp') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/20 bg-[#f0efe9] @enderror px-5 py-5 text-center text-[34px] font-light leading-none tracking-[0.42em] text-[#322d2a] outline-none transition placeholder:text-[#8b8b8b]/45 focus:border-[#f97316] focus:bg-white">
+                            @error('otp')
+                                <p class="mt-2 text-xs font-normal leading-[1.4] tracking-[0.12px] text-[#f97316]">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <button type="submit" class="flex w-full items-center justify-center rounded-full bg-[#f97316] px-[22px] py-[16px] text-sm font-normal tracking-[0.14px] text-white transition hover:bg-[#ea580c]">
+                            Verifikasi & Masuk
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{{ route('register.otp.resend') }}" class="mt-4">
+                        @csrf
+                        <button type="submit" class="flex w-full items-center justify-center rounded-full border border-[#322d2a]/40 bg-transparent px-[22px] py-[16px] text-sm font-normal tracking-[0.14px] text-[#322d2a] transition hover:border-[#f97316] hover:bg-[#fff3e8] hover:text-[#f97316]">
+                            Kirim Ulang Kode OTP
+                        </button>
+                    </form>
+
+                    <div class="mt-6 text-center">
+                        <a href="{{ route('register') }}" class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a] underline-offset-4 transition hover:text-[#f97316] hover:underline">← Kembali ke Form Registrasi</a>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,274 +1,207 @@
 <x-layouts.app title="Profil Kandidat - Career Indodata">
-    <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div class="overflow-hidden rounded-3xl bg-slate-950 text-white shadow-xl shadow-slate-300/20">
-            <div class="bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.45),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(251,191,36,0.28),_transparent_28%)] p-7 md:p-9">
-                <p class="text-xs font-bold uppercase tracking-[0.2em] text-orange-300">Candidate Onboarding</p>
-                <h1 class="mt-3 text-3xl font-bold tracking-tight md:text-4xl">Lengkapi data profil sesuai format recruitment.</h1>
-                <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">Bagian profil kini dibagi menjadi Recruitment, Riwayat Pendidikan, dan Riwayat Pekerjaan agar hasil data mengikuti format output yang Anda tunjukkan.</p>
+    <section class="bg-[#f0efe9] px-4 pb-12 pt-28 text-[#322d2a] sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-[1240px]">
+            <div class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-stretch">
+                <div class="rounded-[56px] border border-white bg-white p-6 sm:p-8 lg:p-10">
+                    <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
+                        <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                        Candidate Onboarding
+                    </div>
+                    <h1 class="mt-8 max-w-3xl text-[42px] font-light leading-none tracking-[0.52px] text-[#322d2a] md:text-[56px]">Lengkapi data profil sesuai format recruitment.</h1>
+                    <p class="mt-6 max-w-3xl text-sm font-normal leading-[1.6] tracking-[0.14px] text-[#6f6b67] md:text-base">Bagian profil kini dibagi menjadi Recruitment, Riwayat Pendidikan, dan Riwayat Pekerjaan agar hasil data mengikuti format output yang Anda tunjukkan.</p>
+                </div>
+                <div class="relative overflow-hidden rounded-[56px] bg-[#322d2a] p-8 text-white sm:p-10">
+                    <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#f97316]/25 blur-3xl"></div>
+                    <div class="absolute -bottom-24 left-8 h-56 w-56 rounded-full bg-[#f97316]/10 blur-3xl"></div>
+                    <div class="relative z-10 flex h-full min-h-[300px] flex-col justify-between">
+                        <div class="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-normal uppercase tracking-[0.12em] text-white backdrop-blur-md">
+                            <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                            Career Hallonet
+                        </div>
+                        <div class="rounded-[32px] border border-white/15 bg-white/10 p-6 backdrop-blur-md">
+                            <p class="text-xs font-normal uppercase tracking-[0.12em] text-white/60">Profile Completion</p>
+                            <p class="mt-3 text-[44px] font-light leading-none tracking-[0.44px] text-white">{{ $profile->profile_completion }}%</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        @php
-            $profileStepDone = $profile->profile_completion >= 100;
-            $education = $profile->educations->first();
-            $experience = $profile->experiences->first();
-        @endphp
+            @php
+                $profileStepDone = $profile->profile_completion >= 100;
+                $education = $profile->educations->first();
+                $experience = $profile->experiences->first();
+            @endphp
 
-        <div class="mt-6 grid gap-3 md:grid-cols-2">
-            @foreach([
-                ['step' => '01', 'title' => 'Lengkapi Profil Recruitment', 'text' => 'Isi identitas, alamat detail, pendidikan, dan pekerjaan terakhir.', 'done' => $profileStepDone],
-                ['step' => '02', 'title' => 'Kirim Lamaran', 'text' => $profileStepDone ? 'Profil lengkap, Anda sudah bisa melamar.' : 'Lengkapi profil sampai 100% terlebih dahulu.', 'done' => $profileStepDone],
-            ] as $item)
-                <div class="rounded-2xl border {{ $item['done'] ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-white' }} p-4 shadow-sm">
-                    <div class="flex items-start gap-4">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl {{ $item['done'] ? 'bg-emerald-500 text-white' : 'bg-orange-100 text-orange-600' }} text-sm font-bold">{{ $item['done'] ? '✓' : $item['step'] }}</div>
+            <div class="mt-6 grid gap-4 md:grid-cols-2">
+                @foreach([
+                    ['step' => '01', 'title' => 'Lengkapi Profil Recruitment', 'text' => 'Isi identitas, alamat detail, pendidikan, dan pekerjaan terakhir.', 'done' => $profileStepDone],
+                    ['step' => '02', 'title' => 'Kirim Lamaran', 'text' => $profileStepDone ? 'Profil lengkap, Anda sudah bisa melamar.' : 'Lengkapi profil sampai 100% terlebih dahulu.', 'done' => $profileStepDone],
+                ] as $item)
+                    <div class="rounded-[32px] border {{ $item['done'] ? 'border-[#f97316]/25 bg-[#fff3e8]' : 'border-white bg-white' }} p-5">
+                        <div class="flex items-start gap-4">
+                            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[18px] {{ $item['done'] ? 'bg-[#f97316] text-white' : 'bg-[#fff3e8] text-[#f97316]' }} text-sm font-normal">{{ $item['done'] ? '✓' : $item['step'] }}</div>
+                            <div>
+                                <h2 class="font-normal tracking-[0.16px] text-[#322d2a]">{{ $item['title'] }}</h2>
+                                <p class="mt-1 text-sm font-normal leading-[1.6] text-[#6f6b67]">{{ $item['text'] }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            @if (session('success'))
+                <div class="mt-5 rounded-[24px] border border-[#f97316]/30 bg-[#fff3e8] p-4 text-sm font-normal text-[#322d2a]">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="mt-5 rounded-[24px] border border-[#f97316]/40 bg-[#fff3e8] p-4 text-sm font-normal text-[#322d2a]">
+                    Mohon lengkapi seluruh field wajib pada bagian recruitment, pendidikan, dan pekerjaan.
+                </div>
+            @endif
+
+            <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_0.72fr]">
+                <form method="POST" action="{{ route('candidate.profile.update') }}" enctype="multipart/form-data" class="rounded-[40px] border border-white bg-white p-5 md:p-7">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="flex items-start justify-between gap-4">
                         <div>
-                            <h2 class="font-bold text-slate-950">{{ $item['title'] }}</h2>
-                            <p class="mt-1 text-sm font-medium leading-5 text-slate-500">{{ $item['text'] }}</p>
+                            <p class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]"><span class="h-1.5 w-1.5 bg-[#f97316]"></span>Step 01</p>
+                            <h2 class="mt-4 text-[32px] font-light leading-none tracking-[0.32px] text-[#322d2a]">Form Recruitment Kandidat</h2>
+                            <p class="mt-3 text-sm font-normal leading-[1.6] text-[#6f6b67]">Field opsional hanya LinkedIn URL dan Portfolio URL.</p>
                         </div>
+                        <span class="rounded-full bg-[#fff3e8] px-4 py-2 text-sm font-normal text-[#f97316]">{{ $profile->profile_completion }}%</span>
                     </div>
-                </div>
-            @endforeach
-        </div>
 
-        @if (session('success'))
-            <div class="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">
-                Mohon lengkapi seluruh field wajib pada bagian recruitment, pendidikan, dan pekerjaan.
-            </div>
-        @endif
-
-        <div class="mt-6 grid gap-5 lg:grid-cols-[1fr_0.72fr]">
-            <form method="POST" action="{{ route('candidate.profile.update') }}" enctype="multipart/form-data" class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 md:p-7">
-                @csrf
-                @method('PUT')
-
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-orange-500">Step 01</p>
-                        <h2 class="mt-1.5 text-2xl font-bold text-slate-950">Form Recruitment Kandidat</h2>
-                        <p class="mt-2 text-sm font-medium leading-6 text-slate-500">Field opsional hanya LinkedIn URL dan Portfolio URL.</p>
-                    </div>
-                    <span class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">{{ $profile->profile_completion }}%</span>
-                </div>
-
-                <div class="mt-6 rounded-2xl border border-orange-100 bg-orange-50/60 p-4">
-                    <label class="block">
-                        <span class="text-sm font-semibold text-slate-700">Pass Foto <span class="text-red-500">*</span></span>
-                        <div class="mt-3 flex flex-col gap-4 md:flex-row md:items-center">
-                            <div class="h-32 w-28 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                                <img id="photoPreview" src="{{ $profile->photo ? asset('storage/'.$profile->photo) : '' }}" alt="Preview pass foto" class="{{ $profile->photo ? '' : 'hidden' }} h-full w-full object-cover">
-                                <div id="photoEmpty" class="{{ $profile->photo ? 'hidden' : '' }} flex h-full w-full items-center justify-center text-center text-xs font-semibold text-slate-400">Belum ada foto</div>
-                            </div>
-                            <div class="flex-1 space-y-3">
-                                <input id="photoInput" type="file" name="photo" accept="image/jpeg,image/png,image/webp" capture="user" class="w-full rounded-xl border border-dashed border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium">
-                                <input id="photoCapture" type="hidden" name="photo_capture" value="">
-                                <div class="flex flex-wrap gap-2">
-                                    <button type="button" id="openCameraButton" class="rounded-xl bg-slate-950 px-4 py-2 text-xs font-bold text-white transition hover:bg-orange-500">Open Kamera</button>
-                                    <button type="button" id="capturePhotoButton" class="hidden rounded-xl bg-orange-500 px-4 py-2 text-xs font-bold text-white transition hover:bg-orange-600">Ambil Foto</button>
-                                    <button type="button" id="closeCameraButton" class="hidden rounded-xl bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-200">Tutup Kamera</button>
+                    <div class="mt-6 rounded-[32px] border border-[#f97316]/20 bg-[#fff3e8] p-5">
+                        <label class="block">
+                            <span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">Pass Foto <span class="text-[#f97316]">*</span></span>
+                            <div class="mt-3 flex flex-col gap-4 md:flex-row md:items-center">
+                                <div class="h-32 w-28 overflow-hidden rounded-[24px] border border-white bg-white">
+                                    <img id="photoPreview" src="{{ $profile->photo ? asset('storage/'.$profile->photo) : '' }}" alt="Preview pass foto" class="{{ $profile->photo ? '' : 'hidden' }} h-full w-full object-cover">
+                                    <div id="photoEmpty" class="{{ $profile->photo ? 'hidden' : '' }} flex h-full w-full items-center justify-center text-center text-xs font-normal text-[#6f6b67]">Belum ada foto</div>
                                 </div>
-                                <video id="cameraVideo" autoplay playsinline class="hidden max-h-56 w-full rounded-2xl bg-slate-950"></video>
-                                <canvas id="cameraCanvas" class="hidden"></canvas>
-                                <p class="text-xs font-medium leading-5 text-slate-500">Gunakan foto formal. Bisa upload file atau ambil langsung dari kamera perangkat.</p>
-                                @error('photo')<p class="text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
+                                <div class="flex-1 space-y-3">
+                                    <input id="photoInput" type="file" name="photo" accept="image/jpeg,image/png,image/webp" capture="user" class="w-full rounded-[18px] border border-dashed border-[#322d2a]/20 bg-white px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316]">
+                                    <input id="photoCapture" type="hidden" name="photo_capture" value="">
+                                    <div class="flex flex-wrap gap-2">
+                                        <button type="button" id="openCameraButton" class="rounded-full bg-[#322d2a] px-4 py-2 text-xs font-normal text-white transition hover:bg-[#0f0e12]">Open Kamera</button>
+                                        <button type="button" id="capturePhotoButton" class="hidden rounded-full bg-[#f97316] px-4 py-2 text-xs font-normal text-white transition hover:bg-[#ea580c]">Ambil Foto</button>
+                                        <button type="button" id="closeCameraButton" class="hidden rounded-full border border-[#322d2a]/20 bg-white px-4 py-2 text-xs font-normal text-[#322d2a] transition hover:border-[#f97316] hover:text-[#f97316]">Tutup Kamera</button>
+                                    </div>
+                                    <video id="cameraVideo" autoplay playsinline class="hidden max-h-56 w-full rounded-[24px] bg-[#0f0e12]"></video>
+                                    <canvas id="cameraCanvas" class="hidden"></canvas>
+                                    <p class="text-xs font-normal leading-[1.6] text-[#6f6b67]">Gunakan foto formal. Bisa upload file atau ambil langsung dari kamera perangkat.</p>
+                                    @error('photo')<p class="text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror
+                                </div>
                             </div>
-                        </div>
-                    </label>
-                </div>
+                        </label>
+                    </div>
 
-                <div class="mt-6 rounded-2xl border border-slate-200 p-4">
-                    <p class="text-sm font-black uppercase tracking-[0.16em] text-slate-500">Recruitment</p>
-                    <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        @foreach([
-                            ['full_name', 'Nama Kandidat', 'text'],
-                            ['nik', 'NIK (16 digit)', 'text'],
-                            ['birth_place', 'Tempat Lahir', 'text'],
-                            ['birth_date', 'Tanggal Lahir', 'date'],
-                            ['phone', 'No. Telepon', 'text'],
-                            ['whatsapp', 'No WA Aktif', 'text'],
-                            ['email', 'Email', 'email'],
-                            ['rt_rw', 'RT / RW', 'text'],
-                            ['village', 'Kel/Desa', 'text'],
-                            ['district', 'Kecamatan', 'text'],
-                            ['city', 'Kab/Kota', 'text'],
-                            ['province', 'Provinsi', 'text'],
-                            ['postal_code', 'Kode Pos', 'text'],
-                            ['linkedin_url', 'LinkedIn URL', 'url'],
-                            ['portfolio_url', 'Portfolio URL', 'url'],
-                        ] as [$field, $label, $type])
-                            <label class="block {{ in_array($field, ['address']) ? 'md:col-span-2 xl:col-span-3' : '' }}">
-                                <span class="text-sm font-semibold text-slate-700">{{ $label }} @if(! in_array($field, ['linkedin_url', 'portfolio_url']))<span class="text-red-500">*</span>@endif</span>
-                                <input type="{{ $type }}" name="{{ $field }}" value="{{ old($field, optional($profile->{$field})->format('Y-m-d') ?? $profile->{$field}) }}" @if(! in_array($field, ['linkedin_url', 'portfolio_url'])) required @endif class="mt-2 w-full rounded-xl border @error($field) border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">
-                                @error($field)<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
+                    <div class="mt-6 rounded-[32px] border border-[#322d2a]/10 bg-[#f0efe9] p-5">
+                        <p class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]"><span class="h-1.5 w-1.5 bg-[#f97316]"></span>Recruitment</p>
+                        <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            @foreach([
+                                ['full_name', 'Nama Kandidat', 'text'], ['nik', 'NIK (16 digit)', 'text'], ['birth_place', 'Tempat Lahir', 'text'], ['birth_date', 'Tanggal Lahir', 'date'], ['phone', 'No. Telepon', 'text'], ['whatsapp', 'No WA Aktif', 'text'], ['email', 'Email', 'email'], ['rt_rw', 'RT / RW', 'text'], ['village', 'Kel/Desa', 'text'], ['district', 'Kecamatan', 'text'], ['city', 'Kab/Kota', 'text'], ['province', 'Provinsi', 'text'], ['postal_code', 'Kode Pos', 'text'], ['linkedin_url', 'LinkedIn URL', 'url'], ['portfolio_url', 'Portfolio URL', 'url'],
+                            ] as [$field, $label, $type])
+                                <label class="block {{ in_array($field, ['address']) ? 'md:col-span-2 xl:col-span-3' : '' }}">
+                                    <span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">{{ $label }} @if(! in_array($field, ['linkedin_url', 'portfolio_url']))<span class="text-[#f97316]">*</span>@endif</span>
+                                    <input type="{{ $type }}" name="{{ $field }}" value="{{ old($field, optional($profile->{$field})->format('Y-m-d') ?? $profile->{$field}) }}" @if(! in_array($field, ['linkedin_url', 'portfolio_url'])) required @endif class="mt-2 w-full rounded-[18px] border @error($field) border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition placeholder:text-[#6f6b67]/60 focus:border-[#f97316] focus:bg-white">
+                                    @error($field)<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror
+                                </label>
+                            @endforeach
+
+                            <label class="block">
+                                <span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">Gender <span class="text-[#f97316]">*</span></span>
+                                <select name="gender" required class="mt-2 w-full rounded-[18px] border @error('gender') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white">
+                                    <option value="">Pilih Gender</option>
+                                    @foreach(['Laki-laki', 'Perempuan'] as $gender)
+                                        <option value="{{ $gender }}" @selected(old('gender', $profile->gender) === $gender)>{{ $gender }}</option>
+                                    @endforeach
+                                </select>
+                                @error('gender')<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror
                             </label>
-                        @endforeach
 
-                        <label class="block">
-                            <span class="text-sm font-semibold text-slate-700">Gender <span class="text-red-500">*</span></span>
-                            <select name="gender" required class="mt-2 w-full rounded-xl border @error('gender') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">
-                                <option value="">Pilih Gender</option>
-                                @foreach(['Laki-laki', 'Perempuan'] as $gender)
-                                    <option value="{{ $gender }}" @selected(old('gender', $profile->gender) === $gender)>{{ $gender }}</option>
-                                @endforeach
-                            </select>
-                            @error('gender')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
-                        </label>
+                            <label class="block">
+                                <span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">Status Pernikahan <span class="text-[#f97316]">*</span></span>
+                                <select name="marital_status" required class="mt-2 w-full rounded-[18px] border @error('marital_status') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white">
+                                    <option value="">Pilih Status Pernikahan</option>
+                                    @foreach(['Belum Menikah', 'Menikah', 'Cerai Hidup', 'Cerai Mati'] as $status)
+                                        <option value="{{ $status }}" @selected(old('marital_status', $profile->marital_status) === $status)>{{ $status }}</option>
+                                    @endforeach
+                                </select>
+                                @error('marital_status')<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror
+                            </label>
 
-                        <label class="block">
-                            <span class="text-sm font-semibold text-slate-700">Status Pernikahan <span class="text-red-500">*</span></span>
-                            <select name="marital_status" required class="mt-2 w-full rounded-xl border @error('marital_status') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">
-                                <option value="">Pilih Status Pernikahan</option>
-                                @foreach(['Belum Menikah', 'Menikah', 'Cerai Hidup', 'Cerai Mati'] as $status)
-                                    <option value="{{ $status }}" @selected(old('marital_status', $profile->marital_status) === $status)>{{ $status }}</option>
-                                @endforeach
-                            </select>
-                            @error('marital_status')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
-                        </label>
+                            <label class="block">
+                                <span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">SIM <span class="text-[#f97316]">*</span></span>
+                                <select name="driving_license" required class="mt-2 w-full rounded-[18px] border @error('driving_license') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white">
+                                    <option value="">Pilih SIM</option>
+                                    @foreach(['A', 'B1', 'B2', 'C', 'Tidak Ada'] as $license)
+                                        <option value="{{ $license }}" @selected(old('driving_license', $profile->driving_license) === $license)>{{ $license }}</option>
+                                    @endforeach
+                                </select>
+                                @error('driving_license')<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror
+                            </label>
 
-                        <label class="block">
-                            <span class="text-sm font-semibold text-slate-700">SIM <span class="text-red-500">*</span></span>
-                            <select name="driving_license" required class="mt-2 w-full rounded-xl border @error('driving_license') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">
-                                <option value="">Pilih SIM</option>
-                                @foreach(['A', 'B1', 'B2', 'C', 'Tidak Ada'] as $license)
-                                    <option value="{{ $license }}" @selected(old('driving_license', $profile->driving_license) === $license)>{{ $license }}</option>
-                                @endforeach
-                            </select>
-                            @error('driving_license')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
-                        </label>
-
-                        <label class="block md:col-span-2 xl:col-span-3">
-                            <span class="text-sm font-semibold text-slate-700">Alamat <span class="text-red-500">*</span></span>
-                            <textarea name="address" rows="4" required class="mt-2 w-full rounded-xl border @error('address') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">{{ old('address', $profile->address) }}</textarea>
-                            @error('address')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
-                        </label>
-                    </div>
-                </div>
-
-                <div class="mt-6 rounded-2xl border border-slate-200 p-4">
-                    <p class="text-sm font-black uppercase tracking-[0.16em] text-slate-500">Riwayat Pendidikan</p>
-                    <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-                        <label class="block">
-                            <span class="text-sm font-semibold text-slate-700">Educ <span class="text-red-500">*</span></span>
-                            <select name="education_level" required class="mt-2 w-full rounded-xl border @error('education_level') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">
-                                <option value="">Pilih</option>
-                                @foreach(['SMA/SMK', 'D3', 'D4', 'S1', 'S2', 'S3'] as $level)
-                                    <option value="{{ $level }}" @selected(old('education_level', $education?->education_level) === $level)>{{ $level }}</option>
-                                @endforeach
-                            </select>
-                            @error('education_level')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
-                        </label>
-                        <label class="block xl:col-span-2">
-                            <span class="text-sm font-semibold text-slate-700">Nama Sekolah / Universitas <span class="text-red-500">*</span></span>
-                            <input type="text" name="institution" value="{{ old('institution', $education?->institution) }}" required class="mt-2 w-full rounded-xl border @error('institution') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">
-                            @error('institution')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
-                        </label>
-                        <label class="block xl:col-span-2">
-                            <span class="text-sm font-semibold text-slate-700">Jurusan <span class="text-red-500">*</span></span>
-                            <input type="text" name="major" value="{{ old('major', $education?->major) }}" required class="mt-2 w-full rounded-xl border @error('major') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">
-                            @error('major')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
-                        </label>
-                        <label class="block">
-                            <span class="text-sm font-semibold text-slate-700">IPK / Rata2 <span class="text-red-500">*</span></span>
-                            <input type="text" name="ipk" value="{{ old('ipk', $education?->ipk ?? $education?->gpa) }}" required class="mt-2 w-full rounded-xl border @error('ipk') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">
-                            @error('ipk')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
-                        </label>
-                        <label class="block xl:col-span-4">
-                            <span class="text-sm font-semibold text-slate-700">Keahlian / Sertifikasi <span class="text-red-500">*</span></span>
-                            <textarea name="certification" rows="3" required class="mt-2 w-full rounded-xl border @error('certification') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">{{ old('certification', $education?->certification) }}</textarea>
-                            @error('certification')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
-                        </label>
-                    </div>
-                </div>
-
-                <div class="mt-6 rounded-2xl border border-slate-200 p-4">
-                    <p class="text-sm font-black uppercase tracking-[0.16em] text-slate-500">Riwayat Pekerjaan</p>
-                    <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        <label class="block xl:col-span-1">
-                            <span class="text-sm font-semibold text-slate-700">Nama Perusahaan Terakhir <span class="text-red-500">*</span></span>
-                            <input type="text" name="company_name" value="{{ old('company_name', $experience?->company_name) }}" required class="mt-2 w-full rounded-xl border @error('company_name') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">
-                            @error('company_name')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
-                        </label>
-                        <label class="block xl:col-span-1">
-                            <span class="text-sm font-semibold text-slate-700">Jabatan <span class="text-red-500">*</span></span>
-                            <input type="text" name="position" value="{{ old('position', $experience?->position) }}" required class="mt-2 w-full rounded-xl border @error('position') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">
-                            @error('position')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
-                        </label>
-                        <label class="block xl:col-span-1">
-                            <span class="text-sm font-semibold text-slate-700">Tahun Bekerja <span class="text-red-500">*</span></span>
-                            <input type="text" name="work_years" value="{{ old('work_years', $experience?->work_years) }}" required placeholder="2024 - 2026" class="mt-2 w-full rounded-xl border @error('work_years') border-red-300 bg-red-50 @else border-slate-200 bg-slate-50 @enderror px-3.5 py-2.5 text-sm font-medium outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100">
-                            @error('work_years')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
-                        </label>
-                    </div>
-                </div>
-
-                <button class="mt-6 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-orange-500/20 transition hover:bg-orange-600">Simpan Data Recruitment</button>
-            </form>
-
-            <div class="space-y-6">
-                <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 md:p-7">
-                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-orange-500">Info</p>
-                    <h2 class="mt-1.5 text-2xl font-bold text-slate-950">Status Profil</h2>
-                    <div class="mt-4 rounded-2xl {{ $profileStepDone ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-orange-50 text-orange-700 ring-orange-200' }} p-4 ring-1">
-                        <p class="text-sm font-bold">{{ $profileStepDone ? 'Profil recruitment sudah lengkap.' : 'Profil recruitment belum lengkap.' }}</p>
-                        <p class="mt-1 text-xs font-semibold leading-5">Kelengkapan saat ini {{ $profile->profile_completion }}%. Dashboard kandidat terbuka setelah semua bagian wajib terisi.</p>
-                    </div>
-                </div>
-
-                <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 md:p-7">
-                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-orange-500">Preview Output</p>
-                    <h2 class="mt-1.5 text-2xl font-bold text-slate-950">Ringkasan Recruitment</h2>
-                    <div class="mt-4 space-y-3 text-sm">
-                        <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-                            <p class="font-bold text-slate-900">Recruitment</p>
-                            <ul class="mt-3 space-y-2 text-slate-600">
-                                <li><span class="font-semibold">Nama:</span> {{ $profile->full_name ?: '-' }}</li>
-                                <li><span class="font-semibold">Gender:</span> {{ $profile->gender ?: '-' }}</li>
-                                <li><span class="font-semibold">NIK:</span> {{ $profile->nik ?: '-' }}</li>
-                                <li><span class="font-semibold">Tempat / Tanggal Lahir:</span> {{ $profile->birth_place ?: '-' }} / {{ $profile->birth_date?->format('d-m-Y') ?: '-' }}</li>
-                                <li><span class="font-semibold">Alamat:</span> {{ $profile->address ?: '-' }}</li>
-                                <li><span class="font-semibold">RT/RW:</span> {{ $profile->rt_rw ?: '-' }}</li>
-                                <li><span class="font-semibold">Kel/Desa:</span> {{ $profile->village ?: '-' }}</li>
-                                <li><span class="font-semibold">Kecamatan:</span> {{ $profile->district ?: '-' }}</li>
-                                <li><span class="font-semibold">Kab/Kota:</span> {{ $profile->city ?: '-' }}</li>
-                                <li><span class="font-semibold">Provinsi:</span> {{ $profile->province ?: '-' }}</li>
-                                <li><span class="font-semibold">Telepon / WA:</span> {{ $profile->whatsapp ?: '-' }}</li>
-                                <li><span class="font-semibold">Email:</span> {{ $profile->email ?: '-' }}</li>
-                            </ul>
-                        </div>
-
-                        <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-                            <p class="font-bold text-slate-900">Riwayat Pendidikan</p>
-                            <ul class="mt-3 space-y-2 text-slate-600">
-                                <li><span class="font-semibold">Educ:</span> {{ $education?->education_level ?: '-' }}</li>
-                                <li><span class="font-semibold">Institusi:</span> {{ $education?->institution ?: '-' }}</li>
-                                <li><span class="font-semibold">Jurusan:</span> {{ $education?->major ?: '-' }}</li>
-                                <li><span class="font-semibold">IPK/Rata2:</span> {{ $education?->ipk ?: '-' }}</li>
-                                <li><span class="font-semibold">Keahlian/Sertifikasi:</span> {{ $education?->certification ?: '-' }}</li>
-                                <li><span class="font-semibold">SIM:</span> {{ $profile->driving_license ?: '-' }}</li>
-                            </ul>
-                        </div>
-
-                        <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-                            <p class="font-bold text-slate-900">Riwayat Pekerjaan</p>
-                            <ul class="mt-3 space-y-2 text-slate-600">
-                                <li><span class="font-semibold">Perusahaan Terakhir:</span> {{ $experience?->company_name ?: '-' }}</li>
-                                <li><span class="font-semibold">Jabatan:</span> {{ $experience?->position ?: '-' }}</li>
-                                <li><span class="font-semibold">Tahun Bekerja:</span> {{ $experience?->work_years ?: '-' }}</li>
-                            </ul>
+                            <label class="block md:col-span-2 xl:col-span-3">
+                                <span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">Alamat <span class="text-[#f97316]">*</span></span>
+                                <textarea name="address" rows="4" required class="mt-2 w-full rounded-[18px] border @error('address') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white">{{ old('address', $profile->address) }}</textarea>
+                                @error('address')<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror
+                            </label>
                         </div>
                     </div>
-                </div>
 
-                {{--
-                STEP DOKUMEN DINONAKTIFKAN SEMENTARA.
-                Blok ini sengaja dikomentari agar bisa dipakai lagi sewaktu-waktu.
-                --}}
+                    <div class="mt-6 rounded-[32px] border border-[#322d2a]/10 bg-[#f0efe9] p-5">
+                        <p class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]"><span class="h-1.5 w-1.5 bg-[#f97316]"></span>Riwayat Pendidikan</p>
+                        <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                            <label class="block"><span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">Educ <span class="text-[#f97316]">*</span></span><select name="education_level" required class="mt-2 w-full rounded-[18px] border @error('education_level') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white"><option value="">Pilih</option>@foreach(['SMA/SMK', 'D3', 'D4', 'S1', 'S2', 'S3'] as $level)<option value="{{ $level }}" @selected(old('education_level', $education?->education_level) === $level)>{{ $level }}</option>@endforeach</select>@error('education_level')<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror</label>
+                            <label class="block xl:col-span-2"><span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">Nama Sekolah / Universitas <span class="text-[#f97316]">*</span></span><input type="text" name="institution" value="{{ old('institution', $education?->institution) }}" required class="mt-2 w-full rounded-[18px] border @error('institution') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white">@error('institution')<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror</label>
+                            <label class="block xl:col-span-2"><span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">Jurusan <span class="text-[#f97316]">*</span></span><input type="text" name="major" value="{{ old('major', $education?->major) }}" required class="mt-2 w-full rounded-[18px] border @error('major') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white">@error('major')<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror</label>
+                            <label class="block"><span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">IPK / Rata2 <span class="text-[#f97316]">*</span></span><input type="text" name="ipk" value="{{ old('ipk', $education?->ipk ?? $education?->gpa) }}" required class="mt-2 w-full rounded-[18px] border @error('ipk') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white">@error('ipk')<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror</label>
+                            <label class="block xl:col-span-4"><span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">Keahlian / Sertifikasi <span class="text-[#f97316]">*</span></span><textarea name="certification" rows="3" required class="mt-2 w-full rounded-[18px] border @error('certification') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white">{{ old('certification', $education?->certification) }}</textarea>@error('certification')<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror</label>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 rounded-[32px] border border-[#322d2a]/10 bg-[#f0efe9] p-5">
+                        <p class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]"><span class="h-1.5 w-1.5 bg-[#f97316]"></span>Riwayat Pekerjaan</p>
+                        <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            <label class="block xl:col-span-1"><span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">Nama Perusahaan Terakhir <span class="text-[#f97316]">*</span></span><input type="text" name="company_name" value="{{ old('company_name', $experience?->company_name) }}" required class="mt-2 w-full rounded-[18px] border @error('company_name') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white">@error('company_name')<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror</label>
+                            <label class="block xl:col-span-1"><span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">Jabatan <span class="text-[#f97316]">*</span></span><input type="text" name="position" value="{{ old('position', $experience?->position) }}" required class="mt-2 w-full rounded-[18px] border @error('position') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white">@error('position')<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror</label>
+                            <label class="block xl:col-span-1"><span class="text-sm font-normal tracking-[0.14px] text-[#322d2a]">Tahun Bekerja <span class="text-[#f97316]">*</span></span><input type="text" name="work_years" value="{{ old('work_years', $experience?->work_years) }}" required placeholder="2024 - 2026" class="mt-2 w-full rounded-[18px] border @error('work_years') border-[#f97316] bg-[#fff3e8] @else border-[#322d2a]/15 bg-white @enderror px-4 py-3 text-sm font-normal text-[#322d2a] outline-none transition focus:border-[#f97316] focus:bg-white">@error('work_years')<p class="mt-1 text-xs font-normal text-[#f97316]">{{ $message }}</p>@enderror</label>
+                        </div>
+                    </div>
+
+                    <button class="mt-6 rounded-full bg-[#f97316] px-[22px] py-[16px] text-sm font-normal tracking-[0.14px] text-white transition hover:bg-[#ea580c]">Simpan Data Recruitment</button>
+                </form>
+
+                <div class="space-y-6">
+                    <div class="rounded-[40px] border border-white bg-white p-5 md:p-7">
+                        <p class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]"><span class="h-1.5 w-1.5 bg-[#f97316]"></span>Info</p>
+                        <h2 class="mt-4 text-[32px] font-light leading-none tracking-[0.32px] text-[#322d2a]">Status Profil</h2>
+                        <div class="mt-4 rounded-[28px] {{ $profileStepDone ? 'bg-[#fff3e8] text-[#322d2a] ring-[#f97316]/25' : 'bg-[#fff3e8] text-[#322d2a] ring-[#f97316]/25' }} p-5 ring-1">
+                            <p class="text-sm font-normal">{{ $profileStepDone ? 'Profil recruitment sudah lengkap.' : 'Profil recruitment belum lengkap.' }}</p>
+                            <p class="mt-1 text-xs font-normal leading-[1.6] text-[#6f6b67]">Kelengkapan saat ini {{ $profile->profile_completion }}%. Dashboard kandidat terbuka setelah semua bagian wajib terisi.</p>
+                        </div>
+                    </div>
+
+                    <div class="rounded-[40px] border border-white bg-white p-5 md:p-7">
+                        <p class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]"><span class="h-1.5 w-1.5 bg-[#f97316]"></span>Preview Output</p>
+                        <h2 class="mt-4 text-[32px] font-light leading-none tracking-[0.32px] text-[#322d2a]">Ringkasan Recruitment</h2>
+                        <div class="mt-4 space-y-3 text-sm">
+                            <div class="rounded-[28px] bg-[#f0efe9] p-4 ring-1 ring-[#322d2a]/10"><p class="font-normal text-[#322d2a]">Recruitment</p><ul class="mt-3 space-y-2 text-[#6f6b67]"><li><span class="text-[#322d2a]">Nama:</span> {{ $profile->full_name ?: '-' }}</li><li><span class="text-[#322d2a]">Gender:</span> {{ $profile->gender ?: '-' }}</li><li><span class="text-[#322d2a]">NIK:</span> {{ $profile->nik ?: '-' }}</li><li><span class="text-[#322d2a]">Tempat / Tanggal Lahir:</span> {{ $profile->birth_place ?: '-' }} / {{ $profile->birth_date?->format('d-m-Y') ?: '-' }}</li><li><span class="text-[#322d2a]">Alamat:</span> {{ $profile->address ?: '-' }}</li><li><span class="text-[#322d2a]">RT/RW:</span> {{ $profile->rt_rw ?: '-' }}</li><li><span class="text-[#322d2a]">Kel/Desa:</span> {{ $profile->village ?: '-' }}</li><li><span class="text-[#322d2a]">Kecamatan:</span> {{ $profile->district ?: '-' }}</li><li><span class="text-[#322d2a]">Kab/Kota:</span> {{ $profile->city ?: '-' }}</li><li><span class="text-[#322d2a]">Provinsi:</span> {{ $profile->province ?: '-' }}</li><li><span class="text-[#322d2a]">Telepon / WA:</span> {{ $profile->whatsapp ?: '-' }}</li><li><span class="text-[#322d2a]">Email:</span> {{ $profile->email ?: '-' }}</li></ul></div>
+                            <div class="rounded-[28px] bg-[#f0efe9] p-4 ring-1 ring-[#322d2a]/10"><p class="font-normal text-[#322d2a]">Riwayat Pendidikan</p><ul class="mt-3 space-y-2 text-[#6f6b67]"><li><span class="text-[#322d2a]">Educ:</span> {{ $education?->education_level ?: '-' }}</li><li><span class="text-[#322d2a]">Institusi:</span> {{ $education?->institution ?: '-' }}</li><li><span class="text-[#322d2a]">Jurusan:</span> {{ $education?->major ?: '-' }}</li><li><span class="text-[#322d2a]">IPK/Rata2:</span> {{ $education?->ipk ?: '-' }}</li><li><span class="text-[#322d2a]">Keahlian/Sertifikasi:</span> {{ $education?->certification ?: '-' }}</li><li><span class="text-[#322d2a]">SIM:</span> {{ $profile->driving_license ?: '-' }}</li></ul></div>
+                            <div class="rounded-[28px] bg-[#f0efe9] p-4 ring-1 ring-[#322d2a]/10"><p class="font-normal text-[#322d2a]">Riwayat Pekerjaan</p><ul class="mt-3 space-y-2 text-[#6f6b67]"><li><span class="text-[#322d2a]">Perusahaan Terakhir:</span> {{ $experience?->company_name ?: '-' }}</li><li><span class="text-[#322d2a]">Jabatan:</span> {{ $experience?->position ?: '-' }}</li><li><span class="text-[#322d2a]">Tahun Bekerja:</span> {{ $experience?->work_years ?: '-' }}</li></ul></div>
+                        </div>
+                    </div>
+
+                    {{--
+                    STEP DOKUMEN DINONAKTIFKAN SEMENTARA.
+                    Blok ini sengaja dikomentari agar bisa dipakai lagi sewaktu-waktu.
+                    --}}
+                </div>
             </div>
         </div>
     </section>

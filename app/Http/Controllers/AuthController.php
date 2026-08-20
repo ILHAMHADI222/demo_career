@@ -41,6 +41,19 @@ class AuthController extends Controller
             return back()->withErrors(['email' => 'Email atau password tidak valid.'])->onlyInput('email');
         }
 
+        $user = $request->user();
+
+        if ($user && ! $user->email_verified_at) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            $request->session()->put('pending_otp_user_id', $user->id);
+
+            return redirect()
+                ->route('register.otp.form')
+                ->with('success', 'Akun Anda belum diverifikasi. Silakan masukkan kode OTP terlebih dahulu.');
+        }
+
         $request->session()->regenerate();
         $audit->log('LOGIN', 'AUTH', request: $request);
 

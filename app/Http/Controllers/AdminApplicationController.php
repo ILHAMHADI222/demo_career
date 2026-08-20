@@ -20,9 +20,12 @@ class AdminApplicationController extends Controller
 {
     public function index(Request $request): View
     {
+        $statusFilters = $this->statusFilters();
+        $selectedStatus = $request->string('status')->toString();
+
         $applications = Application::query()
             ->with(['job.department', 'job.division', 'candidateProfile.documents.documentType', 'candidateProfile.educations', 'candidateProfile.experiences'])
-            ->when($request->string('status')->toString(), fn ($query, $status) => $query->where('status', $status))
+            ->when($selectedStatus && isset($statusFilters[$selectedStatus]), fn ($query) => $query->whereIn('status', $statusFilters[$selectedStatus]['statuses']))
             ->when($request->date('date_from'), fn ($query, $dateFrom) => $query->whereDate('created_at', '>=', $dateFrom))
             ->when($request->date('date_to'), fn ($query, $dateTo) => $query->whereDate('created_at', '<=', $dateTo))
             ->when($request->string('keyword')->toString(), fn ($query, $keyword) => $query->where(function ($q) use ($keyword) {
@@ -34,7 +37,7 @@ class AdminApplicationController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.applications.index', ['applications' => $applications, 'statuses' => CareerEnums::APPLICATION_STATUSES]);
+        return view('admin.applications.index', ['applications' => $applications, 'statuses' => $statusFilters]);
     }
 
     public function show(Application $application): View
@@ -131,9 +134,12 @@ class AdminApplicationController extends Controller
 
     public function exportExcel(Request $request): BinaryFileResponse
     {
+        $statusFilters = $this->statusFilters();
+        $selectedStatus = $request->string('status')->toString();
+
         $applications = Application::query()
             ->with(['job.department', 'job.division', 'job.position', 'candidateProfile.educations', 'candidateProfile.experiences'])
-            ->when($request->string('status')->toString(), fn ($query, $status) => $query->where('status', $status))
+            ->when($selectedStatus && isset($statusFilters[$selectedStatus]), fn ($query) => $query->whereIn('status', $statusFilters[$selectedStatus]['statuses']))
             ->when($request->date('date_from'), fn ($query, $dateFrom) => $query->whereDate('created_at', '>=', $dateFrom))
             ->when($request->date('date_to'), fn ($query, $dateTo) => $query->whereDate('created_at', '<=', $dateTo))
             ->when($request->string('keyword')->toString(), fn ($query, $keyword) => $query->where(function ($q) use ($keyword) {
@@ -170,6 +176,32 @@ class AdminApplicationController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
+    private function statusFilters(): array
+    {
+        return [
+            'review' => [
+                'label' => 'Review',
+                'statuses' => ['DRAFT', 'SUBMITTED', 'DOCUMENT_REVIEW', 'ADMINISTRATIVE_REVIEW', 'HR_INTERVIEW', 'USER_INTERVIEW', 'FINAL_INTERVIEW', 'MEDICAL_CHECK_UP'],
+            ],
+            'test' => [
+                'label' => 'Psikotes / Test',
+                'statuses' => ['TECHNICAL_TEST'],
+            ],
+            'offering' => [
+                'label' => 'Offering',
+                'statuses' => ['OFFERING'],
+            ],
+            'hired' => [
+                'label' => 'Hired',
+                'statuses' => ['HIRED'],
+            ],
+            'rejected' => [
+                'label' => 'Rejected',
+                'statuses' => ['REJECTED', 'WITHDRAWN', 'CANCELLED'],
+            ],
+        ];
+    }
+
     private function replaceCandidateSheetRows(string $sheetXml, $applications, int $lastRow): string
     {
         $rows = [];
@@ -191,6 +223,7 @@ class AdminApplicationController extends Controller
         $experience = $profile?->experiences?->first();
         $birthDate = $profile?->birth_date;
         $applyDate = $application->submitted_at ?? $application->created_at;
+        $formattedBirthDate = $birthDate?->format('d-M-y');
         $age = $birthDate ? round($birthDate->diffInDays(now()) / 365, 2) : null;
 
         $statusLabel = str($application->status)->headline()->toString();
@@ -206,7 +239,7 @@ class AdminApplicationController extends Controller
             'G' => ['v' => $profile?->gender, 's' => 13],
             'H' => ['v' => $profile?->nik, 's' => 15],
             'I' => ['v' => $profile?->birth_place, 's' => 14],
-            'J' => ['v' => $this->excelDate($birthDate), 's' => 116, 'type' => 'n'],
+            'J' => ['v' => $formattedBirthDate, 's' => 116],
             'K' => ['v' => $age, 's' => 58, 'type' => 'n'],
             'L' => ['v' => $profile?->address, 's' => 59],
             'M' => ['v' => $profile?->rt_rw, 's' => 118],

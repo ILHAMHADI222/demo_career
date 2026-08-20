@@ -1,169 +1,284 @@
 <x-layouts.app title="Dashboard HRD - Career Indodata">
-    <section class="bg-slate-50 py-10 md:py-14">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="relative overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-2xl shadow-slate-300/30">
-                <div class="absolute -left-20 top-10 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl"></div>
-                <div class="absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl"></div>
-                <div class="relative z-10 p-8 md:p-10 lg:p-12">
-                    <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-                        <div class="max-w-3xl">
-                            <span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-orange-300 backdrop-blur">
-                                <span class="h-2 w-2 rounded-full bg-orange-400"></span>
-                                HRD Dashboard
-                            </span>
-                            <h1 class="mt-5 text-4xl font-black leading-tight tracking-tight md:text-5xl">
-                                Data lengkap pelamar <span class="text-orange-400">dalam satu tabel.</span>
-                            </h1>
-                            <p class="mt-5 max-w-2xl text-sm leading-7 text-slate-200 md:text-base">
-                                Pantau semua pelamar, data diri, foto, pendidikan, pengalaman kerja, dan update status seleksi seperti lolos administrasi, psikotesa, atau interview user.
-                            </p>
+    <section class="min-h-screen bg-[#f0efe9] px-4 pb-12 pt-28 text-[#322d2a] sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-[1240px] space-y-6">
+            <div class="grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-stretch">
+                <div class="rounded-[56px] border border-white bg-white p-6 sm:p-8 lg:p-10">
+                    <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
+                        <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                        HRD Dashboard
+                    </div>
+
+                    <h1 class="mt-8 max-w-3xl text-[42px] font-light leading-none tracking-[0.52px] text-[#322d2a] md:text-[56px]">
+                        Ringkasan pelamar yang rapi dan mudah dipantau.
+                    </h1>
+
+                    <p class="mt-6 max-w-2xl text-sm font-normal leading-[1.6] tracking-[0.14px] text-[#6f6b67] md:text-base">
+                        Fokus pada angka penting, progress rekrutmen, dan kandidat terbaru tanpa tampilan yang terlalu padat.
+                    </p>
+
+                    <div class="mt-8 flex flex-wrap gap-3">
+                        <a href="{{ route('admin.applications.index') }}" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#f97316] px-[22px] py-[16px] text-sm font-normal tracking-[0.14px] text-white transition hover:bg-[#ea580c]">
+                            Kelola Pelamar
+                            <span>→</span>
+                        </a>
+                        <a href="{{ route('admin.jobs.index') }}" class="inline-flex items-center justify-center gap-2 rounded-full border border-[#322d2a]/30 bg-transparent px-[22px] py-[16px] text-sm font-normal tracking-[0.14px] text-[#322d2a] transition hover:border-[#f97316] hover:bg-[#fff3e8] hover:text-[#f97316]">
+                            Kelola Lowongan
+                            <span>→</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="relative overflow-hidden rounded-[56px] bg-[#322d2a] p-8 text-white sm:p-10">
+                    <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#f97316]/25 blur-3xl"></div>
+                    <div class="absolute -bottom-24 left-8 h-56 w-56 rounded-full bg-[#f97316]/10 blur-3xl"></div>
+
+                    <div class="relative z-10 flex h-full min-h-[340px] flex-col justify-between">
+                        <div class="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-normal uppercase tracking-[0.12em] text-white backdrop-blur-md">
+                            <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                            Total Pelamar
                         </div>
-                        <div class="flex flex-wrap gap-3">
-                            <a href="{{ route('admin.applications.index') }}" class="inline-flex items-center gap-2 rounded-2xl bg-orange-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-500/25 transition hover:-translate-y-0.5 hover:bg-orange-600">
-                                Kelola Pelamar <span>→</span>
-                            </a>
-                            <a href="{{ route('admin.jobs.index') }}" class="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-black text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/20">
-                                Kelola Lowongan <span>→</span>
-                            </a>
+
+                        <div>
+                            <p class="text-[64px] font-light leading-none tracking-[0.64px] text-white">{{ $totalApplicants }}</p>
+                            <p class="mt-4 text-sm font-normal leading-[1.6] text-white/70">
+                                {{ $newApplicants }} pelamar baru hari ini.
+                            </p>
+
+                            <div class="mt-8 grid grid-cols-2 gap-3">
+                                <div class="rounded-[28px] border border-white/15 bg-white/10 p-4 backdrop-blur-md">
+                                    <p class="text-xs font-normal uppercase tracking-[0.12em] text-white/60">Interview</p>
+                                    <p class="mt-3 text-2xl font-light text-white">{{ $interview }}</p>
+                                </div>
+                                <div class="rounded-[28px] border border-white/15 bg-white/10 p-4 backdrop-blur-md">
+                                    <p class="text-xs font-normal uppercase tracking-[0.12em] text-white/60">Lowongan</p>
+                                    <p class="mt-3 text-2xl font-light text-white">{{ $activeJobs }}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 @foreach([
-                    ['label' => 'Lowongan Aktif', 'value' => $activeJobs, 'bg' => 'bg-blue-50', 'text' => 'text-blue-700'],
-                    ['label' => 'Total Kandidat', 'value' => $totalApplicants, 'bg' => 'bg-emerald-50', 'text' => 'text-emerald-700'],
-                    ['label' => 'Pelamar Baru Hari Ini', 'value' => $newApplicants, 'bg' => 'bg-amber-50', 'text' => 'text-amber-700'],
-                    ['label' => 'Sedang Interview', 'value' => $interview, 'bg' => 'bg-violet-50', 'text' => 'text-violet-700'],
-                    ['label' => 'Admin HRD', 'value' => $totalAdmin, 'bg' => 'bg-slate-100', 'text' => 'text-slate-700'],
-                ] as $index => $item)
-                    <div class="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-                        <div class="flex items-start justify-between gap-4">
+                    ['label' => 'Lowongan Aktif', 'value' => $activeJobs, 'icon' => 'briefcase'],
+                    ['label' => 'Total Kandidat', 'value' => $totalApplicants, 'icon' => 'users'],
+                    ['label' => 'Baru Hari Ini', 'value' => $newApplicants, 'icon' => 'sparkles'],
+                    ['label' => 'Interview', 'value' => $interview, 'icon' => 'chat'],
+                    ['label' => 'Admin HRD', 'value' => $totalAdmin, 'icon' => 'shield'],
+                ] as $item)
+                    <div class="rounded-[32px] border border-white bg-white p-5 transition hover:border-[#f97316]/30 hover:bg-[#fff3e8]">
+                        <div class="flex items-center justify-between gap-4">
                             <div>
-                                <p class="text-xs font-black uppercase tracking-[0.16em] text-slate-500">{{ $item['label'] }}</p>
-                                <p class="mt-4 text-4xl font-black tracking-tight text-slate-950">{{ $item['value'] }}</p>
+                                <p class="text-xs font-normal uppercase tracking-[0.12em] text-[#6f6b67]">{{ $item['label'] }}</p>
+                                <p class="mt-4 text-3xl font-light tracking-[0.32px] text-[#322d2a]">{{ $item['value'] }}</p>
                             </div>
-                            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl {{ $item['bg'] }} {{ $item['text'] }} text-xs font-black">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</div>
+                            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-[#fff3e8] text-[#f97316] ring-1 ring-[#f97316]/20">
+                                @if($item['icon'] === 'briefcase')
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25A2.25 2.25 0 0118 20.65H6A2.25 2.25 0 013.75 18.4v-4.25m16.5 0A2.25 2.25 0 0018 11.9H6a2.25 2.25 0 00-2.25 2.25m16.5 0v-3.9A2.25 2.25 0 0018 8H6a2.25 2.25 0 00-2.25 2.25v3.9M9 8V6.75A2.25 2.25 0 0111.25 4.5h1.5A2.25 2.25 0 0115 6.75V8" /></svg>
+                                @elseif($item['icon'] === 'users')
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21C6.432 21 4.35 20.445 2.546 19.447a4.125 4.125 0 017.533-2.493M12 11.25a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm6.75 0a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+                                @elseif($item['icon'] === 'sparkles')
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.25 7.5L18 8.25l-.25-.75a2.25 2.25 0 00-1.5-1.5L15.5 5.75l.75-.25a2.25 2.25 0 001.5-1.5L18 3.25l.25.75a2.25 2.25 0 001.5 1.5l.75.25-.75.25a2.25 2.25 0 00-1.5 1.5z" /></svg>
+                                @elseif($item['icon'] === 'chat')
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.17 48.17 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
+                                @else
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.75A11.959 11.959 0 0112 2.714z" /></svg>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @endforeach
             </div>
 
-            <div class="mt-8 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-                <div class="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-                    <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-500">Recruitment Funnel</p>
-                    <h2 class="mt-2 text-2xl font-black text-slate-950">Pipeline Rekrutmen</h2>
-                    <div class="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div class="grid gap-6 lg:grid-cols-[1fr_380px]">
+                <div class="rounded-[40px] border border-white bg-white p-6 md:p-7">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <p class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]"><span class="h-1.5 w-1.5 bg-[#f97316]"></span>Pipeline</p>
+                            <h2 class="mt-4 text-[32px] font-light leading-none tracking-[0.32px] text-[#322d2a]">Progress Rekrutmen</h2>
+                        </div>
+                        <span class="rounded-full bg-[#f0efe9] px-4 py-2 text-xs font-normal text-[#6f6b67] ring-1 ring-[#322d2a]/10">Ringkas</span>
+                    </div>
+
+                    <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                         @foreach([
-                            ['label' => 'Review Dokumen', 'value' => $documentReview],
-                            ['label' => 'Psikotesa / Test', 'value' => $test],
-                            ['label' => 'Offering', 'value' => $offering],
-                            ['label' => 'Hired', 'value' => $hired],
-                            ['label' => 'Rejected', 'value' => $rejected],
+                            ['label' => 'Review', 'value' => $documentReview, 'icon' => 'document'],
+                            ['label' => 'Psikotes / Test', 'value' => $test, 'icon' => 'clipboard'],
+                            ['label' => 'Offering', 'value' => $offering, 'icon' => 'mail'],
+                            ['label' => 'Hired', 'value' => $hired, 'icon' => 'check'],
+                            ['label' => 'Rejected', 'value' => $rejected, 'icon' => 'x'],
                         ] as $stage)
-                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                                <p class="text-sm font-black text-slate-700">{{ $stage['label'] }}</p>
-                                <p class="mt-3 text-3xl font-black text-slate-950">{{ $stage['value'] }}</p>
+                            <div class="rounded-[28px] bg-[#f0efe9] p-4 ring-1 ring-[#322d2a]/10">
+                                <div class="flex h-9 w-9 items-center justify-center rounded-[16px] bg-white text-[#f97316] ring-1 ring-[#f97316]/20">
+                                    @if($stage['icon'] === 'document')
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-.988-2.386l-4.751-4.751A3.375 3.375 0 0011.375 3.5H7.5A2.25 2.25 0 005.25 5.75v12.5A2.25 2.25 0 007.5 20.5h9.75a2.25 2.25 0 002.25-2.25v-4z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 3.75v4.5A2.25 2.25 0 0014.25 10.5h4.5" /></svg>
+                                    @elseif($stage['icon'] === 'clipboard')
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5.25h6m-6 4.5h6m-6 4.5h3M9.75 3.75h4.5A1.5 1.5 0 0115.75 5.25v.75h.75A2.25 2.25 0 0118.75 8.25v9A2.25 2.25 0 0116.5 19.5h-9a2.25 2.25 0 01-2.25-2.25v-9A2.25 2.25 0 017.5 6h.75v-.75a1.5 1.5 0 011.5-1.5z" /></svg>
+                                    @elseif($stage['icon'] === 'mail')
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 7.5A2.25 2.25 0 016 5.25h12a2.25 2.25 0 012.25 2.25v9A2.25 2.25 0 0118 18.75H6a2.25 2.25 0 01-2.25-2.25v-9z" /><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 7.875l6.4 4.267a2 2 0 002.2 0l6.4-4.267" /></svg>
+                                    @elseif($stage['icon'] === 'check')
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l5 5 10-11" /></svg>
+                                    @else
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                    @endif
+                                </div>
+                                <p class="mt-3 text-xs font-normal uppercase tracking-[0.12em] text-[#6f6b67]">{{ $stage['label'] }}</p>
+                                <p class="mt-2 text-2xl font-light text-[#322d2a]">{{ $stage['value'] }}</p>
                             </div>
                         @endforeach
                     </div>
                 </div>
-                <div class="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-                    <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-500">Status Cepat</p>
-                    <h2 class="mt-2 text-2xl font-black text-slate-950">Pilihan Status HRD</h2>
-                    <div class="mt-6 flex flex-wrap gap-2">
+
+                <div class="rounded-[40px] border border-white bg-white p-6 md:p-7">
+                    <p class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]"><span class="h-1.5 w-1.5 bg-[#f97316]"></span>Status HRD</p>
+                    <h2 class="mt-4 text-[32px] font-light leading-none tracking-[0.32px] text-[#322d2a]">Pilihan Status</h2>
+                    <p class="mt-4 text-sm font-normal leading-[1.6] text-[#6f6b67]">Status dibuat singkat agar proses update tidak membingungkan.</p>
+
+                    <div class="mt-5 grid gap-2">
                         @foreach($statusOptions as $label)
-                            <span class="rounded-full bg-orange-50 px-3 py-1 text-[11px] font-black text-orange-700 ring-1 ring-orange-100">{{ $label }}</span>
+                            <div class="flex items-center gap-3 rounded-[24px] bg-[#fff3e8] px-4 py-3 text-sm font-normal text-[#322d2a] ring-1 ring-[#f97316]/20">
+                                <span class="flex h-8 w-8 items-center justify-center rounded-[14px] bg-white text-[#f97316] ring-1 ring-[#f97316]/20">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </span>
+                                {{ $label }}
+                            </div>
                         @endforeach
                     </div>
                 </div>
             </div>
 
-            <div class="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-                <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div class="overflow-hidden rounded-[40px] border border-white bg-white">
+                <div class="flex flex-col gap-4 border-b border-[#322d2a]/10 p-6 md:flex-row md:items-end md:justify-between md:p-7">
                     <div>
-                        <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-500">HRD Applicant Tracking</p>
-                        <h2 class="mt-2 text-2xl font-black text-slate-950">Full List Data Pelamar</h2>
-                        <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">HRD dapat melihat data diri lengkap, foto, pendidikan, pengalaman, posisi yang dilamar, serta mengubah status pelamar langsung dari tabel.</p>
+                        <p class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]"><span class="h-1.5 w-1.5 bg-[#f97316]"></span>Pelamar Terbaru</p>
+                        <h2 class="mt-4 text-[32px] font-light leading-none tracking-[0.32px] text-[#322d2a]">Daftar Kandidat</h2>
+                        <p class="mt-4 max-w-2xl text-sm font-normal leading-[1.6] text-[#6f6b67]">
+                            Tabel dibuat lebih singkat. Detail lengkap tetap bisa dibuka dari halaman kelola pelamar.
+                        </p>
                     </div>
-                    <div class="inline-flex items-center gap-2 rounded-2xl bg-slate-50 px-5 py-3 text-sm font-black text-slate-700 ring-1 ring-slate-200">
-                        <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-                        {{ $allApplications->count() }} total pelamar
-                    </div>
+
+                    <a href="{{ route('admin.applications.index') }}" class="inline-flex w-fit items-center gap-2 rounded-full bg-[#322d2a] px-[22px] py-[14px] text-sm font-normal tracking-[0.14px] text-white transition hover:bg-[#0f0e12]">
+                        Lihat Semua
+                        <span>→</span>
+                    </a>
                 </div>
 
-                <div class="mt-7 overflow-x-auto rounded-2xl border border-slate-200">
-                    <table class="min-w-[1800px] w-full divide-y divide-slate-200 text-left">
-                        <thead class="bg-slate-950 text-xs font-black uppercase tracking-[0.16em] text-white">
+                <div class="hidden overflow-x-auto lg:block">
+                    <table class="w-full min-w-[980px] text-left">
+                        <thead class="bg-[#f0efe9] text-xs font-normal uppercase tracking-[0.12em] text-[#6f6b67]">
                             <tr>
-                                <th class="px-4 py-4">Foto</th>
-                                <th class="px-4 py-4">Apply Date</th>
-                                <th class="px-4 py-4">Position Applied</th>
-                                <th class="px-4 py-4">Candidate Name</th>
-                                <th class="px-4 py-4">Gender</th>
-                                <th class="px-4 py-4">NIK</th>
-                                <th class="px-4 py-4">TTL</th>
-                                <th class="px-4 py-4">Alamat</th>
-                                <th class="px-4 py-4">Kontak</th>
-                                <th class="px-4 py-4">Pendidikan</th>
-                                <th class="px-4 py-4">Pengalaman</th>
-                                <th class="px-4 py-4">Status</th>
+                                <th class="px-6 py-4">Kandidat</th>
+                                <th class="px-6 py-4">Posisi</th>
+                                <th class="px-6 py-4">Tanggal</th>
+                                <th class="px-6 py-4">Kontak</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4 text-right">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-200 bg-white">
+                        <tbody class="divide-y divide-[#322d2a]/10">
                             @forelse ($allApplications as $application)
                                 @php
                                     $profile = $application->candidateProfile;
-                                    $education = $profile?->educations?->first();
-                                    $experience = $profile?->experiences?->first();
                                 @endphp
-                                <tr class="align-top transition hover:bg-slate-50">
-                                    <td class="px-4 py-5">
-                                        @if($profile?->photo)
-                                            <img src="{{ asset('storage/'.$profile->photo) }}" alt="Foto {{ $profile->full_name }}" class="h-16 w-16 rounded-2xl object-cover ring-2 ring-orange-100">
-                                        @else
-                                            <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 text-lg font-black text-orange-600">{{ strtoupper(substr($profile?->full_name ?? 'K', 0, 1)) }}</div>
-                                        @endif
+                                <tr class="transition hover:bg-[#fff3e8]">
+                                    <td class="px-6 py-5">
+                                        <div class="flex items-center gap-4">
+                                            @if($profile?->photo)
+                                                <img src="{{ asset('storage/'.$profile->photo) }}" alt="Foto {{ $profile->full_name }}" class="h-12 w-12 rounded-[18px] object-cover ring-1 ring-[#322d2a]/10">
+                                            @else
+                                                <div class="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[#fff3e8] text-sm font-normal text-[#f97316] ring-1 ring-[#f97316]/20">
+                                                    {{ strtoupper(substr($profile?->full_name ?? 'K', 0, 1)) }}
+                                                </div>
+                                            @endif
+                                            <div>
+                                                <p class="font-normal tracking-[0.16px] text-[#322d2a]">{{ $profile?->full_name ?? '-' }}</p>
+                                                <p class="mt-1 text-xs font-normal text-[#6f6b67]">{{ $application->application_number }}</p>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td class="px-4 py-5 text-sm font-bold text-slate-700">
+                                    <td class="px-6 py-5">
+                                        <p class="text-sm font-normal text-[#322d2a]">{{ $application->job?->title ?? '-' }}</p>
+                                        <p class="mt-1 text-xs font-normal text-[#6f6b67]">{{ $application->job?->department?->name ?? '-' }}</p>
+                                    </td>
+                                    <td class="px-6 py-5 text-sm font-normal text-[#6f6b67]">
                                         {{ $application->submitted_at?->format('d M Y') ?? $application->created_at?->format('d M Y') }}
-                                        <p class="mt-1 text-[10px] font-black uppercase tracking-wide text-slate-400">{{ $application->application_number }}</p>
                                     </td>
-                                    <td class="px-4 py-5 text-sm font-black text-slate-900">{{ $application->job?->title ?? '-' }}<p class="mt-1 text-xs font-semibold text-slate-500">{{ $application->job?->department?->name ?? '-' }}</p></td>
-                                    <td class="px-4 py-5 text-sm text-slate-700"><p class="font-black text-slate-950">{{ $profile?->full_name ?? '-' }}</p><p class="mt-1 text-xs font-semibold text-slate-500">{{ $profile?->marital_status ?? '-' }}</p></td>
-                                    <td class="px-4 py-5 text-sm font-semibold text-slate-700">{{ $profile?->gender ?? '-' }}</td>
-                                    <td class="px-4 py-5 text-sm font-semibold text-slate-700">{{ $profile?->nik ?? '-' }}</td>
-                                    <td class="px-4 py-5 text-sm text-slate-700"><p>{{ $profile?->birth_place ?? '-' }}</p><p class="mt-1 font-semibold">{{ $profile?->birth_date?->format('d M Y') ?? '-' }}</p></td>
-                                    <td class="px-4 py-5 text-sm leading-6 text-slate-700"><p class="min-w-64">{{ $profile?->address ?? '-' }}</p><p>RT/RW: {{ $profile?->rt_rw ?? '-' }}</p><p>{{ $profile?->village ?? '-' }}, {{ $profile?->district ?? '-' }}</p><p>{{ $profile?->city ?? '-' }}, {{ $profile?->province ?? '-' }} {{ $profile?->postal_code ?? '' }}</p></td>
-                                    <td class="px-4 py-5 text-sm leading-6 text-slate-700"><p>Email: {{ $profile?->email ?? '-' }}</p><p>Telp: {{ $profile?->phone ?? '-' }}</p><p>WA: {{ $profile?->whatsapp ?? '-' }}</p></td>
-                                    <td class="px-4 py-5 text-sm leading-6 text-slate-700"><p class="font-black text-slate-900">{{ $education?->education_level ?? '-' }}</p><p>{{ $education?->institution ?? '-' }}</p><p>{{ $education?->major ?? '-' }} | IPK: {{ $education?->ipk ?? '-' }}</p><p>Skill/Sertifikasi: {{ $education?->certification ?? '-' }}</p><p>SIM: {{ $profile?->driving_license ?? '-' }}</p></td>
-                                    <td class="px-4 py-5 text-sm leading-6 text-slate-700"><p class="font-black text-slate-900">{{ $experience?->company_name ?? '-' }}</p><p>{{ $experience?->position ?? '-' }}</p><p>{{ $experience?->work_years ?? '-' }}</p></td>
-                                    <td class="px-4 py-5">
-                                        <form method="POST" action="{{ route('admin.applications.status', $application) }}" class="min-w-56 space-y-3">
+                                    <td class="px-6 py-5 text-sm font-normal text-[#6f6b67]">
+                                        <p>{{ $profile?->email ?? '-' }}</p>
+                                        <p class="mt-1 text-xs text-[#6f6b67]/70">{{ $profile?->whatsapp ?? $profile?->phone ?? '-' }}</p>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <form method="POST" action="{{ route('admin.applications.status', $application) }}" class="flex min-w-52 items-center gap-2">
                                             @csrf
                                             @method('PUT')
-                                            <select name="status" class="w-full rounded-xl border-slate-200 text-xs font-bold text-slate-700 focus:border-orange-500 focus:ring-orange-500">
+                                            <select name="status" class="w-full rounded-[16px] border-[#322d2a]/15 bg-white text-xs font-normal text-[#322d2a] focus:border-[#f97316] focus:ring-[#f97316]">
                                                 @foreach($statusOptions as $status => $label)
                                                     <option value="{{ $status }}" @selected($application->status === $status)>{{ $label }}</option>
                                                 @endforeach
                                             </select>
-                                            <input type="text" name="note" placeholder="Catatan opsional" class="w-full rounded-xl border-slate-200 text-xs font-semibold focus:border-orange-500 focus:ring-orange-500">
-                                            <button type="submit" class="w-full rounded-xl bg-orange-500 px-3 py-2 text-xs font-black text-white transition hover:bg-orange-600">Update Status</button>
+                                            <button type="submit" class="rounded-[16px] bg-[#f97316] px-3 py-2 text-xs font-normal text-white transition hover:bg-[#ea580c]">OK</button>
                                         </form>
+                                    </td>
+                                    <td class="px-6 py-5 text-right">
+                                        <a href="{{ route('admin.applications.show', $application) }}" class="inline-flex items-center rounded-[16px] border border-[#322d2a]/15 px-3 py-2 text-xs font-normal text-[#322d2a] transition hover:border-[#f97316] hover:bg-[#fff3e8] hover:text-[#f97316]">
+                                            Detail
+                                        </a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="12" class="px-5 py-12 text-center">
-                                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-xl">👥</div>
-                                        <p class="mt-4 text-lg font-black text-slate-950">Belum ada pelamar masuk.</p>
-                                        <p class="mt-2 text-sm font-semibold text-slate-600">Pelamar akan muncul otomatis setelah kandidat mengirim lamaran.</p>
+                                    <td colspan="6" class="px-6 py-12 text-center">
+                                        <p class="text-lg font-normal text-[#322d2a]">Belum ada pelamar masuk.</p>
+                                        <p class="mt-2 text-sm font-normal text-[#6f6b67]">Pelamar akan muncul otomatis setelah kandidat mengirim lamaran.</p>
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                <div class="grid gap-4 p-5 lg:hidden">
+                    @forelse ($allApplications as $application)
+                        @php
+                            $profile = $application->candidateProfile;
+                        @endphp
+                        <div class="rounded-[28px] border border-[#322d2a]/10 bg-[#f0efe9] p-4">
+                            <div class="flex items-start gap-4">
+                                @if($profile?->photo)
+                                    <img src="{{ asset('storage/'.$profile->photo) }}" alt="Foto {{ $profile->full_name }}" class="h-12 w-12 rounded-[18px] object-cover ring-1 ring-[#322d2a]/10">
+                                @else
+                                    <div class="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[#fff3e8] text-sm font-normal text-[#f97316] ring-1 ring-[#f97316]/20">
+                                        {{ strtoupper(substr($profile?->full_name ?? 'K', 0, 1)) }}
+                                    </div>
+                                @endif
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-normal tracking-[0.16px] text-[#322d2a]">{{ $profile?->full_name ?? '-' }}</p>
+                                    <p class="mt-1 text-sm font-normal text-[#6f6b67]">{{ $application->job?->title ?? '-' }}</p>
+                                    <p class="mt-1 text-xs font-normal text-[#6f6b67]/70">{{ $application->submitted_at?->format('d M Y') ?? $application->created_at?->format('d M Y') }}</p>
+                                </div>
+                            </div>
+
+                            <form method="POST" action="{{ route('admin.applications.status', $application) }}" class="mt-4 grid gap-3">
+                                @csrf
+                                @method('PUT')
+                                <select name="status" class="w-full rounded-[16px] border-[#322d2a]/15 bg-white text-xs font-normal text-[#322d2a] focus:border-[#f97316] focus:ring-[#f97316]">
+                                    @foreach($statusOptions as $status => $label)
+                                        <option value="{{ $status }}" @selected($application->status === $status)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button type="submit" class="rounded-[16px] bg-[#f97316] px-3 py-2 text-xs font-normal text-white transition hover:bg-[#ea580c]">Update</button>
+                                    <a href="{{ route('admin.applications.show', $application) }}" class="rounded-[16px] border border-[#322d2a]/15 px-3 py-2 text-center text-xs font-normal text-[#322d2a] transition hover:border-[#f97316] hover:bg-[#fff3e8] hover:text-[#f97316]">Detail</a>
+                                </div>
+                            </form>
+                        </div>
+                    @empty
+                        <div class="rounded-[28px] border border-dashed border-[#322d2a]/25 p-8 text-center">
+                            <p class="text-lg font-normal text-[#322d2a]">Belum ada pelamar masuk.</p>
+                            <p class="mt-2 text-sm font-normal text-[#6f6b67]">Pelamar akan muncul otomatis setelah kandidat mengirim lamaran.</p>
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </div>
