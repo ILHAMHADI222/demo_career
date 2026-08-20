@@ -265,6 +265,87 @@
 
                     </div>
 
+
+                    {{-- DISC ASSESSMENT --}}
+                    <div class="rounded-[40px] border border-white bg-white p-6 md:p-8">
+
+                        <p class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
+                            <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                            Psychometric Test
+                        </p>
+
+                        <h2 class="mt-4 text-[32px] font-light leading-none tracking-[0.32px] text-[#322d2a]">
+                            Asesmen DISC
+                        </h2>
+
+                        <p class="mt-4 text-sm font-normal leading-[1.6] tracking-[0.14px] text-[#6f6b67]">
+                            Uji kepribadian kerja DISC untuk melengkapi profil seleksi Anda.
+                        </p>
+
+                        <div class="mt-6 space-y-4">
+
+                            @forelse($discAssessments as $discPart)
+                                @php
+                                    $assess = $discPart->assessment;
+                                    $session = $discPart->latestSession;
+                                @endphp
+                                <div class="rounded-[28px] border {{ $session && $session->isCompleted() ? 'border-emerald-200 bg-emerald-50/50' : 'border-[#f97316]/30 bg-[#fff3e8]' }} p-5">
+
+                                    <div class="flex items-start justify-between gap-4">
+
+                                        <div>
+                                            <span class="rounded-md bg-white px-2 py-0.5 font-mono text-[11px] font-bold text-slate-700">{{ $assess->code }}</span>
+                                            <p class="mt-2 font-normal tracking-[0.16px] text-[#322d2a]">
+                                                {{ $assess->title }}
+                                            </p>
+
+                                            <p class="mt-1 text-xs text-[#6f6b67]">
+                                                Durasi: {{ $assess->duration_minutes }} Menit • Status: 
+                                                <strong class="{{ $session && $session->isCompleted() ? 'text-emerald-700' : 'text-[#f97316]' }}">
+                                                    {{ $session ? $session->status : 'BELUM MULAI' }}
+                                                </strong>
+                                            </p>
+
+                                            <div class="mt-4">
+                                                @if ($session && $session->isCompleted())
+                                                    <a href="{{ route('disc.assessment.completed', $session->session_token) }}"
+                                                       class="inline-flex rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700">
+                                                        Lihat Konfirmasi Selesai ✓
+                                                    </a>
+                                                @else
+                                                    <a href="{{ route('disc.assessment.instruction', $assess) }}"
+                                                       class="inline-flex rounded-full bg-[#f97316] px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-orange-500/20 transition hover:bg-[#ea580c]">
+                                                        {{ $session ? 'Lanjutkan Tes DISC →' : 'Mulai Kerjakan Tes DISC →' }}
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[16px] {{ $session && $session->isCompleted() ? 'bg-emerald-100 text-emerald-600' : 'bg-[#fff3e8] text-[#f97316]' }} text-sm font-bold font-mono">
+                                            DISC
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            @empty
+
+                                <div class="rounded-[28px] border border-dashed border-[#322d2a]/25 bg-[#f0efe9] p-6 text-center">
+                                    <p class="font-normal tracking-[0.16px] text-[#322d2a]">
+                                        Belum ada jadwal asesmen DISC
+                                    </p>
+                                    <p class="mt-2 text-sm font-normal leading-[1.6] text-[#6f6b67]">
+                                        Jika diundang psikotes DISC oleh HRD, tautan pengerjaan akan otomatis tampil di sini.
+                                    </p>
+                                </div>
+
+                            @endforelse
+
+                        </div>
+
+                    </div>
+
                 </div>
 
 

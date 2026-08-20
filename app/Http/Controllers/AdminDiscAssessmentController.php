@@ -1,0 +1,236 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Application;
+use App\Models\DiscAssessment;
+use App\Models\DiscAssessmentParticipant;
+use App\Models\DiscAssessmentSession;
+use App\Models\QuestionBank;
+use App\Models\User;
+use App\Services\AuditLogger;
+use App\Services\DiscReportExporter;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+class AdminDiscAssessmentController extends Controller
+{
+    public function index(Request $request): View
+    {
+        $status = $request->string('status')->toString();
+        $keyword = $request->string('keyword')->toString();
+
+        $assessments = DiscAssessment::query()
+            ->with(['questionBank', 'creator'])
+            ->withCount(['participants', 'sessions'])
+            ->when($status, fn ($q) => $q->where('status', $status))
+            ->when($keyword, fn ($q) => $q->where(fn ($sub) => $sub->where('title', 'like', "%{$keyword}%")->orWhere('code', 'like', "%{$keyword}%")))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $stats = [
+            'total' => DiscAssessment::count(),
+            'published' => DiscAssessment::where('status', 'PUBLISHED')->count(),
+            'draft' => DiscAssessment::where('status', 'DRAFT')->count(),
+            'closed' => DiscAssessment::where('status', 'CLOSED')->count(),
+            'total_participants' => DiscAssessmentParticipant::count(),
+            'completed_sessions' => DiscAssessmentSession::where('status', 'COMPLETED')->count(),
+        ];
+
+        return view('admin.disc.assessments.index', compact('assessments', 'stats', 'status', 'keyword'));
+    }
+
+    public function create(): View
+    {
+        $questionBanks = QuestionBank::query()
+            ->where('status', 'PUBLISHED')
+            ->orderBy('name')
+            ->get();
+
+        $applications = Application::query()
+            ->with(['candidateProfile', 'job'])
+            ->whereIn('status', ['DOCUMENT_REVIEW', 'ADMINISTRATIVE_REVIEW', 'HR_INTERVIEW', 'USER_INTERVIEW', 'TECHNICAL_TEST'])
+            ->latest()
+            ->get();
+
+        return view('admin.disc.assessments.create', compact('questionBanks', 'applications'));
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:50', 'unique:disc_assessments,code'],
+            'question_bank_id' => ['required', 'exists:question_banks,id'],
+            'duration_minutes' => ['required', 'integer', 'min:5', 'max:180'],
+            'start_at' => ['nullable', 'date'],
+            'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
+            'randomize_questions' => ['nullable', 'boolean'],
+            'randomize_options' => ['nullable', 'boolean'],
+            'result_visibility' => ['required', 'in:HRD_ONLY,PARTICIPANT_AFTER_COMPLETION,PARTICIPANT_AFTER_HRD_APPROVAL'],
+            'status' => ['required', 'in:DRAFT,PUBLISHED,CLOSED'],
+            'candidate_user_ids' => ['nullable', 'array'],
+            'candidate_user_ids.*' => ['exists:users,id'],
+        ]);
+
+        $bank = QuestionBank::findOrFail($data['question_bank_id']);
+
+        $assessment = DB::transaction(function () use ($data, $bank) {
+            $created = DiscAssessment::create([
+                'title' => $data['title'],
+                'code' => $data['code'],
+                'question_bank_id' => $bank->id,
+                'question_bank_version' => $bank->version,
+                'duration_minutes' => $data['duration_minutes'],
+                'start_at' => $data['start_at'] ?? null,
+                'end_at' => $data['end_at'] ?? null,
+                'randomize_questions' => !empty($data['randomize_questions']),
+                'randomize_options' => !empty($data['randomize_options']),
+                'result_visibility' => $data['result_visibility'],
+                'status' => $data['status'],
+                'created_by' => auth()->id(),
+            ]);
+
+            if (!empty($data['candidate_user_ids'])) {
+                foreach ($data['candidate_user_ids'] as $userId) {
+                    DiscAssessmentParticipant::firstOrCreate(
+                        ['disc_assessment_id' => $created->id, 'user_id' => $userId],
+                        ['status' => 'ASSIGNED', 'invited_at' => now()]
+                    );
+                }
+            }
+
+            return $created;
+        });
+
+        AuditLogger::log('CREATE_ASSESSMENT', 'DISC', $assessment);
+
+        return redirect()->route('admin.disc.assessments.show', $assessment)->with('success', 'Jadwal Asesmen DISC berhasil dibuat.');
+    }
+
+    public function show(DiscAssessment $assessment): View
+    {
+        $assessment->load([
+            'questionBank',
+            'creator',
+            'participants.user.candidateProfile',
+            'participants.latestSession',
+            'sessions.participant.candidateProfile',
+        ]);
+
+        $applications = Application::query()
+            ->with(['candidateProfile', 'job'])
+            ->whereNotIn('id', $assessment->participants->pluck('application_id')->filter())
+            ->latest()
+            ->get();
+
+        $candidates = User::query()
+            ->whereHas('roles', fn ($q) => $q->where('name', 'USER'))
+            ->whereNotIn('id', $assessment->participants->pluck('user_id'))
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.disc.assessments.show', compact('assessment', 'applications', 'candidates'));
+    }
+
+    public function edit(DiscAssessment $assessment): View
+    {
+        $questionBanks = QuestionBank::query()->where('status', 'PUBLISHED')->get();
+
+        return view('admin.disc.assessments.edit', compact('assessment', 'questionBanks'));
+    }
+
+    public function update(Request $request, DiscAssessment $assessment): RedirectResponse
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:50', 'unique:disc_assessments,code,' . $assessment->id],
+            'duration_minutes' => ['required', 'integer', 'min:5', 'max:180'],
+            'start_at' => ['nullable', 'date'],
+            'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
+            'randomize_questions' => ['nullable', 'boolean'],
+            'randomize_options' => ['nullable', 'boolean'],
+            'result_visibility' => ['required', 'in:HRD_ONLY,PARTICIPANT_AFTER_COMPLETION,PARTICIPANT_AFTER_HRD_APPROVAL'],
+            'status' => ['required', 'in:DRAFT,PUBLISHED,CLOSED,ARCHIVED'],
+        ]);
+
+        $assessment->update([
+            'title' => $data['title'],
+            'code' => $data['code'],
+            'duration_minutes' => $data['duration_minutes'],
+            'start_at' => $data['start_at'] ?? null,
+            'end_at' => $data['end_at'] ?? null,
+            'randomize_questions' => !empty($data['randomize_questions']),
+            'randomize_options' => !empty($data['randomize_options']),
+            'result_visibility' => $data['result_visibility'],
+            'status' => $data['status'],
+        ]);
+
+        AuditLogger::log('UPDATE_ASSESSMENT', 'DISC', $assessment);
+
+        return redirect()->route('admin.disc.assessments.show', $assessment)->with('success', 'Pengaturan Asesmen berhasil diperbarui.');
+    }
+
+    public function assignParticipants(Request $request, DiscAssessment $assessment): RedirectResponse
+    {
+        $data = $request->validate([
+            'user_ids' => ['required', 'array'],
+            'user_ids.*' => ['exists:users,id'],
+        ]);
+
+        $count = 0;
+        foreach ($data['user_ids'] as $userId) {
+            $created = DiscAssessmentParticipant::firstOrCreate(
+                ['disc_assessment_id' => $assessment->id, 'user_id' => $userId],
+                ['status' => 'ASSIGNED', 'invited_at' => now()]
+            );
+            if ($created->wasRecentlyCreated) {
+                $count++;
+            }
+        }
+
+        AuditLogger::log('ASSIGN_PARTICIPANTS', 'DISC', $assessment, ['count' => $count]);
+
+        return back()->with('success', "{$count} peserta berhasil ditambahkan ke asesmen ini.");
+    }
+
+    public function monitor(DiscAssessment $assessment): View
+    {
+        $assessment->load([
+            'participants.user.candidateProfile',
+            'participants.latestSession.securityEvents',
+        ]);
+
+        $activeSessions = DiscAssessmentSession::query()
+            ->where('disc_assessment_id', $assessment->id)
+            ->with(['participant.candidateProfile', 'securityEvents'])
+            ->latest('last_activity_at')
+            ->get();
+
+        return view('admin.disc.assessments.monitor', compact('assessment', 'activeSessions'));
+    }
+
+    public function resultShow(DiscAssessmentSession $session): View
+    {
+        $session->load([
+            'assessment.questionBank',
+            'participant.candidateProfile',
+            'answers.question.options',
+            'answers.mostOption',
+            'answers.leastOption',
+            'securityEvents',
+        ]);
+
+        return view('admin.disc.results.show', compact('session'));
+    }
+
+    public function exportSessionCsv(DiscAssessmentSession $session, DiscReportExporter $exporter): StreamedResponse
+    {
+        return $exporter->exportSessionCsv($session);
+    }
+}

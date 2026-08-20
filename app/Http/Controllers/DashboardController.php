@@ -57,12 +57,19 @@ class DashboardController extends Controller
             return redirect()->route('candidate.profile')->with('success', 'Silakan lengkapi seluruh data diri wajib sebelum masuk dashboard kandidat.');
         }
 
+        $discAssessments = \App\Models\DiscAssessmentParticipant::query()
+            ->where('user_id', $user->id)
+            ->with(['assessment', 'latestSession'])
+            ->latest()
+            ->get();
+
         return view('dashboard.candidate', [
             'profile' => $profile,
             'activeApplications' => $profile?->applications()->whereNotIn('status', ['REJECTED', 'WITHDRAWN', 'CANCELLED', 'HIRED'])->count() ?? 0,
             'applications' => $profile?->applications()->with('job')->latest()->limit(10)->get() ?? collect(),
             'upcomingInterviews' => Interview::query()->whereHas('application', fn ($q) => $q->where('candidate_profile_id', $profile?->id))->whereIn('status', ['SCHEDULED', 'CONFIRMED'])->latest()->limit(3)->get(),
             'offers' => Offer::query()->whereHas('application', fn ($q) => $q->where('candidate_profile_id', $profile?->id))->latest()->limit(3)->get(),
+            'discAssessments' => $discAssessments,
         ]);
     }
 }

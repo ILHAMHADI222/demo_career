@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AdminApplicationController;
+use App\Http\Controllers\AdminDiscAssessmentController;
+use App\Http\Controllers\AdminDiscQuestionBankController;
 use App\Http\Controllers\AdminDocumentTypeController;
 use App\Http\Controllers\AdminJobController;
 use App\Http\Controllers\AdminUserController;
@@ -8,6 +10,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ParticipantDiscAssessmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CareerController::class, 'home'])->name('career.home');
@@ -36,6 +39,21 @@ Route::middleware('auth')->group(function (): void {
     Route::delete('/candidate/documents/{document}', [CandidateController::class, 'deleteDocument'])->name('candidate.documents.destroy');
     Route::post('/jobs/{job:slug}/apply', [CandidateController::class, 'apply'])->name('jobs.apply');
 
+    // Participant DISC Assessment Flow
+    Route::get('/assessment/disc/{assessment}/instruction', [ParticipantDiscAssessmentController::class, 'instruction'])->name('disc.assessment.instruction');
+    Route::post('/assessment/disc/{assessment}/start', [ParticipantDiscAssessmentController::class, 'startSession'])->name('disc.assessment.start');
+    Route::get('/assessment/disc/take/{token}', [ParticipantDiscAssessmentController::class, 'take'])->name('disc.assessment.take');
+    Route::get('/assessment/disc/completed/{token}', [ParticipantDiscAssessmentController::class, 'completed'])->name('disc.assessment.completed');
+
+    // Secure Participant API Endpoints
+    Route::prefix('api/disc/session/{token}')->name('api.disc.')->group(function (): void {
+        Route::get('/question', [ParticipantDiscAssessmentController::class, 'getQuestionApi'])->name('question');
+        Route::post('/answer', [ParticipantDiscAssessmentController::class, 'saveAnswerApi'])->name('answer');
+        Route::post('/security-event', [ParticipantDiscAssessmentController::class, 'logSecurityEventApi'])->name('security-event');
+        Route::post('/submit', [ParticipantDiscAssessmentController::class, 'submitSessionApi'])->name('submit');
+    });
+
+    // Admin & HRD DISC Modules
     Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::middleware('permission:view_applications')->group(function (): void {
             Route::get('/applications', [AdminApplicationController::class, 'index'])->name('applications.index');
@@ -66,5 +84,21 @@ Route::middleware('auth')->group(function (): void {
         Route::middleware('permission:manage_users')->post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::middleware('permission:manage_users')->put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::middleware('permission:manage_users')->delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+
+        // DISC Question Bank Management
+        Route::prefix('disc')->name('disc.')->group(function (): void {
+            Route::resource('banks', AdminDiscQuestionBankController::class);
+            Route::get('banks/{bank}/scoring-keys', [AdminDiscQuestionBankController::class, 'scoringKeys'])->name('banks.scoring-keys');
+            Route::put('banks/{bank}/scoring-keys', [AdminDiscQuestionBankController::class, 'updateScoringKeys'])->name('banks.scoring-keys.update');
+            Route::post('banks/{bank}/publish', [AdminDiscQuestionBankController::class, 'publish'])->name('banks.publish');
+            Route::post('banks/{bank}/duplicate', [AdminDiscQuestionBankController::class, 'duplicate'])->name('banks.duplicate');
+
+            // DISC Assessment Management
+            Route::resource('assessments', AdminDiscAssessmentController::class);
+            Route::post('assessments/{assessment}/assign', [AdminDiscAssessmentController::class, 'assignParticipants'])->name('assessments.assign');
+            Route::get('assessments/{assessment}/monitor', [AdminDiscAssessmentController::class, 'monitor'])->name('assessments.monitor');
+            Route::get('results/{session}', [AdminDiscAssessmentController::class, 'resultShow'])->name('results.show');
+            Route::get('sessions/{session}/export-csv', [AdminDiscAssessmentController::class, 'exportSessionCsv'])->name('sessions.export-csv');
+        });
     });
 });

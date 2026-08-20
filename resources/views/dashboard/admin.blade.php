@@ -21,8 +21,12 @@
                             Kelola Pelamar
                             <span>→</span>
                         </a>
-                        <a href="{{ route('admin.jobs.index') }}" class="inline-flex items-center justify-center gap-2 rounded-full border border-[#322d2a]/30 bg-transparent px-[22px] py-[16px] text-sm font-normal tracking-[0.14px] text-[#322d2a] transition hover:border-[#f97316] hover:bg-[#fff3e8] hover:text-[#f97316]">
-                            Kelola Lowongan
+                        <a href="{{ route('admin.disc.assessments.index') }}" class="inline-flex items-center justify-center gap-2 rounded-full border border-[#322d2a]/30 bg-transparent px-[22px] py-[16px] text-sm font-normal tracking-[0.14px] text-[#322d2a] transition hover:border-[#f97316] hover:bg-[#fff3e8] hover:text-[#f97316]">
+                            Asesmen DISC
+                            <span>→</span>
+                        </a>
+                        <a href="{{ route('admin.disc.banks.index') }}" class="inline-flex items-center justify-center gap-2 rounded-full border border-[#322d2a]/30 bg-transparent px-[22px] py-[16px] text-sm font-normal tracking-[0.14px] text-[#322d2a] transition hover:border-[#f97316] hover:bg-[#fff3e8] hover:text-[#f97316]">
+                            Bank Soal
                             <span>→</span>
                         </a>
                     </div>

@@ -65,12 +65,14 @@
                            class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
                             Kelola Lowongan
                         </a>
-                        <!-- @if (auth()->user()->canDo('manage_master_data'))
-                            <a href="{{ route('admin.document-types.index') }}"
-                               class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
-                                Berkas Wajib
-                            </a>
-                        @endif -->
+                        <a href="{{ route('admin.disc.assessments.index') }}"
+                           class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
+                            Asesmen DISC
+                        </a>
+                        <a href="{{ route('admin.disc.banks.index') }}"
+                           class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
+                            Bank Soal
+                        </a>
                         @if (auth()->user()->canDo('manage_users'))
                             <a href="{{ route('admin.users.index') }}"
                                class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">

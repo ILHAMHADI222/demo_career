@@ -103,5 +103,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'PUBLISHED',
             ]
         );
+
+        $this->call(DiscMasterSeeder::class);
     }
 }

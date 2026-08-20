@@ -13,7 +13,20 @@ final class CareerEnums
         'view_documents', 'verify_documents', 'download_documents',
         'manage_interviews', 'evaluate_interviews', 'manage_tests', 'manage_offers', 'manage_talent_pool',
         'view_reports', 'export_reports', 'manage_notifications', 'view_audit_logs', 'manage_master_data', 'manage_settings',
+        'disc.bank.view', 'disc.bank.create', 'disc.bank.update', 'disc.bank.publish', 'disc.bank.archive',
+        'disc.scoring.view', 'disc.scoring.manage',
+        'disc.normalization.view', 'disc.normalization.manage',
+        'disc.profile.view', 'disc.profile.manage',
+        'disc.assessment.create', 'disc.assessment.manage',
+        'disc.result.view', 'disc.result.export',
+        'disc.security.monitor',
     ];
+
+    public const DISC_BANK_STATUSES = ['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED'];
+    public const DISC_ASSESSMENT_STATUSES = ['DRAFT', 'PUBLISHED', 'CLOSED', 'ARCHIVED'];
+    public const DISC_RESULT_VISIBILITIES = ['HRD_ONLY', 'PARTICIPANT_AFTER_COMPLETION', 'PARTICIPANT_AFTER_HRD_APPROVAL'];
+    public const DISC_SESSION_STATUSES = ['INITIALIZED', 'IN_PROGRESS', 'COMPLETED', 'EXPIRED'];
+    public const DISC_FACTORS = ['D', 'I', 'S', 'C', '*'];
 
     public const JOB_STATUSES = ['DRAFT', 'PUBLISHED', 'CLOSED', 'ARCHIVED'];
 
