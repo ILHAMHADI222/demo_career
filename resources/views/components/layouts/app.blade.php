@@ -15,12 +15,12 @@
     <div class="fixed inset-x-0 top-0 -z-10 h-96 bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.24),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(251,191,36,0.18),_transparent_30%)]"></div>
 
 <header class="sticky top-0 z-40 border-b border-white/70 bg-white/85 shadow-sm shadow-slate-200/50 backdrop-blur-xl">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex h-20 items-center justify-between gap-4">
+    <div class="mx-auto max-w-7xl 2xl:max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div class="flex h-20 items-center justify-between gap-2 xl:gap-4">
 
             {{-- Logo & Brand --}}
-            <a href="{{ route('career.home') }}" class="group flex min-w-0 items-center gap-3">
-                <div class="flex h-14 w-14 shrink-0 items-center justify-center">
+            <a href="{{ route('career.home') }}" class="group flex shrink-0 items-center gap-2.5 sm:gap-3">
+                <div class="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center">
                     <img
                         src="{{ asset('assets/images/logo.png') }}"
                         alt="Logo PT Indodata Solusi Persada"
@@ -28,60 +28,58 @@
                     >
                 </div>
 
-                <div class="hidden leading-tight sm:block">
-                    <span class="block text-base font-black tracking-tight text-slate-950">
+                <div class="hidden sm:block leading-tight whitespace-nowrap">
+                    <span class="block text-sm sm:text-base font-black tracking-tight text-slate-950">
                         Career Hallonet
                     </span>
-                    <span class="block text-xs font-semibold uppercase tracking-[0.20em] text-orange-500">
+                    <span class="block text-[10px] sm:text-xs font-semibold uppercase tracking-[0.18em] text-orange-500">
                         PT INDODATA SOLUSI PERSADA
                     </span>
                 </div>
             </a>
 
             {{-- Desktop Navigation --}}
-            <nav class="hidden items-center gap-2 rounded-full border border-slate-200 bg-white/80 p-1 text-sm font-bold text-slate-600 shadow-sm lg:flex">
+            <nav class="hidden items-center gap-1 rounded-full border border-slate-200 bg-white/90 p-1 text-xs xl:text-[13px] font-bold text-slate-600 shadow-sm lg:flex">
                 <a href="{{ route('career.home') }}"
-                   class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
+                   class="whitespace-nowrap rounded-full px-3 py-2 transition {{ request()->routeIs('career.home') ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/20' : 'hover:bg-orange-50 hover:text-orange-500' }}">
                     Home
                 </a>
 
                 <a href="{{ route('jobs.index') }}"
-                   class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
+                   class="whitespace-nowrap rounded-full px-3 py-2 transition {{ request()->routeIs('jobs.*') ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/20' : 'hover:bg-orange-50 hover:text-orange-500' }}">
                     Lowongan
                 </a>
 
                 @auth
                     <a href="{{ route('dashboard') }}"
-                       class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
+                       class="whitespace-nowrap rounded-full px-3 py-2 transition {{ request()->routeIs('dashboard') ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/20' : 'hover:bg-orange-50 hover:text-orange-500' }}">
                         Dashboard
                     </a>
 
                     @if (auth()->user()->hasAnyRole(['SUPERADMIN', 'ADMIN']))
                         <a href="{{ route('admin.applications.index') }}"
-                           class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
+                           class="whitespace-nowrap rounded-full px-3 py-2 transition {{ request()->routeIs('admin.applications.*') ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/20' : 'hover:bg-orange-50 hover:text-orange-500' }}">
                             Pelamar
                         </a>
                         <a href="{{ route('admin.jobs.index') }}"
-                           class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
+                           class="whitespace-nowrap rounded-full px-3 py-2 transition {{ request()->routeIs('admin.jobs.*') ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/20' : 'hover:bg-orange-50 hover:text-orange-500' }}">
                             Kelola Lowongan
                         </a>
                         <a href="{{ route('admin.disc.assessments.index') }}"
-                           class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
+                           class="whitespace-nowrap rounded-full px-3 py-2 transition {{ request()->routeIs('admin.disc.assessments.*') ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/20' : 'hover:bg-orange-50 hover:text-orange-500' }}">
                             Asesmen DISC
                         </a>
                         <a href="{{ route('admin.disc.banks.index') }}"
-                           class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
+                           class="whitespace-nowrap rounded-full px-3 py-2 transition {{ request()->routeIs('admin.disc.banks.*') ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/20' : 'hover:bg-orange-50 hover:text-orange-500' }}">
                             Bank Soal
                         </a>
-                        @if (auth()->user()->canDo('manage_users'))
-                            <a href="{{ route('admin.users.index') }}"
-                               class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
-                                User
-                            </a>
-                        @endif
+                        <a href="{{ route('admin.users.index') }}"
+                           class="whitespace-nowrap rounded-full px-3 py-2 transition {{ request()->routeIs('admin.users.*') ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/20' : 'hover:bg-orange-50 hover:text-orange-500' }}">
+                            User
+                        </a>
                     @else
                         <a href="{{ route('candidate.profile') }}"
-                           class="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-orange-500">
+                           class="whitespace-nowrap rounded-full px-3 py-2 transition {{ request()->routeIs('candidate.profile') ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/20' : 'hover:bg-orange-50 hover:text-orange-500' }}">
                             Profil
                         </a>
                     @endif
@@ -92,27 +90,28 @@
             <div class="flex shrink-0 items-center gap-2">
                 @auth
                     <a href="{{ route('dashboard') }}"
-                       class="hidden rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:border-orange-200 hover:text-orange-500 sm:inline-flex">
-                        {{ auth()->user()->name }}
+                       class="hidden rounded-2xl border border-slate-200 bg-white px-3.5 py-2 text-xs xl:text-sm font-bold text-slate-700 shadow-sm transition hover:border-orange-200 hover:text-orange-500 sm:inline-flex"
+                       title="{{ auth()->user()->name }}">
+                        {{ \Illuminate\Support\Str::before(auth()->user()->name, ' ') }}
                     </a>
 
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="{{ route('logout') }}" class="shrink-0">
                         @csrf
 
                         <button
                             type="submit"
-                            class="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-orange-500">
+                            class="whitespace-nowrap rounded-2xl bg-slate-950 px-3.5 py-2 text-xs xl:text-sm font-bold text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-orange-500">
                             Logout
                         </button>
                     </form>
                 @else
                     <a href="{{ route('login') }}"
-                       class="hidden rounded-2xl px-4 py-2 text-sm font-bold text-slate-700 transition hover:text-orange-500 sm:inline-flex">
+                       class="hidden whitespace-nowrap rounded-2xl px-4 py-2 text-sm font-bold text-slate-700 transition hover:text-orange-500 sm:inline-flex">
                         Login
                     </a>
 
                     <a href="{{ route('register') }}"
-                       class="rounded-2xl bg-orange-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-orange-500/25 transition hover:-translate-y-0.5 hover:bg-orange-600">
+                       class="whitespace-nowrap rounded-2xl bg-orange-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-orange-500/25 transition hover:-translate-y-0.5 hover:bg-orange-600">
                         Daftar
                     </a>
                 @endauth
@@ -158,12 +157,10 @@
                         Bank Soal
                     </a>
 
-                    @if (auth()->user()->canDo('manage_users'))
-                        <a href="{{ route('admin.users.index') }}"
-                           class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
-                            User
-                        </a>
-                    @endif
+                    <a href="{{ route('admin.users.index') }}"
+                       class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
+                        User
+                    </a>
                 @else
                     <a href="{{ route('candidate.profile') }}"
                        class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('candidate.profile') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
