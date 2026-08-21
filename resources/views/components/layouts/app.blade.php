@@ -118,57 +118,59 @@
             </div>
         </div>
 
-        {{-- Mobile Navigation (Horizontally Scrollable) --}}
-        <nav class="flex items-center gap-2 overflow-x-auto border-t border-slate-100 py-2.5 text-xs font-bold text-slate-700 lg:hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            <a href="{{ route('career.home') }}"
-               class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('career.home') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
-                Home
-            </a>
-
-            <a href="{{ route('jobs.index') }}"
-               class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('jobs.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
-                Lowongan
-            </a>
-
-            @auth
-                <a href="{{ route('dashboard') }}"
-                   class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('dashboard') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
-                    Dashboard
+        {{-- Mobile Navigation (Centered when few, Scrollable when many) --}}
+        <div class="overflow-x-auto border-t border-slate-100 py-2.5 lg:hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <nav class="flex min-w-full w-max items-center justify-center gap-2 px-4 text-xs font-bold text-slate-700">
+                <a href="{{ route('career.home') }}"
+                   class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('career.home') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
+                    Home
                 </a>
 
-                @if (auth()->user()->hasAnyRole(['SUPERADMIN', 'ADMIN']))
-                    <a href="{{ route('admin.applications.index') }}"
-                       class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('admin.applications.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
-                        Pelamar
+                <a href="{{ route('jobs.index') }}"
+                   class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('jobs.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
+                    Lowongan
+                </a>
+
+                @auth
+                    <a href="{{ route('dashboard') }}"
+                       class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('dashboard') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
+                        Dashboard
                     </a>
 
-                    <a href="{{ route('admin.jobs.index') }}"
-                       class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('admin.jobs.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
-                        Kelola Lowongan
-                    </a>
+                    @if (auth()->user()->hasAnyRole(['SUPERADMIN', 'ADMIN']))
+                        <a href="{{ route('admin.applications.index') }}"
+                           class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('admin.applications.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
+                            Pelamar
+                        </a>
 
-                    <a href="{{ route('admin.disc.assessments.index') }}"
-                       class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('admin.disc.assessments.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
-                        Asesmen DISC
-                    </a>
+                        <a href="{{ route('admin.jobs.index') }}"
+                           class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('admin.jobs.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
+                            Kelola Lowongan
+                        </a>
 
-                    <a href="{{ route('admin.disc.banks.index') }}"
-                       class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('admin.disc.banks.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
-                        Bank Soal
-                    </a>
+                        <a href="{{ route('admin.disc.assessments.index') }}"
+                           class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('admin.disc.assessments.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
+                            Asesmen DISC
+                        </a>
 
-                    <a href="{{ route('admin.users.index') }}"
-                       class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
-                        User
-                    </a>
-                @else
-                    <a href="{{ route('candidate.profile') }}"
-                       class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('candidate.profile') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
-                        Profil
-                    </a>
-                @endif
-            @endauth
-        </nav>
+                        <a href="{{ route('admin.disc.banks.index') }}"
+                           class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('admin.disc.banks.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
+                            Bank Soal
+                        </a>
+
+                        <a href="{{ route('admin.users.index') }}"
+                           class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
+                            User
+                        </a>
+                    @else
+                        <a href="{{ route('candidate.profile') }}"
+                           class="shrink-0 rounded-full px-4 py-2 transition duration-200 {{ request()->routeIs('candidate.profile') ? 'bg-[#f97316] text-white' : 'bg-slate-100/90 text-slate-700 hover:bg-[#f97316] hover:text-white' }}">
+                            Profil
+                        </a>
+                    @endif
+                @endauth
+            </nav>
+        </div>
     </div>
 </header>
 
