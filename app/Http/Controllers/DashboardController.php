@@ -4,30 +4,56 @@ namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\CandidateProfile;
+use App\Models\Department;
 use App\Models\Interview;
 use App\Models\Job;
 use App\Models\Offer;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): View|RedirectResponse
+    public function __invoke(Request $request): View|RedirectResponse
     {
         $user = auth()->user();
 
         if ($user->hasAnyRole(['SUPERADMIN', 'ADMIN'])) {
-            $allApplications = Application::query()
+            $query = Application::query()
                 ->with([
                     'job.department',
                     'job.division',
                     'candidateProfile.educations',
                     'candidateProfile.experiences',
-                    'candidateProfile.documents.documentType',
-                ])
-                ->latest()
-                ->get();
+                ]);
+
+            if ($request->filled('search')) {
+                $search = $request->string('search')->toString();
+                $query->where(function ($q) use ($search) {
+                    $q->where('application_number', 'like', "%{$search}%")
+                        ->orWhereHas('candidateProfile', function ($qp) use ($search) {
+                            $qp->where('full_name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%")
+                                ->orWhere('whatsapp', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('job', function ($qj) use ($search) {
+                            $qj->where('title', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            if ($request->filled('job_id')) {
+                $query->where('job_id', $request->input('job_id'));
+            }
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->input('status'));
+            }
+
+            $applications = $query->latest()->paginate(5)->withQueryString();
+            $jobsList = Job::query()->orderBy('title')->get();
 
             return view('dashboard.admin', [
                 'activeJobs' => Job::query()->where('status', 'PUBLISHED')->count(),
@@ -40,13 +66,18 @@ class DashboardController extends Controller
                 'hired' => Application::query()->where('status', 'HIRED')->count(),
                 'rejected' => Application::query()->where('status', 'REJECTED')->count(),
                 'totalAdmin' => User::query()->whereHas('roles', fn ($q) => $q->whereIn('name', ['SUPERADMIN', 'ADMIN']))->count(),
-                'recentApplications' => $allApplications->take(12),
-                'allApplications' => $allApplications,
+                'applications' => $applications,
+                'jobsList' => $jobsList,
                 'statusOptions' => [
+                    'DOCUMENT_REVIEW' => 'Review Berkas',
                     'ADMINISTRATIVE_REVIEW' => 'Lolos Administrasi',
                     'TECHNICAL_TEST' => 'Psikotest / Test',
                     'HR_INTERVIEW' => 'Interview HRD',
+                    'USER_INTERVIEW' => 'Interview User',
                     'FINAL_INTERVIEW' => 'Final Interview',
+                    'OFFERING' => 'Offering',
+                    'HIRED' => 'Hired (Diterima)',
+                    'REJECTED' => 'Rejected (Ditolak)',
                 ],
             ]);
         }

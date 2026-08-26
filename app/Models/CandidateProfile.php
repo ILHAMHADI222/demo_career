@@ -27,23 +27,21 @@ class CandidateProfile extends Model
 
     public function recalculateCompletion(): int
     {
-        $fields = ['photo', 'full_name', 'nik', 'birth_place', 'birth_date', 'gender', 'marital_status', 'email', 'phone', 'whatsapp', 'address', 'rt_rw', 'village', 'district', 'province', 'city', 'postal_code', 'driving_license'];
+        $fields = [
+            'photo', 'full_name', 'nik', 'birth_place', 'birth_date', 'gender',
+            'marital_status', 'email', 'phone', 'whatsapp', 'address', 'rt_rw',
+            'village', 'district', 'province', 'city'
+        ];
         $filled = collect($fields)->filter(fn (string $field) => filled($this->{$field}))->count();
 
         $education = $this->educations()->first();
-        $educationFields = ['education_level', 'institution', 'major', 'ipk', 'certification'];
+        $educationFields = ['education_level', 'institution', 'major', 'ipk'];
         $educationFilled = $education
             ? collect($educationFields)->filter(fn (string $field) => filled($education->{$field}))->count()
             : 0;
 
-        $experience = $this->experiences()->first();
-        $experienceFields = ['company_name', 'position', 'work_years'];
-        $experienceFilled = $experience
-            ? collect($experienceFields)->filter(fn (string $field) => filled($experience->{$field}))->count()
-            : 0;
-
-        $totalFields = count($fields) + count($educationFields) + count($experienceFields);
-        $this->profile_completion = (int) round((($filled + $educationFilled + $experienceFilled) / $totalFields) * 100);
+        $totalFields = count($fields) + count($educationFields);
+        $this->profile_completion = (int) min(100, round((($filled + $educationFilled) / $totalFields) * 100));
         $this->save();
 
         return $this->profile_completion;

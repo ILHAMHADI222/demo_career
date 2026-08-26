@@ -1,258 +1,393 @@
-<x-layouts.app :title="$job->title . ' - Career Indodata'">
+<x-layouts.app :title="$job->title . ' - Career PT Indodata Solusi Persada'">
+    {{-- HERO SECTION --}}
+    <section class="bg-[#f0efe9] px-4 pb-6 pt-6 sm:pt-8 text-[#322d2a] sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-[1240px]">
+            {{-- Breadcrumb / Back Link --}}
+            <div class="mb-4">
+                <a
+                    href="{{ route('jobs.index') }}"
+                    class="inline-flex items-center gap-2 rounded-full border border-[#322d2a]/15 bg-white px-4 py-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a] shadow-xs transition hover:border-[#f97316] hover:bg-[#fff8f3] hover:text-[#f97316]"
+                >
+                    <span>←</span>
+                    <span>Kembali ke Semua Lowongan</span>
+                </a>
+            </div>
 
-    {{-- HERO --}}
-    <section class="relative overflow-hidden">
-        <div
-            class="relative bg-cover bg-center bg-no-repeat"
-            style="background-image: url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2000&q=85');"
-        >
-            <div class="absolute inset-0 bg-slate-950/70"></div>
-            <div class="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/35"></div>
+            {{-- Main Hero Banner --}}
+            <div
+                class="relative min-h-[300px] overflow-hidden rounded-[36px] bg-cover bg-center p-6 sm:p-8 md:p-10 lg:min-h-[320px]"
+                style="background-image: url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2000&q=85');"
+            >
+                <div class="absolute inset-0 bg-gradient-to-r from-[#0f0e12]/90 via-[#0f0e12]/75 to-[#0f0e12]/45"></div>
 
-            <div class="absolute -left-24 top-20 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl"></div>
-            <div class="absolute right-10 top-12 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl"></div>
+                <div class="relative z-10 flex h-full flex-col justify-between">
+                    <div>
+                        <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-white/90">
+                            <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                            PT Indodata Solusi Persada • Detail Posisi
+                        </div>
 
-            <div class="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
-                <div class="max-w-4xl">
-                    <a
-                        href="{{ route('jobs.index') }}"
-                        class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-200 backdrop-blur transition hover:bg-white/15 hover:text-orange-300"
-                    >
-                        <span>←</span>
-                        Kembali ke Lowongan
-                    </a>
+                        <div class="mt-3 flex flex-wrap items-center gap-2">
+                            <span class="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-normal uppercase tracking-[0.12em] text-white backdrop-blur-md">
+                                {{ $job->department?->name ?? 'General' }}
+                            </span>
+                            <span class="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-normal uppercase tracking-[0.12em] text-white backdrop-blur-md">
+                                {{ ucwords(str_replace('_', ' ', $job->employment_type)) }}
+                            </span>
+                            <span class="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-normal uppercase tracking-[0.12em] text-white backdrop-blur-md">
+                                {{ ucwords(str_replace('_', ' ', $job->work_arrangement)) }}
+                            </span>
+                            <span class="rounded-full border border-emerald-400/40 bg-emerald-500/20 px-3 py-1 text-xs font-normal uppercase tracking-[0.12em] text-emerald-200 backdrop-blur-md">
+                                Pendaftaran Dibuka
+                            </span>
+                        </div>
 
-                    <div class="mt-4 flex flex-wrap items-center gap-2">
-                        <span class="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-wide text-orange-300 backdrop-blur">
-                            {{ $job->department?->name ?? 'General' }}
-                        </span>
-                        <span class="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-wide text-white backdrop-blur">
-                            {{ ucwords(str_replace('_', ' ', $job->employment_type)) }}
-                        </span>
-                        <span class="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-wide text-white backdrop-blur">
-                            {{ ucwords(str_replace('_', ' ', $job->work_arrangement)) }}
-                        </span>
+                        <h1 class="mt-4 max-w-4xl text-[28px] font-light leading-tight tracking-[0.32px] text-white sm:text-[36px] md:text-[42px]">
+                            {{ $job->title }}
+                        </h1>
                     </div>
 
-                    <h1 class="mt-4 text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
-                        {{ $job->title }}
-                    </h1>
-
-                    <p class="mt-4 max-w-3xl text-sm leading-7 text-slate-200 md:text-base">
-                        {{ $job->description }}
-                    </p>
-
-                    <div class="mt-5 flex flex-wrap gap-2 text-sm font-bold text-slate-200">
-                        <span class="rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur">
-                            {{ $job->location }}
-                        </span>
-                        <span class="rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur">
-                            {{ $job->number_of_openings ?? 1 }} Kebutuhan
-                        </span>
-                        <span class="rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-emerald-200 backdrop-blur">
-                            Pendaftaran Dibuka
-                        </span>
+                    <div class="mt-6 flex flex-wrap items-center gap-2.5 pt-4 border-t border-white/15 text-xs text-white/90">
+                        <div class="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 backdrop-blur-md">
+                            <span class="text-[#f97316]">📍</span>
+                            <span>{{ $job->location }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 backdrop-blur-md">
+                            <span class="text-[#f97316]">👥</span>
+                            <span>{{ $job->number_of_openings ?? 1 }} Formasi Dibutuhkan</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 backdrop-blur-md">
+                            <span class="text-[#f97316]">⏰</span>
+                            <span>Batas Lamaran: {{ optional($job->deadline_at)->format('d M Y') ?? 'Tanpa Batas Waktu' }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+    {{-- MAIN CONTENT GRID --}}
+    <section class="bg-[#f0efe9] px-4 pb-12 text-[#322d2a] sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-[1240px]">
+            <div class="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
 
-    {{-- CONTENT --}}
-    <section class="bg-slate-50 py-8 md:py-10">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="grid gap-5 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+                {{-- LEFT COLUMN: DETAIL SECTIONS --}}
+                <div class="space-y-5">
 
-                {{-- MAIN DETAIL --}}
-                <div class="space-y-4">
+                    {{-- OVERVIEW CARD --}}
+                    <div class="rounded-[36px] border border-white bg-white p-6 sm:p-7 md:p-8 shadow-xs">
+                        <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
+                            <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                            Tentang Pekerjaan
+                        </div>
+                        <h2 class="mt-3 text-[22px] font-light leading-none tracking-[0.24px] text-[#322d2a] md:text-[26px]">
+                            Deskripsi Posisi
+                        </h2>
+                        <div class="mt-4 text-xs sm:text-sm font-normal leading-[1.7] text-[#6f6b67]">
+                            <p class="whitespace-pre-line">{{ $job->description ?: 'Posisi ini bertanggung jawab untuk mendukung operasional dan pengembangan layanan di lingkungan PT Indodata Solusi Persada.' }}</p>
+                        </div>
 
-                    <div class="-mt-14 relative z-20 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-xl shadow-slate-300/25">
-                        <div class="h-1.5 w-full bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500"></div>
-                        <div class="p-5 md:p-6">
-                            <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-500">
-                                Detail Lowongan
-                            </p>
-                            <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950 md:text-3xl">
-                                Informasi posisi
-                            </h2>
-                            <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-                                Pelajari tanggung jawab, kualifikasi, benefit, dan pertanyaan screening sebelum mengirim lamaran Anda.
-                            </p>
+                        {{-- Quick Highlights --}}
+                        <div class="mt-6 grid gap-3 sm:grid-cols-3">
+                            <div class="rounded-[20px] border border-[#322d2a]/10 bg-[#f0efe9] p-3.5">
+                                <p class="text-[10px] font-normal uppercase tracking-[0.12em] text-[#6f6b67]">Mulai Pendaftaran</p>
+                                <p class="mt-1 text-xs sm:text-sm font-semibold text-[#322d2a]">{{ optional($job->registration_start_at)->format('d M Y') ?? 'Sudah Dibuka' }}</p>
+                            </div>
+                            <div class="rounded-[20px] border border-[#322d2a]/10 bg-[#f0efe9] p-3.5">
+                                <p class="text-[10px] font-normal uppercase tracking-[0.12em] text-[#6f6b67]">Batas Akhir</p>
+                                <p class="mt-1 text-xs sm:text-sm font-semibold text-[#322d2a]">{{ optional($job->deadline_at)->format('d M Y') ?? 'Terbuka Terus' }}</p>
+                            </div>
+                            <div class="rounded-[20px] border border-[#f97316]/30 bg-[#fff3e8] p-3.5">
+                                <p class="text-[10px] font-normal uppercase tracking-[0.12em] text-[#f97316]">Status Lowongan</p>
+                                <p class="mt-1 text-xs sm:text-sm font-semibold text-[#f97316]">Pendaftaran Aktif</p>
+                            </div>
+                        </div>
+                    </div>
 
-                            <div class="mt-5 grid gap-3 sm:grid-cols-3">
-                                <div class="rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-100">
-                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Mulai</p>
-                                    <p class="mt-1 text-sm font-black text-slate-800">{{ optional($job->registration_start_at)->format('d M Y') ?? 'Sudah dibuka' }}</p>
+                    {{-- RESPONSIBILITIES CARD --}}
+                    <div class="rounded-[36px] border border-white bg-white p-6 sm:p-7 md:p-8 shadow-xs">
+                        <div class="flex items-start gap-4">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-xs font-normal text-white">
+                                01
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
+                                    <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                                    Peran & Tugas
                                 </div>
-                                <div class="rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-100">
-                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Berakhir</p>
-                                    <p class="mt-1 text-sm font-black text-slate-800">{{ optional($job->deadline_at)->format('d M Y') ?? 'Tanpa batas waktu' }}</p>
-                                </div>
-                                <div class="rounded-2xl bg-orange-50 p-3 ring-1 ring-orange-100">
-                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-400">Status</p>
-                                    <p class="mt-1 text-sm font-black text-orange-600">Open</p>
+                                <h3 class="mt-2 text-[22px] font-light leading-none tracking-[0.24px] text-[#322d2a] md:text-[26px]">
+                                    Tanggung Jawab Utama
+                                </h3>
+                                <div class="prose mt-4 max-w-none text-xs sm:text-sm font-normal leading-[1.7] text-[#6f6b67]">
+                                    {!! nl2br(e($job->responsibilities ?: 'Tanggung jawab lengkap untuk posisi ini akan dipaparkan secara mendalam saat tahap screening dan wawancara lanjutan.')) !!}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    @foreach([
-                        ['title' => 'Tanggung Jawab', 'content' => $job->responsibilities ?: 'Informasi tanggung jawab akan dijelaskan saat proses screening.'],
-                        ['title' => 'Kualifikasi', 'content' => $job->requirements ?: 'Informasi kualifikasi akan disesuaikan dengan kebutuhan posisi.'],
-                        ['title' => 'Benefit', 'content' => $job->benefits ?: 'Benefit akan diinformasikan lebih lanjut saat proses rekrutmen berjalan.'],
-                    ] as $section)
-                        <article class="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm shadow-slate-200/70">
-                            <div class="h-1 w-full bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500"></div>
-                            <div class="p-5 md:p-6">
-                                <div class="flex items-start gap-4">
-                                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-sm font-black text-orange-500 ring-1 ring-orange-100">
-                                        {{ $loop->iteration }}
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <h2 class="text-2xl font-black text-slate-950">{{ $section['title'] }}</h2>
-                                        <div class="prose mt-3 max-w-none text-sm leading-7 text-slate-600 md:text-base">
-                                            {!! nl2br(e($section['content'])) !!}
-                                        </div>
-                                    </div>
+                    {{-- REQUIREMENTS CARD --}}
+                    <div class="rounded-[36px] border border-white bg-white p-6 sm:p-7 md:p-8 shadow-xs">
+                        <div class="flex items-start gap-4">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-xs font-normal text-white">
+                                02
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
+                                    <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                                    Kriteria Pelamar
+                                </div>
+                                <h3 class="mt-2 text-[22px] font-light leading-none tracking-[0.24px] text-[#322d2a] md:text-[26px]">
+                                    Kualifikasi & Persyaratan
+                                </h3>
+                                <div class="prose mt-4 max-w-none text-xs sm:text-sm font-normal leading-[1.7] text-[#6f6b67]">
+                                    {!! nl2br(e($job->requirements ?: 'Kualifikasi disesuaikan dengan kompetensi teknis, latar belakang pendidikan, serta dedikasi dalam bidang terkait.')) !!}
                                 </div>
                             </div>
-                        </article>
-                    @endforeach
+                        </div>
+                    </div>
 
-                    <article class="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm shadow-slate-200/70">
-                        <div class="h-1 w-full bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500"></div>
-                        <div class="p-5 md:p-6">
+                    {{-- BENEFITS CARD --}}
+                    <div class="rounded-[36px] border border-white bg-white p-6 sm:p-7 md:p-8 shadow-xs">
+                        <div class="flex items-start gap-4">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-xs font-normal text-white">
+                                03
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
+                                    <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                                    Fasilitas & Kompensasi
+                                </div>
+                                <h3 class="mt-2 text-[22px] font-light leading-none tracking-[0.24px] text-[#322d2a] md:text-[26px]">
+                                    Benefit yang Didapatkan
+                                </h3>
+                                <div class="prose mt-4 max-w-none text-xs sm:text-sm font-normal leading-[1.7] text-[#6f6b67]">
+                                    {!! nl2br(e($job->benefits ?: 'Benefit kompetitif, lingkungan kerja kolaboratif, serta peluang pengembangan karir profesional.')) !!}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- SCREENING QUESTIONS CARD --}}
+                    @if($job->questions && $job->questions->count() > 0)
+                        <div class="rounded-[36px] border border-white bg-white p-6 sm:p-7 md:p-8 shadow-xs">
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                                 <div>
-                                    <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-500">Screening</p>
-                                    <h2 class="mt-2 text-2xl font-black text-slate-950">Pertanyaan Tambahan</h2>
+                                    <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
+                                        <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                                        Screening Awal
+                                    </div>
+                                    <h3 class="mt-2 text-[22px] font-light leading-none tracking-[0.24px] text-[#322d2a] md:text-[26px]">
+                                        Pertanyaan Tambahan
+                                    </h3>
                                 </div>
-                                <span class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-slate-500">
+                                <span class="rounded-full border border-[#322d2a]/20 bg-[#f0efe9] px-3.5 py-1 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
                                     {{ $job->questions->count() }} Pertanyaan
                                 </span>
                             </div>
 
-                            <div class="mt-4 space-y-3">
-                                @forelse($job->questions as $question)
-                                    <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-                                        <p class="text-sm font-black leading-6 text-slate-950">{{ $question->question }}</p>
-                                        <p class="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                                            {{ $question->type }} {{ $question->required ? '• Wajib' : '• Opsional' }}
-                                        </p>
-                                    </div>
-                                @empty
-                                    <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-7 text-slate-500">
-                                        Belum ada pertanyaan screening tambahan untuk posisi ini.
-                                    </div>
-                                @endforelse
-                            </div>
-                        </div>
-                    </article>
-                </div>
-
-                {{-- SIDEBAR --}}
-                <aside class="space-y-4 lg:sticky lg:top-28">
-                    <div class="-mt-0 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-xl shadow-slate-300/25 lg:-mt-14">
-                        <div class="h-1.5 w-full bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500"></div>
-                        <div class="p-5">
-                            <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-500">Ringkasan</p>
-                            <h2 class="mt-2 text-xl font-black text-slate-950">Ringkasan Posisi</h2>
-
-                            <div class="mt-5 space-y-3 text-sm">
-                                @foreach([
-                                    'Departemen' => $job->department?->name ?? '-',
-                                    'Divisi' => $job->division?->name ?? '-',
-                                    'Posisi' => $job->position?->name ?? '-',
-                                    'Lokasi' => $job->location,
-                                    'Pembukaan' => ($job->number_of_openings ?? 1) . ' kebutuhan',
-                                ] as $label => $value)
-                                    <div class="rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-100">
-                                        <p class="text-xs font-black uppercase tracking-[0.16em] text-slate-400">{{ $label }}</p>
-                                        <p class="mt-1 font-black text-slate-800">{{ $value }}</p>
+                            <div class="mt-5 space-y-3">
+                                @foreach($job->questions as $question)
+                                    <div class="rounded-[20px] border border-[#322d2a]/10 bg-[#f0efe9] p-4">
+                                        <p class="text-sm font-semibold text-[#322d2a]">{{ $loop->iteration }}. {{ $question->question }}</p>
+                                        <div class="mt-2 flex items-center gap-2 text-xs text-[#6f6b67]">
+                                            <span class="rounded-md bg-white px-2 py-0.5 font-mono text-[10px] uppercase font-bold text-[#322d2a] border border-[#322d2a]/10">{{ $question->type }}</span>
+                                            <span>•</span>
+                                            <span class="{{ $question->required ? 'text-[#f97316] font-semibold' : 'text-[#6f6b67]' }}">
+                                                {{ $question->required ? 'Wajib diisi saat seleksi' : 'Opsional' }}
+                                            </span>
+                                        </div>
                                     </div>
                                 @endforeach
+                            </div>
+                        </div>
+                    @endif
 
-                                <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-3">
-                                    <p class="text-xs font-black uppercase tracking-[0.16em] text-emerald-600">Periode Pendaftaran</p>
-                                    <p class="mt-2 text-sm font-bold text-slate-700">Mulai: {{ optional($job->registration_start_at)->format('d M Y H:i') ?? 'Sudah dibuka' }}</p>
-                                    <p class="mt-1 text-sm font-bold text-slate-700">Berakhir: {{ optional($job->deadline_at)->format('d M Y H:i') ?? 'Tanpa batas waktu' }}</p>
-                                    <p class="mt-3 text-xs font-black uppercase tracking-wide text-emerald-700">Status: Pendaftaran sedang dibuka.</p>
-                                </div>
+                    {{-- HELP & SUPPORT CARD (SEBELAH KIRI) --}}
+                    <div class="rounded-[36px] border border-white bg-white p-6 sm:p-7 md:p-8 shadow-xs">
+                        <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
+                            <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                            Bantuan Pelamar
+                        </div>
+                        <h4 class="mt-2 text-lg font-semibold text-[#322d2a]">Butuh Informasi Lebih Lanjut?</h4>
+                        <p class="mt-2 text-xs sm:text-sm font-normal leading-[1.6] text-[#6f6b67]">
+                            Jika Anda mengalami kendala teknis saat mendaftar atau mengunggah berkas, silakan hubungi tim HRD kami melalui email resmi perusahaan.
+                        </p>
+                        <div class="mt-4 rounded-[18px] border border-[#322d2a]/10 bg-[#f0efe9] p-3.5 text-xs text-[#322d2a]">
+                            <p class="font-medium">PT Indodata Solusi Persada</p>
+                            <p class="mt-0.5 text-xs text-[#6f6b67]">hrd@indodata.co.id</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                {{-- RIGHT COLUMN: SIDEBAR --}}
+                <aside class="space-y-6 lg:sticky lg:top-24">
+
+                    {{-- SUMMARY & APPLY CARD --}}
+                    <div class="rounded-[36px] border border-white bg-white p-6 sm:p-7 shadow-xs">
+                        <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
+                            <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                            Informasi Rekrutmen
+                        </div>
+                        <h2 class="mt-2 text-[22px] font-light leading-none tracking-[0.24px] text-[#322d2a]">
+                            Ringkasan Posisi
+                        </h2>
+
+                        <div class="mt-5 space-y-2.5 text-sm">
+                            <div class="flex items-center justify-between rounded-[18px] border border-[#322d2a]/10 bg-[#f0efe9] px-4 py-3">
+                                <span class="text-xs uppercase tracking-[0.12em] text-[#6f6b67]">Departemen</span>
+                                <span class="font-semibold text-[#322d2a]">{{ $job->department?->name ?? '-' }}</span>
+                            </div>
+                            <div class="flex items-center justify-between rounded-[18px] border border-[#322d2a]/10 bg-[#f0efe9] px-4 py-3">
+                                <span class="text-xs uppercase tracking-[0.12em] text-[#6f6b67]">Divisi</span>
+                                <span class="font-semibold text-[#322d2a]">{{ $job->division?->name ?? '-' }}</span>
+                            </div>
+                            <div class="flex items-center justify-between rounded-[18px] border border-[#322d2a]/10 bg-[#f0efe9] px-4 py-3">
+                                <span class="text-xs uppercase tracking-[0.12em] text-[#6f6b67]">Jabatan / Posisi</span>
+                                <span class="font-semibold text-[#322d2a]">{{ $job->position?->name ?? $job->title }}</span>
+                            </div>
+                            <div class="flex items-center justify-between rounded-[18px] border border-[#322d2a]/10 bg-[#f0efe9] px-4 py-3">
+                                <span class="text-xs uppercase tracking-[0.12em] text-[#6f6b67]">Lokasi</span>
+                                <span class="font-semibold text-[#322d2a]">{{ $job->location }}</span>
+                            </div>
+                            <div class="flex items-center justify-between rounded-[18px] border border-[#322d2a]/10 bg-[#f0efe9] px-4 py-3">
+                                <span class="text-xs uppercase tracking-[0.12em] text-[#6f6b67]">Jumlah Kebutuhan</span>
+                                <span class="font-semibold text-[#322d2a]">{{ $job->number_of_openings ?? 1 }} Orang</span>
                             </div>
 
+                            <div class="rounded-[20px] border border-[#f97316]/30 bg-[#fff8f3] p-3.5 text-xs">
+                                <p class="font-semibold text-[#f97316] uppercase tracking-[0.12em]">Jadwal Pendaftaran</p>
+                                <p class="mt-1.5 text-[#322d2a]">
+                                    <span class="font-medium">Mulai:</span> {{ optional($job->registration_start_at)->format('d M Y') ?? 'Sudah dibuka' }}
+                                </p>
+                                <p class="mt-0.5 text-[#322d2a]">
+                                    <span class="font-medium">Berakhir:</span> {{ optional($job->deadline_at)->format('d M Y') ?? 'Tanpa batas waktu' }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- ACTION BUTTONS --}}
+                        <div class="mt-5 pt-4 border-t border-[#322d2a]/10">
                             @auth
                                 @if (auth()->user()->hasAnyRole(['SUPERADMIN', 'ADMIN']))
-                                    <a href="{{ route('admin.applications.index') }}" class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:bg-orange-600">
-                                        Lihat Pelamar
+                                    <a
+                                        href="{{ route('admin.applications.index') }}"
+                                        class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#322d2a] px-5 py-3 text-xs font-normal tracking-[0.14px] text-white transition hover:bg-black"
+                                    >
+                                        <span>Lihat Daftar Pelamar</span>
                                         <span>→</span>
                                     </a>
                                 @else
-                                    <form method="POST" action="{{ route('jobs.apply', $job) }}" class="mt-6">
+                                    <form method="POST" action="{{ route('jobs.apply', $job) }}" onsubmit="return confirm('Apakah Anda yakin ingin mengirim lamaran untuk posisi {{ $job->title }}?')">
                                         @csrf
-                                        <button class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:bg-orange-600">
-                                            Lamar Posisi Ini
+                                        <button
+                                            type="submit"
+                                            class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#f97316] px-5 py-3.5 text-xs font-normal tracking-[0.14px] text-white shadow-sm transition hover:bg-[#ea580c]"
+                                        >
+                                            <span>Lamar Posisi Ini Sekarang</span>
                                             <span>→</span>
                                         </button>
                                     </form>
                                 @endif
                             @else
-                                <a href="{{ route('register') }}" class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:bg-orange-600">
-                                    Daftar untuk Melamar
-                                    <span>→</span>
-                                </a>
+                                <div class="space-y-2">
+                                    <a
+                                        href="{{ route('register') }}"
+                                        class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#f97316] px-5 py-3.5 text-xs font-normal tracking-[0.14px] text-white shadow-sm transition hover:bg-[#ea580c]"
+                                    >
+                                        <span>Daftar Akun untuk Melamar</span>
+                                        <span>→</span>
+                                    </a>
+                                    <a
+                                        href="{{ route('login') }}"
+                                        class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#322d2a]/20 bg-white px-5 py-2.5 text-xs font-normal tracking-[0.12em] uppercase text-[#322d2a] transition hover:bg-[#f0efe9]"
+                                    >
+                                        <span>Sudah punya akun? Masuk</span>
+                                    </a>
+                                </div>
                             @endauth
                         </div>
                     </div>
 
-                    <div class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/70">
-                        <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-500">Tahapan</p>
-                        <h2 class="mt-2 text-xl font-black text-slate-950">Alur Rekrutmen</h2>
-                        <div class="mt-5 space-y-3">
-                            @foreach(['Daftar & lengkapi data', 'Upload berkas PDF', 'Review dokumen HRD', 'Interview / Hiring'] as $step)
-                                <div class="group flex items-center gap-3 rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-200 transition hover:bg-orange-50 hover:ring-orange-100">
-                                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-sm font-black text-white shadow-lg shadow-orange-500/20">
-                                        {{ $loop->iteration }}
+                    {{-- ALUR TAHAPAN REKRUTMEN CARD --}}
+                    <div class="rounded-[36px] border border-white bg-white p-6 sm:p-7 shadow-xs">
+                        <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#322d2a]">
+                            <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                            Tahapan Seleksi
+                        </div>
+                        <h3 class="mt-2 text-[22px] font-light leading-none tracking-[0.24px] text-[#322d2a]">
+                            Alur Rekrutmen
+                        </h3>
+                        <p class="mt-1.5 text-xs font-normal leading-[1.5] text-[#6f6b67]">
+                            Berikut 6 tahapan seleksi terstruktur yang akan Anda lalui:
+                        </p>
+
+                        <div class="mt-4 space-y-2">
+                            @foreach([
+                                ['title' => 'Melengkapi Profile', 'desc' => 'Pengisian data diri, pendidikan, pengalaman, dan berkas CV.'],
+                                ['title' => 'Seleksi Administrasi', 'desc' => 'Verifikasi kualifikasi dan kelengkapan berkas lamaran.'],
+                                ['title' => 'Psikotest', 'desc' => 'Pengerjaan asesmen psikologi dan tes potensi secara online.'],
+                                ['title' => 'Interview HRD', 'desc' => 'Sesi wawancara mendalam terkait profil dan budaya kerja.'],
+                                ['title' => 'Interview User', 'desc' => 'Evaluasi kompetensi teknis bersama tim dan calon atasan.'],
+                                ['title' => 'Offering', 'desc' => 'Penawaran kerja resmi, kompensasi benefit, dan onboarding.']
+                            ] as $step)
+                                <div class="flex items-start justify-between gap-3 rounded-[18px] border border-[#322d2a]/10 bg-[#f0efe9] p-3">
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-medium text-[#322d2a]">{{ $step['title'] }}</p>
+                                        <p class="mt-0.5 text-[11px] font-normal leading-relaxed text-[#6f6b67]">{{ $step['desc'] }}</p>
+                                    </div>
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-[10px] font-normal text-white">
+                                        {{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}
                                     </span>
-                                    <p class="text-sm font-black text-slate-700">{{ $step }}</p>
                                 </div>
                             @endforeach
                         </div>
                     </div>
+
                 </aside>
             </div>
         </div>
     </section>
 
-
-    {{-- BOTTOM CTA --}}
-    <section class="bg-white py-10">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="relative overflow-hidden rounded-[1.5rem] bg-slate-950 px-6 py-8 text-white shadow-2xl md:px-8 lg:flex lg:items-center lg:justify-between">
-                <div class="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-orange-500/20 blur-3xl"></div>
-                <div class="absolute -bottom-24 left-20 h-56 w-56 rounded-full bg-amber-400/10 blur-3xl"></div>
-
+    {{-- BOTTOM CTA BANNER --}}
+    <section class="bg-[#f0efe9] px-4 pb-20 text-[#322d2a] sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-[1240px]">
+            <div class="relative overflow-hidden rounded-[48px] bg-[#0f0e12] p-8 text-white sm:p-12 md:p-16 lg:flex lg:items-center lg:justify-between">
                 <div class="relative z-10 max-w-2xl">
-                    <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-400">Career Indodata</p>
-                    <h2 class="mt-3 text-3xl font-black tracking-tight md:text-4xl">Siap bergabung bersama kami?</h2>
-                    <p class="mt-4 max-w-xl text-sm leading-7 text-slate-300">
-                        Pastikan profil kandidat dan dokumen pendukung Anda sudah lengkap agar proses seleksi berjalan lebih cepat.
+                    <div class="inline-flex items-center gap-2 text-xs font-normal uppercase tracking-[0.12em] text-[#f97316]">
+                        <span class="h-1.5 w-1.5 bg-[#f97316]"></span>
+                        Career Indodata
+                    </div>
+                    <h2 class="mt-4 text-[32px] font-light leading-tight tracking-[0.32px] md:text-[42px]">
+                        Siap memulai karir impian Anda bersama kami?
+                    </h2>
+                    <p class="mt-4 text-sm font-normal leading-[1.6] text-white/80">
+                        Pastikan biodata dan dokumen pendukung Anda telah lengkap agar proses evaluasi administrasi berjalan cepat dan lancar.
                     </p>
                 </div>
 
-                <div class="relative z-10 mt-8 flex flex-wrap gap-3 lg:mt-0">
+                <div class="relative z-10 mt-8 flex flex-wrap items-center gap-3 lg:mt-0">
                     @auth
-                        <a href="{{ route('dashboard') }}" class="rounded-2xl bg-orange-500 px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:bg-orange-600">
+                        <a
+                            href="{{ route('dashboard') }}"
+                            class="inline-flex items-center justify-center rounded-full bg-[#f97316] px-6 py-4 text-sm font-normal tracking-[0.14px] text-white transition hover:bg-[#ea580c]"
+                        >
                             Buka Dashboard
                         </a>
                     @else
-                        <a href="{{ route('register') }}" class="rounded-2xl bg-orange-500 px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:bg-orange-600">
-                            Daftar Kandidat
+                        <a
+                            href="{{ route('register') }}"
+                            class="inline-flex items-center justify-center rounded-full bg-[#f97316] px-6 py-4 text-sm font-normal tracking-[0.14px] text-white transition hover:bg-[#ea580c]"
+                        >
+                            Daftar Sekarang
                         </a>
                     @endauth
 
-                    <a href="{{ route('jobs.index') }}" class="rounded-2xl border border-white/15 bg-white/10 px-6 py-3.5 text-sm font-black text-white transition hover:bg-white/15">
-                        Lowongan Lainnya
+                    <a
+                        href="{{ route('jobs.index') }}"
+                        class="inline-flex items-center justify-center rounded-full border border-white/40 bg-white/10 px-6 py-4 text-sm font-normal tracking-[0.14px] text-white backdrop-blur-md transition hover:bg-white/20"
+                    >
+                        Lihat Posisi Lain
                     </a>
                 </div>
             </div>

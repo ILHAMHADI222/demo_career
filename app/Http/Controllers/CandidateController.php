@@ -53,18 +53,19 @@ class CandidateController extends Controller
             'district' => ['required', 'string', 'max:100'],
             'province' => ['required', 'string', 'max:100'],
             'city' => ['required', 'string', 'max:100'],
-            'postal_code' => ['required', 'string', 'max:20'],
-            'driving_license' => ['required', 'string', 'max:50'],
+            'postal_code' => ['nullable', 'string', 'max:20'],
+            'driving_license' => ['nullable', 'string', 'max:50'],
             'linkedin_url' => ['nullable', 'url', 'max:255'],
             'portfolio_url' => ['nullable', 'url', 'max:255'],
             'education_level' => ['required', 'string', 'max:100'],
             'institution' => ['required', 'string', 'max:255'],
             'major' => ['required', 'string', 'max:255'],
             'ipk' => ['required', 'string', 'max:20'],
-            'certification' => ['required', 'string'],
-            'company_name' => ['required', 'string', 'max:255'],
-            'position' => ['required', 'string', 'max:255'],
-            'work_years' => ['required', 'string', 'max:50'],
+            'certification' => ['nullable', 'string'],
+            'experiences' => ['nullable', 'array'],
+            'experiences.*.company_name' => ['nullable', 'string', 'max:255'],
+            'experiences.*.position' => ['nullable', 'string', 'max:255'],
+            'experiences.*.work_years' => ['nullable', 'string', 'max:50'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'photo_capture' => ['nullable', 'string'],
         ]);
@@ -90,13 +91,47 @@ class CandidateController extends Controller
 
         unset($data['photo_capture']);
 
+        // Uppercase text values (except email, URLs, etc.)
+        $uppercaseFields = [
+            'full_name', 'nik', 'birth_place', 'address', 'rt_rw', 'village',
+            'district', 'province', 'city', 'postal_code', 'driving_license'
+        ];
+        foreach ($uppercaseFields as $field) {
+            if (! empty($data[$field]) && is_string($data[$field])) {
+                $data[$field] = mb_strtoupper(trim($data[$field]), 'UTF-8');
+            }
+        }
+
         $educationData = collect($data)->only(['education_level', 'institution', 'major', 'ipk', 'certification'])->all();
-        $experienceData = collect($data)->only(['company_name', 'position', 'work_years'])->all();
-        $profileData = collect($data)->except(['education_level', 'institution', 'major', 'ipk', 'certification', 'company_name', 'position', 'work_years'])->all();
+        foreach (['institution', 'major', 'ipk', 'certification'] as $f) {
+            if (! empty($educationData[$f]) && is_string($educationData[$f])) {
+                $educationData[$f] = mb_strtoupper(trim($educationData[$f]), 'UTF-8');
+            }
+        }
+
+        $profileData = collect($data)->except(['education_level', 'institution', 'major', 'ipk', 'certification', 'experiences'])->all();
 
         $profile->update($profileData);
         $profile->educations()->updateOrCreate([], $educationData);
-        $profile->experiences()->updateOrCreate([], $experienceData);
+
+        // Process multiple experiences
+        $profile->experiences()->delete();
+        $experiencesInput = $request->input('experiences', []);
+        if (is_array($experiencesInput)) {
+            foreach ($experiencesInput as $exp) {
+                $company = trim($exp['company_name'] ?? '');
+                $pos = trim($exp['position'] ?? '');
+                $years = trim($exp['work_years'] ?? '');
+                if ($company !== '' || $pos !== '' || $years !== '') {
+                    $profile->experiences()->create([
+                        'company_name' => mb_strtoupper($company, 'UTF-8'),
+                        'position' => mb_strtoupper($pos, 'UTF-8'),
+                        'work_years' => mb_strtoupper($years, 'UTF-8'),
+                    ]);
+                }
+            }
+        }
+
         $profile->recalculateCompletion();
 
         if ($profile->user && $profile->user->email !== $data['email']) {
