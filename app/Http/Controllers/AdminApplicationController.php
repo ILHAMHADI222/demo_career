@@ -34,7 +34,7 @@ class AdminApplicationController extends Controller
                     ->orWhereHas('job', fn ($job) => $job->where('title', 'like', "%{$keyword}%"));
             }))
             ->latest()
-            ->paginate(15)
+            ->paginate(5)
             ->withQueryString();
 
         return view('admin.applications.index', ['applications' => $applications, 'statuses' => $statusFilters]);
@@ -42,9 +42,48 @@ class AdminApplicationController extends Controller
 
     public function show(Application $application): View
     {
-        $application->load(['job.department', 'job.division', 'job.position', 'candidateProfile.educations', 'candidateProfile.experiences']);
+        $application->load([
+            'job.department',
+            'job.division',
+            'job.position',
+            'candidateProfile.educations',
+            'candidateProfile.experiences',
+            'candidateProfile.documents.documentType',
+            'candidateProfile.user',
+            'interviews.interviewer',
+            'offer',
+            'tests',
+            'hrNotes.creator',
+            'statusHistories.changedBy',
+        ]);
 
-        return view('admin.applications.show', ['application' => $application]);
+        $interviewers = User::query()
+            ->whereHas('roles', fn ($q) => $q->whereIn('name', ['SUPERADMIN', 'ADMIN']))
+            ->orderBy('name')
+            ->get();
+
+        $statusOptions = [
+            'DRAFT' => 'Draft',
+            'SUBMITTED' => 'Lamaran Dikirim (Submitted)',
+            'DOCUMENT_REVIEW' => 'Review Berkas (Document Review)',
+            'ADMINISTRATIVE_REVIEW' => 'Lolos Administrasi',
+            'TECHNICAL_TEST' => 'Psikotest / Technical Test',
+            'HR_INTERVIEW' => 'Interview HRD',
+            'USER_INTERVIEW' => 'Interview User / Technical',
+            'FINAL_INTERVIEW' => 'Final Interview Management',
+            'MEDICAL_CHECK_UP' => 'Medical Check Up (MCU)',
+            'OFFERING' => 'Offering (Penawaran Kerja)',
+            'HIRED' => 'Hired (Diterima Bekerja)',
+            'REJECTED' => 'Rejected (Ditolak)',
+            'WITHDRAWN' => 'Withdrawn (Mengundurkan Diri)',
+            'CANCELLED' => 'Cancelled (Dibatalkan)',
+        ];
+
+        return view('admin.applications.show', [
+            'application' => $application,
+            'interviewers' => $interviewers,
+            'statusOptions' => $statusOptions,
+        ]);
     }
 
     public function updateStatus(Request $request, Application $application): RedirectResponse
@@ -139,7 +178,80 @@ class AdminApplicationController extends Controller
 
         Interview::query()->create($data + ['application_id' => $application->id, 'status' => 'SCHEDULED']);
 
-        return back()->with('success', 'Jadwal interview berhasil dibuat.');
+        // Auto update application status to matching interview stage if it's currently at earlier stage
+        $targetStatus = match ($data['type']) {
+            'USER_INTERVIEW', 'Interview User', 'Technical Interview' => 'USER_INTERVIEW',
+            'FINAL_INTERVIEW', 'Final Interview', 'Interview Direksi' => 'FINAL_INTERVIEW',
+            default => 'HR_INTERVIEW',
+        };
+
+        if (in_array($application->status, ['DRAFT', 'SUBMITTED', 'DOCUMENT_REVIEW', 'ADMINISTRATIVE_REVIEW', 'TECHNICAL_TEST'])) {
+            $fromStatus = $application->status;
+            $application->forceFill(['status' => $targetStatus])->save();
+            $application->statusHistories()->create([
+                'from_status' => $fromStatus,
+                'to_status' => $targetStatus,
+                'changed_by' => auth()->id(),
+                'reason' => 'SCHEDULED_INTERVIEW',
+                'note' => "Jadwal interview ({$data['type']}) telah dibuat untuk tanggal {$data['scheduled_date']}.",
+                'changed_at' => now(),
+            ]);
+        }
+
+        return back()->with('success', 'Jadwal interview berhasil dibuat dan akan langsung tampil pada dashboard kandidat.');
+    }
+
+    public function updateInterview(Request $request, Application $application, Interview $interview): RedirectResponse
+    {
+        $data = $request->validate([
+            'type' => ['required', 'string', 'max:80'],
+            'interviewer_id' => ['nullable', 'exists:users,id'],
+            'scheduled_date' => ['required', 'date'],
+            'start_time' => ['required'],
+            'end_time' => ['nullable'],
+            'method' => ['required', 'string', 'max:50'],
+            'location' => ['nullable', 'string', 'max:255'],
+            'meeting_url' => ['nullable', 'url', 'max:255'],
+            'instruction' => ['nullable', 'string'],
+            'status' => ['required', 'string', Rule::in(['SCHEDULED', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'RESCHEDULED'])],
+        ]);
+
+        $interview->update($data);
+
+        $application->statusHistories()->create([
+            'from_status' => $application->status,
+            'to_status' => $application->status,
+            'changed_by' => auth()->id(),
+            'reason' => 'RESCHEDULE_INTERVIEW',
+            'note' => "Jadwal interview ({$data['type']}) telah diubah/dijadwalkan ulang ke tanggal {$data['scheduled_date']}.",
+            'changed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Jadwal interview berhasil diperbarui / di-reschedule.');
+    }
+
+    public function destroyInterview(Application $application, Interview $interview): RedirectResponse
+    {
+        $interviewType = $interview->type;
+        $interview->delete();
+
+        $application->statusHistories()->create([
+            'from_status' => $application->status,
+            'to_status' => $application->status,
+            'changed_by' => auth()->id(),
+            'reason' => 'DELETE_INTERVIEW',
+            'note' => "Jadwal interview ({$interviewType}) telah dihapus dari sistem.",
+            'changed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Jadwal interview berhasil dihapus.');
+    }
+
+    public function destroyOffer(Application $application, Offer $offer): RedirectResponse
+    {
+        $offer->delete();
+
+        return back()->with('success', 'Offering berhasil dihapus.');
     }
 
     public function storeTest(Request $request, Application $application): RedirectResponse
@@ -168,11 +280,39 @@ class AdminApplicationController extends Controller
             'start_date' => ['nullable', 'date'],
             'expired_at' => ['nullable', 'date'],
             'note' => ['nullable', 'string'],
+            'status' => ['nullable', 'string', Rule::in(['DRAFT', 'PREPARED', 'SENT', 'ACCEPTED', 'REJECTED'])],
         ]);
 
-        Offer::query()->updateOrCreate(['application_id' => $application->id], $data + ['status' => 'PREPARED']);
+        $offerStatus = $data['status'] ?? 'SENT';
 
-        return back()->with('success', 'Offering berhasil disiapkan.');
+        Offer::query()->updateOrCreate(
+            ['application_id' => $application->id],
+            [
+                'position' => $data['position'],
+                'employment_type' => $data['employment_type'],
+                'salary' => $data['salary'] ?? null,
+                'start_date' => $data['start_date'] ?? null,
+                'expired_at' => $data['expired_at'] ?? null,
+                'note' => $data['note'] ?? null,
+                'status' => $offerStatus,
+                'sent_at' => now(),
+            ]
+        );
+
+        if (!in_array($application->status, ['HIRED', 'REJECTED', 'WITHDRAWN', 'CANCELLED'])) {
+            $fromStatus = $application->status;
+            $application->forceFill(['status' => 'OFFERING'])->save();
+            $application->statusHistories()->create([
+                'from_status' => $fromStatus,
+                'to_status' => 'OFFERING',
+                'changed_by' => auth()->id(),
+                'reason' => 'OFFER_ISSUED',
+                'note' => 'Penawaran kerja (Offering) telah disiapkan dan diterbitkan untuk kandidat.',
+                'changed_at' => now(),
+            ]);
+        }
+
+        return back()->with('success', 'Offering berhasil disiapkan dan akan langsung tampil pada dashboard kandidat.');
     }
 
     public function exportExcel(Request $request): BinaryFileResponse

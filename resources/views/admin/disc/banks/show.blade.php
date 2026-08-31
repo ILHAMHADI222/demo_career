@@ -1,5 +1,5 @@
-<x-layouts.app title="Preview Bank Soal DISC - Career Indodata">
-    <section class="min-h-screen bg-[#f0efe9] px-4 pb-16 pt-28 sm:px-6 lg:px-8">
+<x-layouts.app :title="$bank->name . ' - Bank Soal DISC'">
+    <section class="min-h-screen bg-[#f0efe9] px-4 pb-16 pt-6 sm:pt-8 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-[1240px]">
 
             <div class="mb-6 flex items-center justify-between">

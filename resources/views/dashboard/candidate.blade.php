@@ -60,21 +60,21 @@
                         <div class="space-y-2">
                             <div class="inline-flex items-center gap-2 rounded-full bg-[#f97316] px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow-sm">
                                 <span class="h-2 w-2 rounded-full bg-white animate-ping"></span>
-                                Tahap Psikotest / Test Terbuka
+                                Tahap Psikotes Terbuka
                             </div>
                             <h2 class="text-2xl md:text-3xl font-light text-[#322d2a]">
-                                Soal Psikotest Sudah Siap Dikerjakan
+                                Tes Psikotes Sudah Siap Dikerjakan
                             </h2>
                             <p class="max-w-2xl text-sm leading-relaxed text-[#6f6b67]">
-                                Status lamaran Anda telah diperbarui ke tahap <strong>Psikotest / Test</strong>{{ $technicalTestApp ? ' untuk posisi ' . $technicalTestApp->job->title : '' }}. 
-                                Waktu pengerjaan adalah <strong class="text-rose-600 font-bold">10 Menit</strong> dengan jam berjalan otomatis. Soal akan otomatis ditutup dan jawaban dikunci setelah waktu berakhir.
+                                Status lamaran Anda telah memasuki tahap <strong>Tes Psikotes</strong>{{ $technicalTestApp ? ' untuk posisi ' . $technicalTestApp->job->title : '' }}. 
+                                Tes terdiri dari <strong>3 Sub-Tes Berurutan</strong>: Sub-Tes 1 (Deret Hitung {{ $targetDisc?->duration_stage_1 ?: 10 }} Menit), Sub-Tes 2 (Analogi Verbal {{ $targetDisc?->duration_stage_2 ?: 10 }} Menit), dan Sub-Tes 3 (Tes Kepribadian tanpa batas waktu).
                             </p>
                         </div>
                         <div class="shrink-0 flex flex-col sm:flex-row gap-3 items-center">
                             @if ($targetDisc)
                                 <a href="{{ route('disc.assessment.instruction', $targetDisc) }}"
                                    class="inline-flex items-center justify-center gap-2 rounded-full bg-[#f97316] px-7 py-4 text-sm font-semibold tracking-wide text-white shadow-lg shadow-orange-500/30 transition hover:bg-[#ea580c] hover:scale-105 active:scale-95">
-                                    <span>Mulai Kerjakan Soal Psikotest (10 Menit)</span>
+                                    <span>Mulai Tes Psikotes Sekarang</span>
                                     <span>→</span>
                                 </a>
                             @endif
@@ -191,28 +191,75 @@
                             </h2>
 
                             <p class="mt-4 text-sm font-normal leading-[1.6] tracking-[0.14px] text-[#6f6b67]">
-                                Jadwal interview yang telah dijadwalkan oleh tim recruitment HRD.
+                                Jadwal wawancara resmi yang telah diagendakan oleh tim HRD Rekrutmen.
                             </p>
 
                             <div class="mt-6 space-y-4">
                                 @foreach($upcomingInterviews as $interview)
-                                    <div class="rounded-[28px] border border-[#f97316]/20 bg-[#fff3e8] p-5">
-                                        <div class="flex items-start justify-between gap-4">
+                                    <div class="rounded-[28px] border border-[#f97316]/25 bg-[#fff8f3] p-5 sm:p-6 shadow-sm">
+                                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 border-b border-[#322d2a]/10 pb-4">
                                             <div>
-                                                <p class="font-normal tracking-[0.16px] text-[#322d2a]">
-                                                    {{ $interview->type ?? 'Interview' }}
-                                                </p>
-                                                <p class="mt-2 text-sm font-normal text-[#6f6b67]">
-                                                    Status:
-                                                    <span class="text-[#f97316] font-medium">
-                                                        {{ str($interview->status)->headline() }}
-                                                    </span>
+                                                <div class="inline-flex items-center gap-2 rounded-full bg-[#f97316] px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-white">
+                                                    <span>📅</span> {{ $interview->type ?? 'Interview' }}
+                                                </div>
+                                                <h3 class="mt-2 text-lg font-medium text-[#322d2a]">
+                                                    {{ $interview->application?->job?->title ?? 'Posisi Rekrutmen' }}
+                                                </h3>
+                                                <p class="text-xs text-[#6f6b67]">
+                                                    No. Lamaran: {{ $interview->application?->application_number ?? '-' }}
                                                 </p>
                                             </div>
-                                            <div class="flex h-10 w-10 items-center justify-center rounded-[16px] bg-[#f97316] text-white">
-                                                ◷
+                                            <span class="inline-flex w-fit items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-[#f97316] ring-1 ring-[#f97316]/20">
+                                                <span class="h-1.5 w-1.5 rounded-full bg-[#f97316]"></span>
+                                                {{ str($interview->status)->headline() }}
+                                            </span>
+                                        </div>
+
+                                        <div class="mt-4 grid gap-3 sm:grid-cols-2 rounded-[20px] bg-white p-4 text-xs border border-[#322d2a]/10">
+                                            <div>
+                                                <p class="text-[10px] uppercase tracking-wider text-[#6f6b67]">Waktu Pelaksanaan</p>
+                                                <p class="mt-1 font-semibold text-[#322d2a]">
+                                                    {{ $interview->scheduled_date?->translatedFormat('l, d F Y') ?? $interview->scheduled_date?->format('d M Y') }}
+                                                </p>
+                                                <p class="mt-0.5 text-xs text-[#f97316] font-medium">
+                                                    Pukul {{ substr($interview->start_time, 0, 5) }} {{ $interview->end_time ? '- ' . substr($interview->end_time, 0, 5) : '' }} WIB
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p class="text-[10px] uppercase tracking-wider text-[#6f6b67]">Metode & Pewawancara</p>
+                                                <p class="mt-1 font-semibold text-[#322d2a]">
+                                                    {{ str_contains(strtolower($interview->method), 'online') ? '🌐 Online (Daring)' : '🏢 Tatap Muka (Offline)' }}
+                                                </p>
+                                                <p class="mt-0.5 text-xs text-[#6f6b67]">
+                                                    Interviewer: {{ $interview->interviewer?->name ?? 'Tim HRD' }}
+                                                </p>
                                             </div>
                                         </div>
+
+                                        @if($interview->meeting_url)
+                                            <div class="mt-3 flex items-center justify-between rounded-[18px] bg-white p-3.5 border border-[#322d2a]/10">
+                                                <div class="min-w-0 pr-3">
+                                                    <p class="text-[10px] uppercase tracking-wider text-[#6f6b67]">Tautan Pertemuan Online</p>
+                                                    <p class="truncate text-xs font-mono text-[#f97316]">{{ $interview->meeting_url }}</p>
+                                                </div>
+                                                <a href="{{ $interview->meeting_url }}" target="_blank" rel="noopener noreferrer" class="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[#f97316] px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-[#ea580c]">
+                                                    Buka Link ↗
+                                                </a>
+                                            </div>
+                                        @elseif($interview->location)
+                                            <div class="mt-3 rounded-[18px] bg-white p-3.5 text-xs border border-[#322d2a]/10">
+                                                <p class="text-[10px] uppercase tracking-wider text-[#6f6b67]">Lokasi / Ruangan</p>
+                                                <p class="mt-0.5 font-medium text-[#322d2a]">{{ $interview->location }}</p>
+                                            </div>
+                                        @endif
+
+                                        @if($interview->instruction)
+                                            <div class="mt-3 rounded-[18px] bg-[#fff3e8] p-3.5 text-xs border border-[#f97316]/20">
+                                                <p class="font-semibold text-[#322d2a]">Catatan & Instruksi:</p>
+                                                <p class="mt-1 leading-relaxed text-[#6f6b67]">{{ $interview->instruction }}</p>
+                                            </div>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>
@@ -381,32 +428,68 @@
                             </p>
 
                             <h2 class="mt-4 text-[32px] font-light leading-none tracking-[0.32px] text-[#322d2a]">
-                                Offering
+                                Penawaran Kerja (Offering)
                             </h2>
 
                             <p class="mt-4 text-sm font-normal leading-[1.6] tracking-[0.14px] text-[#6f6b67]">
-                                Informasi penawaran kerja resmi yang diberikan untuk Anda.
+                                Informasi penawaran kerja resmi yang diberikan oleh manajemen ISP.
                             </p>
 
                             <div class="mt-6 space-y-4">
                                 @foreach($offers as $offer)
-                                    <div class="rounded-[28px] border border-[#f97316]/25 bg-[#fff3e8] p-5">
-                                        <div class="flex items-start gap-4">
-                                            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[18px] bg-[#f97316] font-normal text-white">
-                                                ✓
-                                            </div>
+                                    <div class="rounded-[28px] border border-emerald-500/30 bg-gradient-to-br from-emerald-50/50 via-white to-orange-50/30 p-6 shadow-sm">
+                                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 border-b border-[#322d2a]/10 pb-4">
                                             <div>
-                                                <p class="font-normal tracking-[0.16px] text-[#322d2a]">
-                                                    Offer Penawaran Kerja Tersedia
-                                                </p>
-                                                <p class="mt-1 text-sm font-normal text-[#6f6b67]">
-                                                    Nomor Lamaran: {{ $offer->application?->application_number ?? $offer->application_id }}
-                                                </p>
-                                                <p class="mt-2 text-xs font-normal leading-[1.6] text-[#6f6b67]">
-                                                    Silakan periksa detail penawaran kerja dari tim recruitment HRD.
+                                                <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
+                                                    ✓ Surat Penawaran Kerja Resmi
+                                                </span>
+                                                <h3 class="mt-2 text-xl font-medium text-[#322d2a]">
+                                                    {{ $offer->position }}
+                                                </h3>
+                                                <p class="text-xs text-[#6f6b67]">
+                                                    {{ $offer->employment_type }} • No. Lamaran: {{ $offer->application?->application_number ?? '-' }}
                                                 </p>
                                             </div>
+                                            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+                                                {{ str($offer->status)->headline() }}
+                                            </span>
                                         </div>
+
+                                        <div class="mt-4 grid gap-3 sm:grid-cols-2 rounded-[20px] bg-white p-4 text-xs border border-emerald-100 shadow-inner">
+                                            @if($offer->salary)
+                                                <div>
+                                                    <p class="text-[10px] uppercase tracking-wider text-[#6f6b67]">Gaji / Kompensasi</p>
+                                                    <p class="mt-0.5 text-base font-bold text-emerald-700">
+                                                        Rp {{ number_format($offer->salary, 0, ',', '.') }} <span class="text-xs font-normal text-[#6f6b67]">/ bulan</span>
+                                                    </p>
+                                                </div>
+                                            @endif
+
+                                            @if($offer->start_date)
+                                                <div>
+                                                    <p class="text-[10px] uppercase tracking-wider text-[#6f6b67]">Tanggal Mulai Bekerja</p>
+                                                    <p class="mt-0.5 text-sm font-semibold text-[#322d2a]">
+                                                        {{ $offer->start_date->translatedFormat('d F Y') ?? $offer->start_date->format('d M Y') }}
+                                                    </p>
+                                                </div>
+                                            @endif
+
+                                            @if($offer->expired_at)
+                                                <div>
+                                                    <p class="text-[10px] uppercase tracking-wider text-[#6f6b67]">Batas Waktu Konfirmasi</p>
+                                                    <p class="mt-0.5 text-xs font-medium text-rose-600">
+                                                        {{ $offer->expired_at->translatedFormat('d F Y') ?? $offer->expired_at->format('d M Y') }}
+                                                    </p>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        @if($offer->note)
+                                            <div class="mt-3 rounded-[18px] bg-white p-4 text-xs text-[#322d2a] border border-emerald-100">
+                                                <p class="font-semibold text-[#322d2a]">Catatan & Penjelasan Penawaran:</p>
+                                                <p class="mt-1 leading-relaxed text-[#6f6b67] whitespace-pre-line">{{ $offer->note }}</p>
+                                            </div>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>

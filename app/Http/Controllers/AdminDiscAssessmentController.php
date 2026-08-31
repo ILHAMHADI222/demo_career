@@ -6,6 +6,7 @@ use App\Models\Application;
 use App\Models\DiscAssessment;
 use App\Models\DiscAssessmentParticipant;
 use App\Models\DiscAssessmentSession;
+use App\Models\PsikotesStageQuestion;
 use App\Models\QuestionBank;
 use App\Models\User;
 use App\Services\AuditLogger;
@@ -67,7 +68,9 @@ class AdminDiscAssessmentController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', 'unique:disc_assessments,code'],
             'question_bank_id' => ['required', 'exists:question_banks,id'],
-            'duration_minutes' => ['required', 'integer', 'min:5', 'max:180'],
+            'duration_stage_1' => ['required', 'integer', 'min:1', 'max:120'], // Deret Hitung
+            'duration_stage_2' => ['required', 'integer', 'min:1', 'max:120'], // Analogi Verbal
+            'duration_stage_3' => ['nullable', 'integer'], // Untimed / Kepribadian
             'start_at' => ['nullable', 'date'],
             'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
             'randomize_questions' => ['nullable', 'boolean'],
@@ -79,14 +82,18 @@ class AdminDiscAssessmentController extends Controller
         ]);
 
         $bank = QuestionBank::findOrFail($data['question_bank_id']);
+        $totalDuration = ($data['duration_stage_1'] ?? 10) + ($data['duration_stage_2'] ?? 10) + ($data['duration_stage_3'] ?? 0);
 
-        $assessment = DB::transaction(function () use ($data, $bank) {
+        $assessment = DB::transaction(function () use ($data, $bank, $totalDuration) {
             $created = DiscAssessment::create([
                 'title' => $data['title'],
                 'code' => $data['code'],
                 'question_bank_id' => $bank->id,
                 'question_bank_version' => $bank->version,
-                'duration_minutes' => $data['duration_minutes'],
+                'duration_minutes' => $totalDuration > 0 ? $totalDuration : 30,
+                'duration_stage_1' => $data['duration_stage_1'] ?? 10,
+                'duration_stage_2' => $data['duration_stage_2'] ?? 10,
+                'duration_stage_3' => 0, // Tahap 3 selalu tanpa batas waktu
                 'start_at' => $data['start_at'] ?? null,
                 'end_at' => $data['end_at'] ?? null,
                 'randomize_questions' => !empty($data['randomize_questions']),
@@ -108,9 +115,9 @@ class AdminDiscAssessmentController extends Controller
             return $created;
         });
 
-        AuditLogger::log('CREATE_ASSESSMENT', 'DISC', $assessment);
+        AuditLogger::log('CREATE_ASSESSMENT', 'PSIKOTES', $assessment);
 
-        return redirect()->route('admin.disc.assessments.show', $assessment)->with('success', 'Jadwal Asesmen DISC berhasil dibuat.');
+        return redirect()->route('admin.disc.assessments.show', $assessment)->with('success', 'Jadwal Asesmen Psikotes berhasil dibuat.');
     }
 
     public function show(DiscAssessment $assessment): View
@@ -150,7 +157,9 @@ class AdminDiscAssessmentController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', 'unique:disc_assessments,code,' . $assessment->id],
-            'duration_minutes' => ['required', 'integer', 'min:5', 'max:180'],
+            'duration_stage_1' => ['required', 'integer', 'min:1', 'max:120'],
+            'duration_stage_2' => ['required', 'integer', 'min:1', 'max:120'],
+            'duration_stage_3' => ['nullable', 'integer'],
             'start_at' => ['nullable', 'date'],
             'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
             'randomize_questions' => ['nullable', 'boolean'],
@@ -159,10 +168,15 @@ class AdminDiscAssessmentController extends Controller
             'status' => ['required', 'in:DRAFT,PUBLISHED,CLOSED,ARCHIVED'],
         ]);
 
+        $totalDuration = ($data['duration_stage_1'] ?? 10) + ($data['duration_stage_2'] ?? 10) + ($data['duration_stage_3'] ?? 0);
+
         $assessment->update([
             'title' => $data['title'],
             'code' => $data['code'],
-            'duration_minutes' => $data['duration_minutes'],
+            'duration_minutes' => $totalDuration > 0 ? $totalDuration : 30,
+            'duration_stage_1' => $data['duration_stage_1'] ?? 10,
+            'duration_stage_2' => $data['duration_stage_2'] ?? 10,
+            'duration_stage_3' => 0,
             'start_at' => $data['start_at'] ?? null,
             'end_at' => $data['end_at'] ?? null,
             'randomize_questions' => !empty($data['randomize_questions']),
@@ -171,9 +185,9 @@ class AdminDiscAssessmentController extends Controller
             'status' => $data['status'],
         ]);
 
-        AuditLogger::log('UPDATE_ASSESSMENT', 'DISC', $assessment);
+        AuditLogger::log('UPDATE_ASSESSMENT', 'PSIKOTES', $assessment);
 
-        return redirect()->route('admin.disc.assessments.show', $assessment)->with('success', 'Pengaturan Asesmen berhasil diperbarui.');
+        return redirect()->route('admin.disc.assessments.show', $assessment)->with('success', 'Jadwal Asesmen Psikotes berhasil diperbarui.');
     }
 
     public function assignParticipants(Request $request, DiscAssessment $assessment): RedirectResponse
@@ -218,7 +232,8 @@ class AdminDiscAssessmentController extends Controller
     public function resultShow(DiscAssessmentSession $session): View
     {
         $session->load([
-            'assessment.questionBank',
+            'assessment.questionBank.deretQuestions',
+            'assessment.questionBank.analogiQuestions',
             'participant.candidateProfile',
             'answers.question.options',
             'answers.mostOption',
@@ -226,7 +241,16 @@ class AdminDiscAssessmentController extends Controller
             'securityEvents',
         ]);
 
-        return view('admin.disc.results.show', compact('session'));
+        $bank = $session->assessment->questionBank;
+        $deretQuestions = $bank && $bank->deretQuestions->isNotEmpty()
+            ? $bank->deretQuestions
+            : PsikotesStageQuestion::where('stage', 'STAGE_1_DERET')->where('active', true)->orderBy('question_number')->get();
+
+        $analogiQuestions = $bank && $bank->analogiQuestions->isNotEmpty()
+            ? $bank->analogiQuestions
+            : PsikotesStageQuestion::where('stage', 'STAGE_2_ANALOGI')->where('active', true)->orderBy('question_number')->get();
+
+        return view('admin.disc.results.show', compact('session', 'deretQuestions', 'analogiQuestions'));
     }
 
     public function publish(DiscAssessment $assessment): RedirectResponse

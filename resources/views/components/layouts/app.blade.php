@@ -67,7 +67,7 @@
                         </a>
                         <a href="{{ route('admin.disc.assessments.index') }}"
                            class="whitespace-nowrap rounded-full px-3 py-2 transition {{ request()->routeIs('admin.disc.assessments.*') ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/20' : 'hover:bg-orange-50 hover:text-orange-500' }}">
-                            Asesmen DISC
+                            Asesmen
                         </a>
                         <a href="{{ route('admin.disc.banks.index') }}"
                            class="whitespace-nowrap rounded-full px-3 py-2 transition {{ request()->routeIs('admin.disc.banks.*') ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/20' : 'hover:bg-orange-50 hover:text-orange-500' }}">
@@ -191,27 +191,27 @@
         @endif
     </div>
 
-    <main class="min-h-[calc(100vh-20rem)]">{{ $slot }}</main>
+    <main class="min-h-[calc(100vh-18rem)]">{{ $slot }}</main>
 
-<footer class="mt-20 border-t border-white/70 bg-white/85 text-slate-900 shadow-[0_-8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl">
-    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+<footer class="mt-14 sm:mt-16 border-t border-slate-200/80 bg-white/90 text-slate-800 shadow-sm backdrop-blur-md">
+    <div class="mx-auto max-w-7xl 2xl:max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
 
-        <div class="grid gap-8 rounded-[2rem] border border-slate-200 bg-white/80 p-6 shadow-sm md:grid-cols-4 md:p-8">
+        <div class="grid gap-8 rounded-[2rem] border border-slate-200 bg-white/90 p-6 sm:p-8 shadow-sm md:grid-cols-4">
 
-            {{-- Brand --}}
+            {{-- Brand (Matching Navbar Exactly) --}}
             <div class="md:col-span-2">
                 <a href="{{ route('career.home') }}" class="group inline-flex items-center gap-3">
-                    <div class="flex h-14 w-14 shrink-0 items-center justify-center">
+                    <div class="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center">
                         <img
-                            src="{{ asset('assets/images/logo2.png') }}"
+                            src="{{ asset('assets/images/logo.png') }}"
                             alt="Logo PT Indodata Solusi Persada"
                             class="h-full w-full object-contain transition duration-300 group-hover:scale-105"
                         >
                     </div>
 
                     <div class="leading-tight">
-                        <span class="block text-base font-black tracking-tight text-slate-950">
-                            Career Indodata
+                        <span class="block text-base sm:text-lg font-black tracking-tight text-slate-950">
+                            Career Hallonet
                         </span>
                         <span class="block text-xs font-semibold uppercase tracking-[0.18em] text-orange-500">
                             PT INDODATA SOLUSI PERSADA
@@ -219,58 +219,62 @@
                     </div>
                 </a>
 
-                <p class="mt-4 max-w-xl text-sm leading-6 text-slate-500">
-                    Platform rekrutmen terpadu PT INDODATA SOLUSI PERSADA untuk
-                    pendaftaran calon karyawan, unggah berkas PDF, review HRD,
-                    dan tracking progres seleksi.
+                <p class="mt-3.5 max-w-lg text-sm leading-relaxed text-slate-600">
+                    Platform rekrutmen terpadu PT INDODATA SOLUSI PERSADA untuk pendaftaran calon karyawan, seleksi berkas administrasi, asesmen DISC, jadwal interview, dan offering.
                 </p>
             </div>
 
             {{-- Portal --}}
             <div>
-                <h3 class="font-black text-slate-950">
-                    Portal
+                <h3 class="text-sm font-black uppercase tracking-wider text-slate-950">
+                    Portal Karir
                 </h3>
 
-                <div class="mt-4 grid gap-2 text-sm font-semibold text-slate-600">
+                <div class="mt-3.5 grid gap-2 text-sm font-semibold text-slate-600">
                     <a
                         href="{{ route('career.home') }}"
-                        class="rounded-xl px-3 py-2 transition hover:bg-orange-50 hover:text-orange-500"
+                        class="transition hover:text-orange-500"
                     >
                         Beranda
                     </a>
 
                     <a
                         href="{{ route('jobs.index') }}"
-                        class="rounded-xl px-3 py-2 transition hover:bg-orange-50 hover:text-orange-500"
+                        class="transition hover:text-orange-500"
                     >
-                        Lowongan
+                        Lowongan Pekerjaan
                     </a>
 
-                    <a
-                        href="{{ route('register') }}"
-                        class="rounded-xl px-3 py-2 transition hover:bg-orange-50 hover:text-orange-500"
-                    >
-                        Daftar Kandidat
-                    </a>
+                    @guest
+                        <a
+                            href="{{ route('register') }}"
+                            class="transition hover:text-orange-500"
+                        >
+                            Daftar Kandidat
+                        </a>
+                    @else
+                        <a
+                            href="{{ route('dashboard') }}"
+                            class="transition hover:text-orange-500"
+                        >
+                            Dashboard
+                        </a>
+                    @endguest
                 </div>
             </div>
 
             {{-- Kontak --}}
             <div>
-                <h3 class="font-black text-slate-950">
-                    Kontak
+                <h3 class="text-sm font-black uppercase tracking-wider text-slate-950">
+                    Kontak HRD
                 </h3>
 
-                <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p class="text-sm leading-6 text-slate-600">
-                        HR Recruitment<br>
-                        PT INDODATA SOLUSI PERSADA
-                    </p>
-
+                <div class="mt-3.5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">
+                    <p class="font-bold text-slate-900">HR Recruitment Team</p>
+                    <p class="mt-0.5 text-xs text-slate-500">PT Indodata Solusi Persada</p>
                     <a
                         href="mailto:career@indodata.test"
-                        class="mt-2 inline-block text-sm font-semibold text-slate-700 transition hover:text-orange-500"
+                        class="mt-2 inline-block text-xs font-semibold text-orange-600 hover:underline"
                     >
                         career@indodata.test
                     </a>
@@ -280,14 +284,14 @@
         </div>
 
         {{-- Copyright --}}
-        <div class="mt-5 flex flex-col items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 text-xs font-semibold text-slate-500 shadow-sm sm:flex-row">
+        <div class="mt-5 flex flex-col items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/90 px-5 py-3.5 text-xs font-semibold text-slate-600 sm:flex-row">
             <span>
-                © {{ date('Y') }} Career Indodata. By Hallolabs Team.
+                © {{ date('Y') }} Career Hallonet • PT INDODATA SOLUSI PERSADA. All rights reserved.
             </span>
 
             <a
                 href="{{ route('career.home') }}"
-                class="rounded-full border border-slate-200 bg-white px-4 py-2 font-bold text-slate-600 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-500"
+                class="font-bold text-slate-700 transition hover:text-orange-500"
             >
                 Career Indodata
             </a>

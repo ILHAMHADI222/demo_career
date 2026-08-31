@@ -117,8 +117,17 @@ class DiscScoringEngine
             'normalized_scores' => $normalizedScores,
             'profile_code' => $profileData['code'],
             'profile_name' => $profileData['name'],
+            'profile' => [
+                'code' => $profileData['code'],
+                'name' => $profileData['name'],
+            ],
             'interpretation' => $profileData['interpretation'],
         ];
+    }
+
+    public function calculateSessionScore(DiscAssessmentSession $session): array
+    {
+        return $this->processSession($session);
     }
 
     /**

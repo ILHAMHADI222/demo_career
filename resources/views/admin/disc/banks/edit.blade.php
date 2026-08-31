@@ -1,122 +1,353 @@
-<x-layouts.app title="Kelola Bank Soal DISC - Career Indodata">
-    <section class="min-h-screen bg-[#f0efe9] px-4 pb-16 pt-28 sm:px-6 lg:px-8">
+<x-layouts.app title="Kelola Bank Soal - Career Indodata">
+    <section class="min-h-screen bg-[#f0efe9] px-4 pb-12 pt-6 sm:pt-8 text-[#322d2a] sm:px-6 lg:px-8">
         <div class="mx-auto max-w-[1240px]">
 
-            <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+            {{-- TOP ACTION BAR --}}
+            <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <a href="{{ route('admin.disc.banks.index') }}"
-                   class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                   class="inline-flex items-center gap-1.5 rounded-full border border-[#322d2a]/15 bg-white px-4 py-1.5 text-xs font-medium text-[#322d2a] shadow-sm transition hover:bg-[#f0efe9]">
                     ← Kembali ke Bank Soal
                 </a>
 
-                <div class="flex flex-wrap items-center gap-3">
-                    @if ($bank->questions->count() < 24)
-                        <form method="POST" action="{{ route('admin.disc.banks.import-standard', $bank) }}" onsubmit="return confirm('Salin 24 butir soal standar DISC ke bank soal ini?')">
-                            @csrf
-                            <button type="submit" class="rounded-full border border-blue-200 bg-blue-50 px-5 py-2.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 shadow-xs">
-                                📥 Salin 24 Soal Standar DISC
-                            </button>
-                        </form>
-                    @endif
+                <div class="flex flex-wrap items-center gap-2">
+                    <form method="POST" action="{{ route('admin.disc.banks.import-standard', $bank) }}" onsubmit="return confirm('Salin seluruh paket soal standar (25 Deret, 50 Analogi, 24 Kepribadian) ke bank soal ini?')">
+                        @csrf
+                        <button type="submit" class="rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 shadow-xs">
+                            📥 Salin Paket Standar (99 Soal)
+                        </button>
+                    </form>
 
                     <a href="{{ route('admin.disc.banks.scoring-keys', $bank) }}"
-                       class="rounded-full border border-orange-200 bg-orange-50 px-5 py-2.5 text-xs font-semibold text-[#f97316] transition hover:bg-orange-100">
-                        ⚡ Edit Matriks Kunci Scoring
+                       class="rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100">
+                        ⚡ Kunci Scoring Kepribadian
                     </a>
 
                     @if ($bank->status !== 'PUBLISHED')
                         <form method="POST" action="{{ route('admin.disc.banks.publish', $bank) }}">
                             @csrf
                             <button type="submit"
-                                    class="rounded-full bg-emerald-600 px-6 py-2.5 text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700">
+                                    class="rounded-full bg-emerald-600 px-5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700">
                                 ✓ Publikasikan Bank Soal
                             </button>
                         </form>
                     @else
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-4 py-2 text-xs font-semibold text-emerald-800">
-                            ● Status: PUBLISHED
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3.5 py-1 text-xs font-semibold text-emerald-700">
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> PUBLISHED
                         </span>
                     @endif
                 </div>
             </div>
 
             {{-- METADATA CARD --}}
-            <div class="rounded-[40px] border border-white/80 bg-white p-8 shadow-sm">
+            <div class="rounded-[28px] sm:rounded-[32px] border border-white bg-white p-5 sm:p-6 shadow-sm">
                 <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <span class="rounded-md bg-slate-100 px-2.5 py-1 font-mono text-xs font-bold text-slate-700">{{ $bank->code }}</span>
-                        <span class="ml-2 text-xs text-slate-500">Versi {{ $bank->version }}</span>
-                        <h1 class="mt-2 text-2xl font-light text-[#322d2a] md:text-3xl">
+                        <div class="flex items-center gap-2">
+                            <span class="rounded-md bg-[#f0efe9] px-2.5 py-0.5 font-mono text-xs font-bold text-[#322d2a]">{{ $bank->code }}</span>
+                            <span class="text-xs text-[#6f6b67]">Versi {{ $bank->version }}</span>
+                        </div>
+                        <h1 class="mt-1.5 text-xl sm:text-2xl font-light text-[#322d2a]">
                             {{ $bank->name }}
                         </h1>
-                        <p class="mt-1 text-sm text-slate-500">
-                            {{ $bank->description ?? 'Tidak ada catatan deskripsi.' }}
+                        <p class="mt-1 text-xs text-[#6f6b67]">
+                            {{ $bank->description ?? 'Paket 3 Sub-Tes Psikotes Standar PT Indodata Solusi Persada.' }}
                         </p>
                     </div>
 
-                    <div class="flex items-center gap-6 rounded-3xl bg-slate-50 p-5">
-                        <div class="text-center">
-                            <p class="text-xs uppercase text-slate-500">Total Butir Soal</p>
-                            <p class="text-2xl font-light text-[#322d2a]">{{ $bank->questions->count() }} <span class="text-xs text-slate-400">/ 24</span></p>
+                    <div class="flex flex-wrap items-center gap-2 rounded-[20px] bg-[#f0efe9] p-3 text-xs">
+                        <div class="text-center px-3 py-1 bg-white rounded-[14px]">
+                            <p class="text-[10px] text-[#6f6b67]">1. Deret</p>
+                            <p class="font-bold text-blue-700">{{ $bank->deretQuestions->count() }} / 25</p>
                         </div>
-                        <div class="h-8 w-px bg-slate-200"></div>
-                        <div class="text-center">
-                            <p class="text-xs uppercase text-slate-500">Status</p>
-                            <p class="text-sm font-semibold {{ $bank->status === 'PUBLISHED' ? 'text-emerald-600' : 'text-amber-600' }}">{{ $bank->status }}</p>
+                        <div class="text-center px-3 py-1 bg-white rounded-[14px]">
+                            <p class="text-[10px] text-[#6f6b67]">2. Analogi</p>
+                            <p class="font-bold text-emerald-700">{{ $bank->analogiQuestions->count() }} / 50</p>
+                        </div>
+                        <div class="text-center px-3 py-1 bg-white rounded-[14px]">
+                            <p class="text-[10px] text-[#6f6b67]">3. Kepribadian</p>
+                            <p class="font-bold text-purple-700">{{ $bank->questions->count() }} / 24</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- FORM TAMBAH BUTIR SOAL --}}
-            <div class="mt-8 rounded-[40px] border border-orange-200 bg-gradient-to-br from-[#fff7f0] via-white to-white p-8 shadow-sm">
-                <div class="flex items-center justify-between border-b border-orange-100 pb-4">
-                    <div>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#f97316]">
-                            Formulir Pembuatan Soal
-                        </span>
-                        <h3 class="mt-2 text-xl font-light text-[#322d2a]">
-                            + Tambah Butir Soal Baru (4 Pilihan Pernyataan)
-                        </h3>
-                    </div>
-                </div>
+            {{-- 3 SUBTEST TABS NAVIGATION --}}
+            <div class="mt-6">
+                <div class="flex flex-wrap gap-2 border-b border-[#322d2a]/10 pb-3" x-data="{ tab: 'deret' }">
 
-                <form method="POST" action="{{ route('admin.disc.banks.questions.store', $bank) }}" class="mt-6 space-y-6">
-                    @csrf
-
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700">Nomor Soal</label>
-                            <input type="number" name="question_number" value="{{ $bank->questions->count() + 1 }}" min="1" max="50" required
-                                   class="mt-1 w-full rounded-2xl border border-slate-200 bg-white p-3 font-mono text-sm font-bold text-slate-800 focus:border-[#f97316] focus:outline-none">
+                    {{-- TAB 1: DERET HITUNG --}}
+                    <div class="w-full space-y-5">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">1</span>
+                                <h2 class="text-lg font-medium text-[#322d2a]">Sub-Tes 1: Deret Hitung ({{ $bank->deretQuestions->count() }} Soal)</h2>
+                            </div>
+                            <span class="rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-semibold text-blue-800">
+                                ⏱ Durasi Default: 10 Menit (Target: 25 Soal)
+                            </span>
                         </div>
 
-                        <div class="sm:col-span-2">
-                            <label class="block text-xs font-bold text-slate-700">Instruksi Soal</label>
-                            <input type="text" name="instruction" value="Pilihlah satu pernyataan yang PALING menggambarkan diri Anda (P), dan satu pernyataan yang PALING TIDAK menggambarkan diri Anda (T)."
-                                   class="mt-1 w-full rounded-2xl border border-slate-200 bg-white p-3 text-xs text-slate-800 focus:border-[#f97316] focus:outline-none">
+                        {{-- FORM TAMBAH SOAL DERET --}}
+                        <details class="group rounded-[20px] border border-blue-200 bg-white p-4 shadow-xs">
+                            <summary class="flex cursor-pointer items-center justify-between font-semibold text-xs text-blue-700 hover:text-blue-900">
+                                <span>➕ Tambah Butir Soal Deret Hitung Baru (Manual)</span>
+                                <span class="transition group-open:rotate-180">▼</span>
+                            </summary>
+                            <form method="POST" action="{{ route('admin.disc.banks.stage-questions.store', $bank) }}" class="mt-4 space-y-3 pt-3 border-t border-blue-100 text-xs">
+                                @csrf
+                                <input type="hidden" name="stage" value="STAGE_1_DERET">
+                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                    <div>
+                                        <label class="block font-medium text-[#322d2a] mb-1">Nomor Soal *</label>
+                                        <input type="number" name="question_number" min="1" value="{{ $bank->deretQuestions->count() + 1 }}" required
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs focus:border-blue-500 focus:outline-hidden">
+                                    </div>
+                                    <div class="sm:col-span-3">
+                                        <label class="block font-medium text-[#322d2a] mb-1">Pola Barisan / Deret Angka * (Contoh: 3, 6, 9, 12, ...)</label>
+                                        <input type="text" name="question_text" placeholder="Contoh: 6  9  12  15  18  ..." required
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs font-mono focus:border-blue-500 focus:outline-hidden">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block font-medium text-[#322d2a] mb-1">Kunci Angka 1 (Wajib) *</label>
+                                        <input type="text" name="correct_answer_1" placeholder="Contoh: 21" required
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs font-mono focus:border-blue-500 focus:outline-hidden">
+                                    </div>
+                                    <div>
+                                        <label class="block font-medium text-[#322d2a] mb-1">Kunci Angka 2 (Opsional jika 2 angka)</label>
+                                        <input type="text" name="correct_answer_2" placeholder="Contoh: 24"
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs font-mono focus:border-blue-500 focus:outline-hidden">
+                                    </div>
+                                    <div>
+                                        <label class="block font-medium text-[#322d2a] mb-1">Penjelasan Pola (Opsional)</label>
+                                        <input type="text" name="explanation" placeholder="Pola: +3 tiap langkah"
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs focus:border-blue-500 focus:outline-hidden">
+                                    </div>
+                                </div>
+                                <div class="flex justify-end pt-1">
+                                    <button type="submit" class="rounded-full bg-blue-600 px-5 py-1.5 font-bold text-white shadow-xs hover:bg-blue-700">
+                                        Simpan Soal Deret
+                                    </button>
+                                </div>
+                            </form>
+                        </details>
+
+                        {{-- DAFTAR SOAL DERET HITUNG --}}
+                        <div class="overflow-hidden rounded-[24px] border border-white bg-white shadow-sm">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-[#322d2a]/10 text-xs">
+                                    <thead class="bg-[#322d2a] text-left text-[11px] font-normal uppercase tracking-wider text-white">
+                                        <tr>
+                                            <th class="px-4 py-3">No</th>
+                                            <th class="px-4 py-3">Pola Deret Angka</th>
+                                            <th class="px-4 py-3">Kunci Angka 1</th>
+                                            <th class="px-4 py-3">Kunci Angka 2</th>
+                                            <th class="px-4 py-3">Penjelasan Pola</th>
+                                            <th class="px-4 py-3 text-right">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-[#322d2a]/10 bg-white">
+                                        @forelse($bank->deretQuestions as $dq)
+                                            <tr class="transition hover:bg-blue-50/40">
+                                                <td class="px-4 py-3 font-bold text-[#322d2a]">{{ $dq->question_number }}</td>
+                                                <td class="px-4 py-3 font-mono font-bold text-[#322d2a]">{{ $dq->question_text }}</td>
+                                                <td class="px-4 py-3"><span class="rounded bg-blue-100 px-2 py-0.5 font-mono font-bold text-blue-900">{{ $dq->correct_answer_1 }}</span></td>
+                                                <td class="px-4 py-3"><span class="rounded bg-blue-100 px-2 py-0.5 font-mono font-bold text-blue-900">{{ $dq->correct_answer_2 ?? '-' }}</span></td>
+                                                <td class="px-4 py-3 text-[#6f6b67] text-[11px]">{{ $dq->explanation ?? '-' }}</td>
+                                                <td class="px-4 py-3 text-right">
+                                                    <form method="POST" action="{{ route('admin.disc.banks.stage-questions.destroy', [$bank, $dq]) }}" onsubmit="return confirm('Hapus butir soal deret ini?')" class="inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-rose-600 hover:underline">Hapus</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="px-4 py-6 text-center text-xs text-[#6f6b67]">Belum ada soal deret hitung. Klik 'Salin Paket Standar' di atas atau tambah secara manual.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="space-y-4">
-                        <label class="block text-xs font-bold text-slate-700">4 Pilihan Pernyataan & Kunci Most/Least</label>
+                        {{-- TAB 2: ANALOGI VERBAL --}}
+                        <div class="mt-8 flex flex-wrap items-center justify-between gap-3 pt-6 border-t border-[#322d2a]/10">
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">2</span>
+                                <h2 class="text-lg font-medium text-[#322d2a]">Sub-Tes 2: Analogi Verbal ({{ $bank->analogiQuestions->count() }} Soal)</h2>
+                            </div>
+                            <span class="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-800">
+                                ⏱ Durasi Default: 10 Menit (Target: 50 Soal)
+                            </span>
+                        </div>
 
-                        @php
-                            $labels = ['A', 'B', 'C', 'D'];
-                        @endphp
+                        {{-- FORM TAMBAH SOAL ANALOGI --}}
+                        <details class="group rounded-[20px] border border-emerald-200 bg-white p-4 shadow-xs">
+                            <summary class="flex cursor-pointer items-center justify-between font-semibold text-xs text-emerald-700 hover:text-emerald-900">
+                                <span>➕ Tambah Butir Soal Analogi Verbal Baru (Manual)</span>
+                                <span class="transition group-open:rotate-180">▼</span>
+                            </summary>
+                            <form method="POST" action="{{ route('admin.disc.banks.stage-questions.store', $bank) }}" class="mt-4 space-y-3 pt-3 border-t border-emerald-100 text-xs">
+                                @csrf
+                                <input type="hidden" name="stage" value="STAGE_2_ANALOGI">
+                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                    <div>
+                                        <label class="block font-medium text-[#322d2a] mb-1">Nomor Soal *</label>
+                                        <input type="number" name="question_number" min="1" value="{{ $bank->analogiQuestions->count() + 1 }}" required
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs focus:border-emerald-500 focus:outline-hidden">
+                                    </div>
+                                    <div class="sm:col-span-3">
+                                        <label class="block font-medium text-[#322d2a] mb-1">Pertanyaan Analogi * (Contoh: Menghubungkan kata / analogi)</label>
+                                        <input type="text" name="question_text" placeholder="Contoh: Gelap : Terang = Dingin : ..." required
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs focus:border-emerald-500 focus:outline-hidden">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                    <div>
+                                        <label class="block font-medium text-[#322d2a] mb-1">Opsi A *</label>
+                                        <input type="text" name="options[A]" placeholder="Pilihan A" required
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs focus:border-emerald-500 focus:outline-hidden">
+                                    </div>
+                                    <div>
+                                        <label class="block font-medium text-[#322d2a] mb-1">Opsi B *</label>
+                                        <input type="text" name="options[B]" placeholder="Pilihan B" required
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs focus:border-emerald-500 focus:outline-hidden">
+                                    </div>
+                                    <div>
+                                        <label class="block font-medium text-[#322d2a] mb-1">Opsi C *</label>
+                                        <input type="text" name="options[C]" placeholder="Pilihan C" required
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs focus:border-emerald-500 focus:outline-hidden">
+                                    </div>
+                                    <div>
+                                        <label class="block font-medium text-[#322d2a] mb-1">Opsi D *</label>
+                                        <input type="text" name="options[D]" placeholder="Pilihan D" required
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs focus:border-emerald-500 focus:outline-hidden">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block font-medium text-[#322d2a] mb-1">Kunci Jawaban Benar *</label>
+                                        <select name="correct_answer_1" required
+                                                class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs focus:border-emerald-500 focus:outline-hidden bg-white">
+                                            <option value="A">A</option>
+                                            <option value="B">B</option>
+                                            <option value="C">C</option>
+                                            <option value="D">D</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block font-medium text-[#322d2a] mb-1">Penjelasan (Opsional)</label>
+                                        <input type="text" name="explanation" placeholder="Hubungan antonim/lawan kata"
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs focus:border-emerald-500 focus:outline-hidden">
+                                    </div>
+                                </div>
+                                <div class="flex justify-end pt-1">
+                                    <button type="submit" class="rounded-full bg-emerald-600 px-5 py-1.5 font-bold text-white shadow-xs hover:bg-emerald-700">
+                                        Simpan Soal Analogi
+                                    </button>
+                                </div>
+                            </form>
+                        </details>
 
-                        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                            @foreach ($labels as $idx => $lbl)
-                                <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-xs">
-                                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                                        <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-orange-100 text-xs font-bold text-[#f97316]">
-                                            {{ $lbl }}
-                                        </span>
-                                        <input type="hidden" name="options[{{ $idx }}][label]" value="{{ $lbl }}">
+                        {{-- DAFTAR SOAL ANALOGI VERBAL --}}
+                        <div class="overflow-hidden rounded-[24px] border border-white bg-white shadow-sm">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-[#322d2a]/10 text-xs">
+                                    <thead class="bg-[#322d2a] text-left text-[11px] font-normal uppercase tracking-wider text-white">
+                                        <tr>
+                                            <th class="px-4 py-3">No</th>
+                                            <th class="px-4 py-3">Pertanyaan Analogi</th>
+                                            <th class="px-4 py-3">Pilihan Opsi (A, B, C, D)</th>
+                                            <th class="px-4 py-3">Kunci Benar</th>
+                                            <th class="px-4 py-3 text-right">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-[#322d2a]/10 bg-white">
+                                        @forelse($bank->analogiQuestions as $aq)
+                                            <tr class="transition hover:bg-emerald-50/40">
+                                                <td class="px-4 py-3 font-bold text-[#322d2a]">{{ $aq->question_number }}</td>
+                                                <td class="px-4 py-3 font-medium text-[#322d2a]">{{ $aq->question_text }}</td>
+                                                <td class="px-4 py-3">
+                                                    <div class="grid grid-cols-2 gap-1 text-[11px]">
+                                                        @foreach($aq->options_json ?? [] as $k => $v)
+                                                            <span class="{{ $aq->correct_answer_1 === $k ? 'font-bold text-emerald-700 bg-emerald-100 rounded px-1' : 'text-[#6f6b67]' }}">
+                                                                <strong>{{ $k }}.</strong> {{ $v }}
+                                                            </span>
+                                                        @endforeach
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3">
+                                                    <span class="rounded-full bg-emerald-600 px-2.5 py-0.5 font-bold text-white text-[11px]">{{ $aq->correct_answer_1 }}</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-right">
+                                                    <form method="POST" action="{{ route('admin.disc.banks.stage-questions.destroy', [$bank, $aq]) }}" onsubmit="return confirm('Hapus butir soal analogi ini?')" class="inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-rose-600 hover:underline">Hapus</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="px-4 py-6 text-center text-xs text-[#6f6b67]">Belum ada soal analogi verbal. Klik 'Salin Paket Standar' di atas atau tambah secara manual.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
 
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="text-[11px] font-bold text-blue-700">Most:</span>
-                                                <select name="options[{{ $idx }}][most_mapping]" required class="rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 font-mono text-xs font-bold text-blue-800 focus:outline-none">
+                        {{-- TAB 3: TES KEPRIBADIAN (24 SOAL) --}}
+                        <div class="mt-8 flex flex-wrap items-center justify-between gap-3 pt-6 border-t border-[#322d2a]/10">
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-purple-600 text-xs font-bold text-white">3</span>
+                                <h2 class="text-lg font-medium text-[#322d2a]">Sub-Tes 3: Tes Kepribadian ({{ $bank->questions->count() }} Soal Most/Least)</h2>
+                            </div>
+                            <span class="rounded-full bg-purple-50 border border-purple-200 px-3 py-1 text-xs font-semibold text-purple-800">
+                                ✨ Tanpa Batas Waktu (Target: 24 Soal)
+                            </span>
+                        </div>
+
+                        {{-- FORM TAMBAH SOAL KEPRIBADIAN --}}
+                        <details class="group rounded-[20px] border border-purple-200 bg-white p-4 shadow-xs">
+                            <summary class="flex cursor-pointer items-center justify-between font-semibold text-xs text-purple-700 hover:text-purple-900">
+                                <span>➕ Tambah Butir Soal Kepribadian Baru (Manual)</span>
+                                <span class="transition group-open:rotate-180">▼</span>
+                            </summary>
+                            <form method="POST" action="{{ route('admin.disc.banks.questions.store', $bank) }}" class="mt-4 space-y-3 pt-3 border-t border-purple-100 text-xs">
+                                @csrf
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block font-medium text-[#322d2a] mb-1">Nomor Butir Soal * (1 - 50)</label>
+                                        <input type="number" name="question_number" min="1" max="50" value="{{ $bank->questions->count() + 1 }}" required
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs focus:border-purple-500 focus:outline-hidden">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label class="block font-medium text-[#322d2a] mb-1">Instruksi Khusus (Opsional)</label>
+                                        <input type="text" name="instruction" placeholder="Pilih 1 pernyataan yang Paling menggambarkan dan 1 yang Kurang menggambarkan"
+                                               class="w-full rounded-xl border border-[#322d2a]/20 px-3 py-2 text-xs focus:border-purple-500 focus:outline-hidden">
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2.5">
+                                    <p class="font-semibold text-[#322d2a]">4 Pilihan Pernyataan & Pemetaan DISC:</p>
+                                    @for($i = 0; $i < 4; $i++)
+                                        @php $labels = ['A', 'B', 'C', 'D']; @endphp
+                                        <div class="grid grid-cols-12 gap-2 rounded-xl bg-purple-50/50 p-2.5 border border-purple-100 items-center">
+                                            <div class="col-span-1 text-center font-bold text-purple-900">
+                                                {{ $labels[$i] }}
+                                                <input type="hidden" name="options[{{ $i }}][label]" value="{{ $labels[$i] }}">
+                                            </div>
+                                            <div class="col-span-7">
+                                                <input type="text" name="options[{{ $i }}][statement]" placeholder="Pernyataan {{ $labels[$i] }}..." required
+                                                       class="w-full rounded-lg border border-[#322d2a]/20 px-3 py-1.5 text-xs bg-white focus:border-purple-500 focus:outline-hidden">
+                                            </div>
+                                            <div class="col-span-2">
+                                                <select name="options[{{ $i }}][most_mapping]" required class="w-full rounded-lg border border-[#322d2a]/20 px-2 py-1.5 text-xs bg-white">
+                                                    <option value="" disabled selected>Most (M)</option>
                                                     <option value="D">D</option>
                                                     <option value="I">I</option>
                                                     <option value="S">S</option>
@@ -124,9 +355,9 @@
                                                     <option value="*">*</option>
                                                 </select>
                                             </div>
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="text-[11px] font-bold text-rose-700">Least:</span>
-                                                <select name="options[{{ $idx }}][least_mapping]" required class="rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 font-mono text-xs font-bold text-rose-800 focus:outline-none">
+                                            <div class="col-span-2">
+                                                <select name="options[{{ $i }}][least_mapping]" required class="w-full rounded-lg border border-[#322d2a]/20 px-2 py-1.5 text-xs bg-white">
+                                                    <option value="" disabled selected>Least (L)</option>
                                                     <option value="D">D</option>
                                                     <option value="I">I</option>
                                                     <option value="S">S</option>
@@ -135,83 +366,49 @@
                                                 </select>
                                             </div>
                                         </div>
+                                    @endfor
+                                </div>
+
+                                <div class="flex justify-end pt-1">
+                                    <button type="submit" class="rounded-full bg-purple-600 px-5 py-1.5 font-bold text-white shadow-xs hover:bg-purple-700">
+                                        Simpan Soal Kepribadian
+                                    </button>
+                                </div>
+                            </form>
+                        </details>
+
+                        {{-- DAFTAR SOAL KEPRIBADIAN --}}
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            @forelse($bank->questions as $q)
+                                <div class="rounded-[20px] border border-white bg-white p-4 shadow-sm">
+                                    <div class="flex items-center justify-between border-b border-[#322d2a]/10 pb-2">
+                                        <span class="font-bold text-[#322d2a]">Nomor {{ $q->question_number }}</span>
+                                        <form method="POST" action="{{ route('admin.disc.banks.questions.destroy', [$bank, $q]) }}" onsubmit="return confirm('Hapus butir soal kepribadian ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="text-[11px] text-rose-600 hover:underline">Hapus</button>
+                                        </form>
                                     </div>
-
-                                    <div class="mt-3">
-                                        <input type="text" name="options[{{ $idx }}][statement]" required placeholder="Ketik pernyataan opsi {{ $lbl }}..."
-                                               class="w-full rounded-xl border border-slate-200 bg-slate-50/50 p-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-[#f97316] focus:bg-white focus:outline-none">
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end pt-2">
-                        <button type="submit" class="inline-flex items-center gap-2 rounded-full bg-[#f97316] px-8 py-3 text-xs font-semibold text-white shadow-md shadow-orange-500/20 transition hover:bg-[#ea580c]">
-                            <span>+ Simpan Butir Soal Ini</span>
-                            <span>→</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            {{-- 24 QUESTIONS PREVIEW & LIST --}}
-            <div class="mt-8">
-                <div class="mb-4 flex items-center justify-between">
-                    <h2 class="text-lg font-light text-[#322d2a]">
-                        Daftar Butir Pertanyaan ({{ $bank->questions->count() }} Soal)
-                    </h2>
-                    <p class="text-xs text-slate-500">
-                        Setiap soal wajib memiliki 4 opsi dengan pemetaan Most dan Least (D, I, S, C, atau *).
-                    </p>
-                </div>
-
-                <div class="space-y-4">
-                    @forelse ($bank->questions as $q)
-                        <div class="overflow-hidden rounded-3xl border border-white/80 bg-white p-6 shadow-sm">
-                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                                <div class="flex items-center gap-3">
-                                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#322d2a] text-xs font-semibold text-white">
-                                        {{ $q->question_number }}
-                                    </span>
-                                    <span class="text-xs font-medium text-slate-700">Pertanyaan No. {{ $q->question_number }}</span>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">4 Opsi Lengkap</span>
-                                    <form method="POST" action="{{ route('admin.disc.banks.questions.destroy', [$bank, $q]) }}" onsubmit="return confirm('Hapus butir soal No. {{ $q->question_number }}?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] font-bold text-rose-700 hover:bg-rose-600 hover:text-white transition">
-                                            ✕ Hapus
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                                @foreach ($q->options as $opt)
-                                    <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-                                        <div class="flex items-center justify-between">
-                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-orange-100 text-xs font-bold text-[#f97316]">
-                                                {{ $opt->option_label }}
-                                            </span>
-                                            <div class="flex gap-2 font-mono text-[11px] font-bold">
-                                                <span class="rounded bg-blue-50 px-1.5 py-0.5 text-blue-700" title="Most Mapping">M: {{ $opt->most_mapping }}</span>
-                                                <span class="rounded bg-rose-50 px-1.5 py-0.5 text-rose-700" title="Least Mapping">L: {{ $opt->least_mapping }}</span>
+                                    <div class="mt-2.5 space-y-1.5 text-[11px]">
+                                        @foreach($q->options as $opt)
+                                            <div class="flex items-center justify-between rounded-lg bg-[#f0efe9] p-2">
+                                                <span class="text-[#322d2a]">{{ $opt->statement }}</span>
+                                                <div class="flex items-center gap-2 text-[10px] font-mono">
+                                                    <span class="text-blue-700">M: {{ $opt->most_mapping }}</span>
+                                                    <span class="text-rose-700">L: {{ $opt->least_mapping }}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <p class="mt-3 text-xs leading-relaxed text-slate-700">
-                                            {{ $opt->statement }}
-                                        </p>
+                                        @endforeach
                                     </div>
-                                @endforeach
-                            </div>
+                                </div>
+                            @empty
+                                <div class="col-span-2 rounded-[20px] border border-white bg-white p-6 text-center text-xs text-[#6f6b67]">
+                                    Belum ada butir soal kepribadian. Klik 'Salin Paket Standar' di atas atau tambah secara manual.
+                                </div>
+                            @endforelse
                         </div>
-                    @empty
-                        <div class="rounded-3xl border border-white/80 bg-white p-12 text-center text-slate-500 shadow-sm">
-                            Belum ada pertanyaan pada bank soal ini. Silakan gunakan formulir di atas untuk menambah soal atau klik <strong>"Salin 24 Soal Standar DISC"</strong>.
-                        </div>
-                    @endforelse
+
+                    </div>
                 </div>
             </div>
 

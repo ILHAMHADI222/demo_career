@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DiscQuestion;
 use App\Models\DiscQuestionOption;
+use App\Models\PsikotesStageQuestion;
 use App\Models\QuestionBank;
 use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
@@ -19,7 +20,7 @@ class AdminDiscQuestionBankController extends Controller
         $keyword = $request->string('keyword')->toString();
 
         $banks = QuestionBank::query()
-            ->withCount(['questions', 'assessments'])
+            ->withCount(['questions', 'assessments', 'stageQuestions'])
             ->with(['creator'])
             ->when($status, fn ($q) => $q->where('status', $status))
             ->when($keyword, fn ($q) => $q->where(fn ($sub) => $sub->where('name', 'like', "%{$keyword}%")->orWhere('code', 'like', "%{$keyword}%")))
@@ -52,26 +53,26 @@ class AdminDiscQuestionBankController extends Controller
         ]);
 
         $bank = QuestionBank::create($data + [
-            'assessment_type' => 'DISC',
+            'assessment_type' => 'PSIKOTES_3_STAGE',
             'status' => 'DRAFT',
             'created_by' => auth()->id(),
         ]);
 
-        AuditLogger::log('CREATE_QUESTION_BANK', 'DISC', $bank);
+        AuditLogger::log('CREATE_QUESTION_BANK', 'PSIKOTES', $bank);
 
-        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', 'Bank Soal DISC berhasil dibuat. Silakan kelola butir pertanyaan.');
+        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', 'Bank Soal Psikotes berhasil dibuat. Silakan kelola butir pertanyaan untuk 3 sub-tes.');
     }
 
     public function show(QuestionBank $bank): View
     {
-        $bank->load(['questions.options']);
+        $bank->load(['questions.options', 'deretQuestions', 'analogiQuestions']);
 
         return view('admin.disc.banks.show', compact('bank'));
     }
 
     public function edit(QuestionBank $bank): View
     {
-        $bank->load(['questions.options']);
+        $bank->load(['questions.options', 'deretQuestions', 'analogiQuestions']);
 
         return view('admin.disc.banks.edit', compact('bank'));
     }
@@ -86,11 +87,76 @@ class AdminDiscQuestionBankController extends Controller
         ]);
 
         $bank->update($data + ['updated_by' => auth()->id()]);
-        AuditLogger::log('UPDATE_QUESTION_BANK', 'DISC', $bank);
+        AuditLogger::log('UPDATE_QUESTION_BANK', 'PSIKOTES', $bank);
 
-        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', 'Informasi Bank Soal berhasil diperbarui.');
+        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', 'Informasi Bank Soal Psikotes berhasil diperbarui.');
     }
 
+    // --- MANAJEMEN SOAL SUB-TES 1 (DERET) & SUB-TES 2 (ANALOGI) ---
+    public function storeStageQuestion(Request $request, QuestionBank $bank): RedirectResponse
+    {
+        $data = $request->validate([
+            'stage' => ['required', 'string', 'in:STAGE_1_DERET,STAGE_2_ANALOGI'],
+            'question_number' => ['required', 'integer', 'min:1'],
+            'question_text' => ['required', 'string'],
+            'correct_answer_1' => ['required', 'string'],
+            'correct_answer_2' => ['nullable', 'string'],
+            'explanation' => ['nullable', 'string'],
+            'options' => ['nullable', 'array'],
+        ]);
+
+        PsikotesStageQuestion::create([
+            'question_bank_id' => $bank->id,
+            'stage' => $data['stage'],
+            'question_number' => $data['question_number'],
+            'question_text' => $data['question_text'],
+            'options_json' => $data['options'] ?? null,
+            'correct_answer_1' => $data['correct_answer_1'],
+            'correct_answer_2' => $data['correct_answer_2'] ?? null,
+            'explanation' => $data['explanation'] ?? null,
+            'active' => true,
+        ]);
+
+        AuditLogger::log('CREATE_STAGE_QUESTION', 'PSIKOTES', $bank, ['stage' => $data['stage'], 'question_number' => $data['question_number']]);
+
+        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', 'Butir soal psikotes berhasil ditambahkan.');
+    }
+
+    public function updateStageQuestion(Request $request, QuestionBank $bank, PsikotesStageQuestion $question): RedirectResponse
+    {
+        $data = $request->validate([
+            'question_text' => ['required', 'string'],
+            'correct_answer_1' => ['required', 'string'],
+            'correct_answer_2' => ['nullable', 'string'],
+            'explanation' => ['nullable', 'string'],
+            'options' => ['nullable', 'array'],
+        ]);
+
+        $question->update([
+            'question_text' => $data['question_text'],
+            'options_json' => $data['options'] ?? $question->options_json,
+            'correct_answer_1' => $data['correct_answer_1'],
+            'correct_answer_2' => $data['correct_answer_2'] ?? null,
+            'explanation' => $data['explanation'] ?? null,
+        ]);
+
+        AuditLogger::log('UPDATE_STAGE_QUESTION', 'PSIKOTES', $bank, ['id' => $question->id]);
+
+        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', "Soal No. {$question->question_number} berhasil diperbarui.");
+    }
+
+    public function deleteStageQuestion(QuestionBank $bank, PsikotesStageQuestion $question): RedirectResponse
+    {
+        $stage = $question->stage;
+        $num = $question->question_number;
+        $question->delete();
+
+        AuditLogger::log('DELETE_STAGE_QUESTION', 'PSIKOTES', $bank, ['stage' => $stage, 'question_number' => $num]);
+
+        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', "Soal No. {$num} berhasil dihapus.");
+    }
+
+    // --- MANAJEMEN SOAL SUB-TES 3 (KEPRIBADIAN / MOST-LEAST) ---
     public function storeQuestion(Request $request, QuestionBank $bank): RedirectResponse
     {
         $data = $request->validate([
@@ -98,98 +164,122 @@ class AdminDiscQuestionBankController extends Controller
             'instruction' => ['nullable', 'string', 'max:255'],
             'options' => ['required', 'array', 'size:4'],
             'options.*.label' => ['required', 'string', 'max:5'],
-            'options.*.statement' => ['required', 'string', 'max:255'],
+            'options.*.statement' => ['required', 'string'],
             'options.*.most_mapping' => ['required', 'string', 'in:D,I,S,C,*'],
             'options.*.least_mapping' => ['required', 'string', 'in:D,I,S,C,*'],
         ]);
 
         DB::transaction(function () use ($data, $bank) {
-            $question = DiscQuestion::create([
-                'question_bank_id' => $bank->id,
-                'question_number' => $data['question_number'],
-                'instruction' => $data['instruction'] ?? 'Pilihlah satu pernyataan yang PALING menggambarkan diri Anda (P), dan satu pernyataan yang PALING TIDAK menggambarkan diri Anda (T).',
-                'active' => true,
-                'created_by' => auth()->id(),
-            ]);
+            $question = DiscQuestion::updateOrCreate(
+                [
+                    'question_bank_id' => $bank->id,
+                    'question_number' => $data['question_number'],
+                ],
+                [
+                    'instruction' => $data['instruction'] ?? null,
+                    'active' => true,
+                    'created_by' => auth()->id(),
+                    'updated_by' => auth()->id(),
+                ]
+            );
 
             foreach ($data['options'] as $idx => $opt) {
-                DiscQuestionOption::create([
-                    'disc_question_id' => $question->id,
-                    'option_number' => $idx + 1,
-                    'option_label' => strtoupper($opt['label']),
-                    'statement' => $opt['statement'],
-                    'most_mapping' => strtoupper($opt['most_mapping']),
-                    'least_mapping' => strtoupper($opt['least_mapping']),
-                    'display_order' => $idx + 1,
-                    'active' => true,
-                ]);
+                DiscQuestionOption::updateOrCreate(
+                    [
+                        'disc_question_id' => $question->id,
+                        'option_number' => $idx + 1,
+                    ],
+                    [
+                        'option_label' => $opt['label'],
+                        'statement' => $opt['statement'],
+                        'most_mapping' => strtoupper($opt['most_mapping']),
+                        'least_mapping' => strtoupper($opt['least_mapping']),
+                        'display_order' => $idx + 1,
+                        'active' => true,
+                    ]
+                );
             }
         });
 
-        AuditLogger::log('ADD_QUESTION_TO_BANK', 'DISC', $bank, ['question_number' => $data['question_number']]);
+        AuditLogger::log('STORE_QUESTION_TO_BANK', 'PSIKOTES', $bank, ['question_number' => $data['question_number']]);
 
-        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', "Butir Soal No. {$data['question_number']} berhasil ditambahkan ke bank soal.");
+        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', "Butir Soal Kepribadian No. {$data['question_number']} berhasil disimpan.");
     }
 
     public function deleteQuestion(QuestionBank $bank, DiscQuestion $question): RedirectResponse
     {
-        if ($question->question_bank_id !== $bank->id) {
-            abort(404);
-        }
-
         $num = $question->question_number;
         $question->options()->delete();
         $question->delete();
 
-        AuditLogger::log('DELETE_QUESTION_FROM_BANK', 'DISC', $bank, ['question_number' => $num]);
+        AuditLogger::log('DELETE_QUESTION_FROM_BANK', 'PSIKOTES', $bank, ['question_number' => $num]);
 
         return redirect()->route('admin.disc.banks.edit', $bank)->with('success', "Butir Soal No. {$num} berhasil dihapus.");
     }
 
     public function importStandardQuestions(QuestionBank $bank): RedirectResponse
     {
-        $sourceBank = QuestionBank::where('code', 'DISC-ISP')->orWhere('status', 'PUBLISHED')->first();
-        if (!$sourceBank || $sourceBank->questions()->count() < 24) {
+        $sourceBank = QuestionBank::where('status', 'PUBLISHED')->first();
+        if (!$sourceBank) {
             return back()->withErrors(['error' => 'Master Bank Soal standar belum ditemukan di database.']);
         }
 
-        $existingNumbers = $bank->questions()->pluck('question_number')->toArray();
-        $importedCount = 0;
+        DB::transaction(function () use ($bank, $sourceBank) {
+            // Salin Soal Deret & Analogi
+            foreach ($sourceBank->stageQuestions as $sq) {
+                PsikotesStageQuestion::updateOrCreate(
+                    [
+                        'question_bank_id' => $bank->id,
+                        'stage' => $sq->stage,
+                        'question_number' => $sq->question_number,
+                    ],
+                    [
+                        'question_text' => $sq->question_text,
+                        'options_json' => $sq->options_json,
+                        'correct_answer_1' => $sq->correct_answer_1,
+                        'correct_answer_2' => $sq->correct_answer_2,
+                        'explanation' => $sq->explanation,
+                        'active' => true,
+                    ]
+                );
+            }
 
-        DB::transaction(function () use ($bank, $sourceBank, $existingNumbers, &$importedCount) {
+            // Salin Soal Kepribadian
             foreach ($sourceBank->questions()->with('options')->get() as $q) {
-                if (in_array($q->question_number, $existingNumbers)) {
-                    continue;
-                }
-
-                $newQ = DiscQuestion::create([
-                    'question_bank_id' => $bank->id,
-                    'question_number' => $q->question_number,
-                    'instruction' => $q->instruction,
-                    'active' => true,
-                    'created_by' => auth()->id(),
-                ]);
+                $newQ = DiscQuestion::updateOrCreate(
+                    [
+                        'question_bank_id' => $bank->id,
+                        'question_number' => $q->question_number,
+                    ],
+                    [
+                        'instruction' => $q->instruction,
+                        'active' => true,
+                        'created_by' => auth()->id(),
+                    ]
+                );
 
                 foreach ($q->options as $opt) {
-                    DiscQuestionOption::create([
-                        'disc_question_id' => $newQ->id,
-                        'option_number' => $opt->option_number,
-                        'option_label' => $opt->option_label,
-                        'statement' => $opt->statement,
-                        'most_mapping' => $opt->most_mapping,
-                        'least_mapping' => $opt->least_mapping,
-                        'display_order' => $opt->display_order,
-                        'active' => true,
-                    ]);
+                    DiscQuestionOption::updateOrCreate(
+                        [
+                            'disc_question_id' => $newQ->id,
+                            'option_number' => $opt->option_number,
+                        ],
+                        [
+                            'option_label' => $opt->option_label,
+                            'statement' => $opt->statement,
+                            'most_mapping' => $opt->most_mapping,
+                            'least_mapping' => $opt->least_mapping,
+                            'display_order' => $opt->display_order,
+                            'active' => true,
+                        ]
+                    );
                 }
-
-                $importedCount++;
             }
         });
 
-        AuditLogger::log('IMPORT_STANDARD_QUESTIONS', 'DISC', $bank, ['imported_count' => $importedCount]);
+        AuditLogger::log('IMPORT_STANDARD_QUESTIONS', 'PSIKOTES', $bank);
 
-        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', "Berhasil menyalin {$importedCount} butir soal standar DISC ke Bank Soal ini.");
+        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', 'Berhasil menyalin seluruh paket 3 sub-tes soal standar Psikotes ISP ke Bank Soal ini.');
     }
 
     public function scoringKeys(QuestionBank $bank): View
@@ -224,39 +314,58 @@ class AdminDiscQuestionBankController extends Controller
             }
         });
 
-        AuditLogger::log('UPDATE_SCORING_KEYS', 'DISC', $bank);
+        AuditLogger::log('UPDATE_SCORING_KEYS', 'PSIKOTES', $bank);
 
         return back()->with('success', 'Kunci jawaban scoring dan pemetaan Most/Least berhasil disimpan.');
     }
 
     public function publish(QuestionBank $bank): RedirectResponse
     {
-        $questionCount = $bank->questions()->count();
-        if ($questionCount < 24) {
-            return back()->withErrors(['error' => "Bank Soal harus memiliki minimal 24 butir soal lengkap sebelum dipublikasikan. (Saat ini: {$questionCount} soal)"]);
+        $deretCount = $bank->deretQuestions()->count();
+        $analogiCount = $bank->analogiQuestions()->count();
+        $discCount = $bank->questions()->count();
+
+        if ($deretCount < 25 || $analogiCount < 50 || $discCount < 24) {
+            return back()->withErrors(['error' => "Bank Soal harus memiliki paket lengkap: 25 Soal Deret Hitung, 50 Soal Analogi Verbal, dan 24 Soal Kepribadian sebelum dipublikasikan. (Saat ini: Deret: {$deretCount}, Analogi: {$analogiCount}, Kepribadian: {$discCount})"]);
         }
 
         $bank->update(['status' => 'PUBLISHED', 'updated_by' => auth()->id()]);
-        AuditLogger::log('PUBLISH_QUESTION_BANK', 'DISC', $bank);
+        AuditLogger::log('PUBLISH_QUESTION_BANK', 'PSIKOTES', $bank);
 
-        return back()->with('success', 'Bank Soal DISC berhasil dipublikasikan dan siap digunakan untuk Asesmen.');
+        return back()->with('success', 'Bank Soal Psikotes berhasil dipublikasikan dan siap digunakan untuk Asesmen.');
     }
 
     public function duplicate(QuestionBank $bank): RedirectResponse
     {
-        $bank->load(['questions.options']);
+        $bank->load(['questions.options', 'stageQuestions']);
 
         $newBank = DB::transaction(function () use ($bank) {
             $cloned = QuestionBank::create([
                 'name' => $bank->name . ' (Copy)',
                 'code' => $bank->code . '-COPY-' . strtoupper(bin2hex(random_bytes(2))),
                 'description' => $bank->description,
-                'assessment_type' => 'DISC',
+                'assessment_type' => 'PSIKOTES_3_STAGE',
                 'version' => $bank->version . '.1',
                 'status' => 'DRAFT',
                 'created_by' => auth()->id(),
             ]);
 
+            // Salin stage questions
+            foreach ($bank->stageQuestions as $sq) {
+                PsikotesStageQuestion::create([
+                    'question_bank_id' => $cloned->id,
+                    'stage' => $sq->stage,
+                    'question_number' => $sq->question_number,
+                    'question_text' => $sq->question_text,
+                    'options_json' => $sq->options_json,
+                    'correct_answer_1' => $sq->correct_answer_1,
+                    'correct_answer_2' => $sq->correct_answer_2,
+                    'explanation' => $sq->explanation,
+                    'active' => $sq->active,
+                ]);
+            }
+
+            // Salin kepribadian questions
             foreach ($bank->questions as $q) {
                 $newQ = DiscQuestion::create([
                     'question_bank_id' => $cloned->id,
@@ -283,9 +392,9 @@ class AdminDiscQuestionBankController extends Controller
             return $cloned;
         });
 
-        AuditLogger::log('DUPLICATE_QUESTION_BANK', 'DISC', $newBank);
+        AuditLogger::log('DUPLICATE_QUESTION_BANK', 'PSIKOTES', $newBank);
 
-        return redirect()->route('admin.disc.banks.edit', $newBank)->with('success', 'Bank Soal berhasil diduplikasi menjadi versi Draft baru.');
+        return redirect()->route('admin.disc.banks.edit', $newBank)->with('success', 'Bank Soal Psikotes berhasil diduplikasi menjadi versi Draft baru.');
     }
 
     public function destroy(QuestionBank $bank): RedirectResponse
@@ -295,8 +404,8 @@ class AdminDiscQuestionBankController extends Controller
         }
 
         $bank->delete();
-        AuditLogger::log('DELETE_QUESTION_BANK', 'DISC', $bank);
+        AuditLogger::log('DELETE_QUESTION_BANK', 'PSIKOTES', $bank);
 
-        return redirect()->route('admin.disc.banks.index')->with('success', 'Bank Soal berhasil diarsipkan/dihapus.');
+        return redirect()->route('admin.disc.banks.index')->with('success', 'Bank Soal Psikotes berhasil diarsipkan/dihapus.');
     }
 }

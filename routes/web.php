@@ -39,10 +39,12 @@ Route::middleware('auth')->group(function (): void {
     Route::delete('/candidate/documents/{document}', [CandidateController::class, 'deleteDocument'])->name('candidate.documents.destroy');
     Route::post('/jobs/{job:slug}/apply', [CandidateController::class, 'apply'])->name('jobs.apply');
 
-    // Participant DISC Assessment Flow
+    // Participant Psikotes Assessment Flow
     Route::get('/assessment/disc/{assessment}/instruction', [ParticipantDiscAssessmentController::class, 'instruction'])->name('disc.assessment.instruction');
     Route::post('/assessment/disc/{assessment}/start', [ParticipantDiscAssessmentController::class, 'startSession'])->name('disc.assessment.start');
     Route::get('/assessment/disc/take/{token}', [ParticipantDiscAssessmentController::class, 'take'])->name('disc.assessment.take');
+    Route::post('/assessment/disc/take/{token}/stage-1', [ParticipantDiscAssessmentController::class, 'submitStage1'])->name('disc.assessment.stage1.submit');
+    Route::post('/assessment/disc/take/{token}/stage-2', [ParticipantDiscAssessmentController::class, 'submitStage2'])->name('disc.assessment.stage2.submit');
     Route::get('/assessment/disc/completed/{token}', [ParticipantDiscAssessmentController::class, 'completed'])->name('disc.assessment.completed');
 
     // Secure Participant API Endpoints
@@ -63,9 +65,17 @@ Route::middleware('auth')->group(function (): void {
 
         Route::middleware('permission:change_application_status')->put('/applications/{application}/status', [AdminApplicationController::class, 'updateStatus'])->name('applications.status');
         Route::middleware('permission:manage_applications')->post('/applications/{application}/notes', [AdminApplicationController::class, 'storeNote'])->name('applications.notes.store');
-        Route::middleware('permission:manage_interviews')->post('/applications/{application}/interviews', [AdminApplicationController::class, 'storeInterview'])->name('applications.interviews.store');
+        Route::middleware('permission:manage_interviews')->group(function (): void {
+            Route::post('/applications/{application}/interviews', [AdminApplicationController::class, 'storeInterview'])->name('applications.interviews.store');
+            Route::put('/applications/{application}/interviews/{interview}', [AdminApplicationController::class, 'updateInterview'])->name('applications.interviews.update');
+            Route::delete('/applications/{application}/interviews/{interview}', [AdminApplicationController::class, 'destroyInterview'])->name('applications.interviews.destroy');
+        });
+
         Route::middleware('permission:manage_tests')->post('/applications/{application}/tests', [AdminApplicationController::class, 'storeTest'])->name('applications.tests.store');
-        Route::middleware('permission:manage_offers')->post('/applications/{application}/offers', [AdminApplicationController::class, 'storeOffer'])->name('applications.offers.store');
+        Route::middleware('permission:manage_offers')->group(function (): void {
+            Route::post('/applications/{application}/offers', [AdminApplicationController::class, 'storeOffer'])->name('applications.offers.store');
+            Route::delete('/applications/{application}/offers/{offer}', [AdminApplicationController::class, 'destroyOffer'])->name('applications.offers.destroy');
+        });
 
         Route::middleware('permission:view_jobs')->get('/jobs', [AdminJobController::class, 'index'])->name('jobs.index');
         Route::middleware('permission:create_jobs')->get('/jobs/create', [AdminJobController::class, 'create'])->name('jobs.create');
@@ -90,6 +100,9 @@ Route::middleware('auth')->group(function (): void {
             Route::resource('banks', AdminDiscQuestionBankController::class);
             Route::post('banks/{bank}/questions', [AdminDiscQuestionBankController::class, 'storeQuestion'])->name('banks.questions.store');
             Route::delete('banks/{bank}/questions/{question}', [AdminDiscQuestionBankController::class, 'deleteQuestion'])->name('banks.questions.destroy');
+            Route::post('banks/{bank}/stage-questions', [AdminDiscQuestionBankController::class, 'storeStageQuestion'])->name('banks.stage-questions.store');
+            Route::put('banks/{bank}/stage-questions/{question}', [AdminDiscQuestionBankController::class, 'updateStageQuestion'])->name('banks.stage-questions.update');
+            Route::delete('banks/{bank}/stage-questions/{question}', [AdminDiscQuestionBankController::class, 'deleteStageQuestion'])->name('banks.stage-questions.destroy');
             Route::post('banks/{bank}/import-standard', [AdminDiscQuestionBankController::class, 'importStandardQuestions'])->name('banks.import-standard');
             Route::get('banks/{bank}/scoring-keys', [AdminDiscQuestionBankController::class, 'scoringKeys'])->name('banks.scoring-keys');
             Route::put('banks/{bank}/scoring-keys', [AdminDiscQuestionBankController::class, 'updateScoringKeys'])->name('banks.scoring-keys.update');

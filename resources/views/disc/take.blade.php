@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Asesmen DISC - {{ $assessment->title }}</title>
+    <title>Sub-Tes 3: Tes Kepribadian - {{ $assessment->title }}</title>
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @else
@@ -126,8 +126,8 @@
                     DISC
                 </span>
                 <div>
-                    <h1 class="text-sm font-bold text-[#322d2a] sm:text-base">{{ $assessment->title }}</h1>
-                    <p class="text-xs text-slate-500">{{ auth()->user()->name }} • Percobaan #{{ $session->attempt_number }}</p>
+                    <h1 class="text-sm font-bold text-[#322d2a] sm:text-base">TES KEPRIBADIAN (MOST & LEAST)</h1>
+                    <p class="text-xs text-slate-500">{{ auth()->user()->name }} • Sub-Tes 3</p>
                 </div>
             </div>
 
@@ -138,10 +138,9 @@
                     <span>Tersimpan</span>
                 </div>
 
-                {{-- COUNTDOWN TIMER --}}
-                <div class="flex items-center gap-2 rounded-2xl bg-[#322d2a] px-4 py-2 text-white shadow-md">
-                    <span class="text-xs text-slate-300">⏱ Sisa Waktu:</span>
-                    <span id="timerDisplay" class="font-mono text-sm font-bold text-[#f97316]">--:--</span>
+                {{-- UNTIMED BADGE --}}
+                <div class="flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-800 shadow-sm">
+                    <span>✨ Tanpa Batas Waktu</span>
                 </div>
             </div>
         </div>
@@ -239,9 +238,9 @@
                         type="button"
                         id="submitBtn"
                         onclick="confirmSubmit()"
-                        class="rounded-full bg-emerald-600 px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700"
+                        class="hidden rounded-full bg-emerald-600 px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700"
                     >
-                        ✓ Selesai & Kirim
+                        ✓ Selesai & Kirim Jawaban
                     </button>
                 </div>
             </div>
@@ -368,6 +367,15 @@
 
                 // Update UI state
                 document.getElementById('prevBtn').disabled = (currentIndex === 0);
+
+                if (currentIndex === totalQuestions - 1) {
+                    document.getElementById('nextBtn').classList.add('hidden');
+                    document.getElementById('submitBtn').classList.remove('hidden');
+                } else {
+                    document.getElementById('nextBtn').classList.remove('hidden');
+                    document.getElementById('submitBtn').classList.add('hidden');
+                }
+
                 updateProgressBar();
                 updateNavigationPalette();
                 showSaveStatus('Tersimpan', 'emerald');
@@ -491,7 +499,7 @@
                     })
                 });
                 const data = await res.json();
-                if (res.ok && data.saved) {
+                if (res.ok && (data.saved || data.success)) {
                     if (selectedMost && selectedLeast) {
                         answeredQuestionsMap[currentIndex] = true;
                         showSaveStatus('Lengkap & Tersimpan ✓', 'emerald');
@@ -661,7 +669,6 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
-            startTimer(timeRemaining);
             loadQuestion(0);
         });
     </script>

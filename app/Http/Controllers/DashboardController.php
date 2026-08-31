@@ -109,8 +109,20 @@ class DashboardController extends Controller
             'profile' => $profile,
             'activeApplications' => $profile?->applications()->whereNotIn('status', ['REJECTED', 'WITHDRAWN', 'CANCELLED', 'HIRED'])->count() ?? 0,
             'applications' => $profile?->applications()->with('job')->latest()->limit(10)->get() ?? collect(),
-            'upcomingInterviews' => Interview::query()->whereHas('application', fn ($q) => $q->where('candidate_profile_id', $profile?->id))->whereIn('status', ['SCHEDULED', 'CONFIRMED'])->latest()->limit(3)->get(),
-            'offers' => Offer::query()->whereHas('application', fn ($q) => $q->where('candidate_profile_id', $profile?->id))->latest()->limit(3)->get(),
+            'upcomingInterviews' => Interview::query()
+                ->whereHas('application', fn ($q) => $q->where('candidate_profile_id', $profile?->id))
+                ->whereIn('status', ['SCHEDULED', 'CONFIRMED'])
+                ->with(['interviewer', 'application.job'])
+                ->orderBy('scheduled_date')
+                ->orderBy('start_time')
+                ->limit(5)
+                ->get(),
+            'offers' => Offer::query()
+                ->whereHas('application', fn ($q) => $q->where('candidate_profile_id', $profile?->id))
+                ->with('application.job')
+                ->latest()
+                ->limit(5)
+                ->get(),
             'discAssessments' => $discAssessments,
             'technicalTestApp' => $technicalTestApp,
         ]);

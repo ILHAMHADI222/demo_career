@@ -33,6 +33,25 @@ class QuestionBank extends Model
         return $this->hasMany(DiscQuestion::class)->where('active', true)->orderBy('question_number');
     }
 
+    public function stageQuestions(): HasMany
+    {
+        return $this->hasMany(PsikotesStageQuestion::class)->orderBy('question_number');
+    }
+
+    public function deretQuestions(): HasMany
+    {
+        return $this->hasMany(PsikotesStageQuestion::class)
+            ->where('stage', 'STAGE_1_DERET')
+            ->orderBy('question_number');
+    }
+
+    public function analogiQuestions(): HasMany
+    {
+        return $this->hasMany(PsikotesStageQuestion::class)
+            ->where('stage', 'STAGE_2_ANALOGI')
+            ->orderBy('question_number');
+    }
+
     public function assessments(): HasMany
     {
         return $this->hasMany(DiscAssessment::class);
