@@ -53,4 +53,27 @@ class Application extends Model
             'changed_at' => now(),
         ]);
     }
+
+    public function getStatusLabelAttribute(): string
+    {
+        $normalized = strtoupper(str_replace([' ', '-'], '_', $this->status ?? ''));
+
+        return match ($normalized) {
+            'DRAFT' => 'Draft',
+            'SUBMITTED' => 'Lamaran Dikirim',
+            'DOCUMENT_REVIEW', 'DOCUMENTREVIEW' => 'Review Berkas',
+            'ADMINISTRATIVE_REVIEW', 'ADMINISTRATIVEREVIEW' => 'Lolos Administrasi',
+            'TECHNICAL_TEST', 'TECHNICALTEST' => 'Tes Teknis / Psikotes',
+            'HR_INTERVIEW', 'HRINTERVIEW' => 'Interview HRD',
+            'USER_INTERVIEW', 'USERINTERVIEW' => 'Interview User',
+            'FINAL_INTERVIEW', 'FINALINTERVIEW' => 'Interview Direksi',
+            'MEDICAL_CHECK_UP', 'MEDICALCHECKUP' => 'Medical Check Up (MCU)',
+            'OFFERING' => 'Offering (Penawaran Kerja)',
+            'HIRED', 'ACCEPTED' => 'Diterima Bekerja',
+            'REJECTED', 'DECLINED' => 'Tidak Lolos (Ditolak)',
+            'WITHDRAWN' => 'Mengundurkan Diri',
+            'CANCELLED' => 'Dibatalkan',
+            default => str($this->status)->replace('_', ' ')->headline()->toString(),
+        };
+    }
 }

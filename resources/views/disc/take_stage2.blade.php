@@ -9,7 +9,7 @@
                 </div>
             @endif
 
-            {{-- HEADER BAR: STAGE INFO & TIMER --}}
+            {{-- HEADER BAR: STAGE INFO, AUTOSAVE STATUS & TIMER --}}
             <div class="sticky top-20 z-30 mb-5 overflow-hidden rounded-[24px] border border-white bg-white/95 p-4 shadow-md backdrop-blur">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-2.5">
@@ -17,15 +17,20 @@
                         <div>
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Sub-Tes 2 dari 3</span>
-                                <span class="text-[10px] text-[#6f6b67]">• 50 Soal Analogi Kata</span>
+                                <span class="text-[10px] text-[#6f6b67]">• 50 Soal Analogi Kata (Opsional / Bisa Di-skip)</span>
                             </div>
                             <h2 class="text-sm font-semibold text-[#322d2a]">ANALOGI VERBAL (KORELASI MAKNA KATA)</h2>
                         </div>
                     </div>
 
-                    {{-- TIMER --}}
-                    <div class="flex items-center gap-3">
-                        <div id="timerContainer" class="flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-xs font-bold text-rose-700">
+                    {{-- AUTOSAVE BADGE & TIMER --}}
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div id="saveStatusIndicator" class="hidden items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-medium text-emerald-700 transition">
+                            <span class="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
+                            <span id="saveStatusText">Tersimpan otomatis</span>
+                        </div>
+
+                        <div id="timerContainer" class="flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-xs font-bold text-rose-700 shadow-xs">
                             <span>⏱ Sisa Waktu:</span>
                             <span id="timerDisplay" class="font-mono text-sm">--:--</span>
                         </div>
@@ -40,7 +45,8 @@
                     <div>
                         <p class="font-bold text-emerald-950">Petunjuk Pengerjaan Sub-Tes 2 (Analogi Verbal):</p>
                         <p class="mt-1 text-[11px] leading-relaxed text-emerald-900">
-                            Pilihlah <strong>satu kata dari opsi A, B, C, atau D</strong> yang memiliki hubungan / korelasi analogi makna yang paling setara untuk melengkapi pasangan kata yang rumpang.
+                            Pilihlah <strong>satu kata dari opsi A, B, C, atau D</strong> yang memiliki korelasi analogi paling setara. 
+                            <strong>Soal tidak wajib dijawab semua (bisa dilewati / di-skip)</strong>. Bila waktu habis atau Anda menyelesaikan tes, jawaban terakhir akan tersimpan otomatis dan dinilai langsung.
                         </p>
                     </div>
                 </div>
@@ -52,13 +58,21 @@
 
                 <div class="space-y-4">
                     @foreach($questions as $index => $q)
-                        <div class="rounded-[24px] border border-white bg-white p-5 shadow-sm transition hover:border-emerald-300">
+                        <div class="question-card rounded-[24px] border border-white bg-white p-5 shadow-sm transition hover:border-emerald-300" data-question-id="{{ $q->id }}">
                             <div class="flex items-center justify-between border-b border-[#322d2a]/10 pb-2.5">
                                 <div class="flex items-center gap-2">
                                     <span class="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
                                         Soal No. {{ $index + 1 }} dari {{ count($questions) }}
                                     </span>
                                     <span class="text-[11px] text-[#6f6b67]">Pilihlah kata yang tepat:</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="clearQuestion('{{ $q->id }}')" class="text-[10px] text-slate-400 hover:text-rose-600 hover:underline">
+                                        Kosongkan / Skip
+                                    </button>
+                                    <span class="skip-badge text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+                                        {{ !empty($savedAnswers[$q->id]) ? 'Terpilih: ' . $savedAnswers[$q->id] : 'Belum diisi' }}
+                                    </span>
                                 </div>
                             </div>
 
@@ -77,8 +91,7 @@
                                             name="answers[{{ $q->id }}]"
                                             value="{{ $key }}"
                                             @checked(($savedAnswers[$q->id] ?? '') === $key)
-                                            required
-                                            class="h-4 w-4 text-emerald-600 focus:ring-emerald-500"
+                                            class="stage-radio h-4 w-4 text-emerald-600 focus:ring-emerald-500"
                                         >
                                         <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-bold text-[#322d2a] shadow-xs border border-[#322d2a]/15">{{ $key }}</span>
                                         <span class="text-sm font-medium text-[#1e293b]">{{ $optText }}</span>
@@ -92,7 +105,7 @@
                 {{-- SUBMIT BAR --}}
                 <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 rounded-[24px] border border-white bg-white p-5 shadow-sm">
                     <p class="text-xs text-[#6f6b67]">
-                        Pastikan seluruh soal telah dijawab sebelum lanjut ke tes kepribadian.
+                        Soal yang tidak dijawab akan dilewati (skip). Jawaban terakhir akan disimpan otomatis.
                     </p>
                     <button type="button" onclick="openStage2Modal()" class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700">
                         <span>Selesai Tahap 2 & Lanjut ke Tahap 3</span>
@@ -114,16 +127,19 @@
             <p class="mt-2 text-xs text-[#6f6b67] leading-relaxed">
                 Apakah Anda yakin ingin menyelesaikan <strong>Sub-Tes 2 (Analogi Verbal)</strong> dan melanjutkan ke <strong>Sub-Tes 3 (Tes Kepribadian)</strong>?
             </p>
+            <div id="modalSummary" class="mt-3 rounded-2xl bg-emerald-50/70 border border-emerald-100 p-3 text-xs text-emerald-950 font-medium">
+                Memeriksa jawaban...
+            </div>
             <p class="mt-2 text-[11px] text-amber-700 bg-amber-50 rounded-xl p-2.5 border border-amber-200">
-                ⚠️ Setelah berpindah ke Tahap 3, jawaban Sub-Tes 1 dan 2 akan dikunci secara permanen.
+                ⚠️ Setelah berpindah ke Tahap 3, jawaban Sub-Tes 1 dan 2 akan dikunci permanen dan nilainya langsung masuk ke data HRD.
             </p>
 
             <div class="mt-6 flex items-center justify-center gap-3">
                 <button type="button" onclick="closeStage2Modal()" class="rounded-full bg-[#f0efe9] px-5 py-2.5 text-xs font-semibold text-[#6f6b67] hover:text-[#322d2a]">
-                    Batal / Cek Lagi
+                    Batal / Lanjutkan Mengerjakan
                 </button>
                 <button type="button" onclick="submitStage2Form()" class="rounded-full bg-emerald-600 px-6 py-2.5 text-xs font-semibold text-white shadow-md hover:bg-emerald-700">
-                    Ya, Lanjut ke Tahap 3 →
+                    Ya, Simpan & Lanjut ke Tahap 3 →
                 </button>
             </div>
         </div>
@@ -134,12 +150,91 @@
         const timerDisplay = document.getElementById('timerDisplay');
         const timerContainer = document.getElementById('timerContainer');
         const form = document.getElementById('stage2Form');
+        const draftUrl = "{{ route('disc.assessment.stage2.draft', $session->session_token) }}";
+        const csrfToken = "{{ csrf_token() }}";
         let autoSubmitted = false;
+        let saveTimeout = null;
+
+        // Auto-save draft function
+        function triggerAutoSave() {
+            const saveIndicator = document.getElementById('saveStatusIndicator');
+            const saveText = document.getElementById('saveStatusText');
+            if (saveIndicator) {
+                saveIndicator.classList.remove('hidden');
+                saveIndicator.classList.add('flex');
+                if (saveText) saveText.textContent = 'Menyimpan...';
+            }
+
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const formData = new FormData(form);
+                fetch(draftUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (saveText) saveText.textContent = 'Tersimpan otomatis ✓';
+                })
+                .catch(() => {
+                    if (saveText) saveText.textContent = 'Disimpan lokal';
+                });
+            }, 600);
+        }
+
+        // Attach radio click listeners
+        document.querySelectorAll('.stage-radio').forEach(radio => {
+            radio.addEventListener('change', function() {
+                triggerAutoSave();
+                updateCardStatus(this.closest('.question-card'), this.value);
+            });
+        });
+
+        function clearQuestion(questionId) {
+            const radios = document.querySelectorAll(`input[name="answers[${questionId}]"]`);
+            radios.forEach(r => r.checked = false);
+            const card = document.querySelector(`.question-card[data-question-id="${questionId}"]`);
+            if (card) {
+                updateCardStatus(card, null);
+            }
+            triggerAutoSave();
+        }
+
+        function updateCardStatus(card, value) {
+            if (!card) return;
+            const badge = card.querySelector('.skip-badge');
+            if (badge) {
+                if (value) {
+                    badge.textContent = `Terpilih: ${value} ✓`;
+                    badge.className = 'skip-badge text-[10px] font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md';
+                } else {
+                    badge.textContent = 'Belum diisi';
+                    badge.className = 'skip-badge text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md';
+                }
+            }
+        }
+
+        function countAnswered() {
+            const cards = document.querySelectorAll('.question-card');
+            let answered = 0;
+            cards.forEach(card => {
+                const checked = card.querySelector('.stage-radio:checked');
+                if (checked) answered++;
+            });
+            return { answered, total: cards.length };
+        }
 
         function openStage2Modal() {
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
+            const stats = countAnswered();
+            const modalSummary = document.getElementById('modalSummary');
+            if (modalSummary) {
+                const skipped = stats.total - stats.answered;
+                modalSummary.innerHTML = `<strong>${stats.answered} dari ${stats.total} Soal</strong> telah terisi` + 
+                    (skipped > 0 ? ` (${skipped} soal dilewati / skip).` : ` (Semua soal terisi).`);
             }
             document.getElementById('stage2Modal').classList.remove('hidden');
             document.getElementById('stage2Modal').classList.add('flex');
@@ -163,7 +258,6 @@
                 timerDisplay.textContent = '00:00';
                 if (!autoSubmitted) {
                     autoSubmitted = true;
-                    alert('Waktu Sub-Tes 2 (Analogi Verbal) telah habis! Jawaban Anda akan disimpan dan berpindah ke Sub-Tes 3.');
                     form.submit();
                 }
                 return;

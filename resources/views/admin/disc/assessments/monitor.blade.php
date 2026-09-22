@@ -45,7 +45,31 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4 text-xs">
+                        <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6 text-xs">
+                            <div class="rounded-2xl bg-slate-50 p-3">
+                                <p class="text-slate-500">Tahap Berjalan</p>
+                                <p class="mt-1 font-bold text-[#322d2a]">
+                                    Tahap {{ $sess->current_stage ?? 1 }}/3
+                                </p>
+                            </div>
+                            <div class="rounded-2xl bg-blue-50/60 border border-blue-100 p-3">
+                                <p class="text-blue-900 font-medium">Sub-Tes 1 (Deret)</p>
+                                <p class="mt-1 font-bold text-blue-700">
+                                    {{ $sess->stage_1_completed_at ? number_format($sess->stage_1_score ?? 0, 1) . '% (' . ($sess->stage_1_correct_count ?? 0) . '/25)' : (($sess->current_stage ?? 1) == 1 ? 'Mengerjakan...' : '-') }}
+                                </p>
+                            </div>
+                            <div class="rounded-2xl bg-emerald-50/60 border border-emerald-100 p-3">
+                                <p class="text-emerald-900 font-medium">Sub-Tes 2 (Analogi)</p>
+                                <p class="mt-1 font-bold text-emerald-700">
+                                    {{ $sess->stage_2_completed_at ? number_format($sess->stage_2_score ?? 0, 1) . '% (' . ($sess->stage_2_correct_count ?? 0) . '/50)' : (($sess->current_stage ?? 1) == 2 ? 'Mengerjakan...' : '-') }}
+                                </p>
+                            </div>
+                            <div class="rounded-2xl bg-purple-50/60 border border-purple-100 p-3">
+                                <p class="text-purple-900 font-medium">Tahap 3 (DISC)</p>
+                                <p class="mt-1 font-bold text-purple-700">
+                                    {{ $sess->disc_profile_code ?: (($sess->current_stage ?? 1) == 3 ? 'Mengerjakan...' : '-') }}
+                                </p>
+                            </div>
                             <div class="rounded-2xl bg-slate-50 p-3">
                                 <p class="text-slate-500">Waktu Mulai</p>
                                 <p class="mt-1 font-semibold text-slate-800">{{ $sess->started_at ? $sess->started_at->format('H:i:s') : '-' }}</p>
@@ -53,14 +77,6 @@
                             <div class="rounded-2xl bg-slate-50 p-3">
                                 <p class="text-slate-500">Aktivitas Terakhir</p>
                                 <p class="mt-1 font-semibold text-slate-800">{{ $sess->last_activity_at ? $sess->last_activity_at->diffForHumans() : '-' }}</p>
-                            </div>
-                            <div class="rounded-2xl bg-slate-50 p-3">
-                                <p class="text-slate-500">Total Security Event</p>
-                                <p class="mt-1 font-bold text-rose-600">{{ $sess->securityEvents->count() }} Kali</p>
-                            </div>
-                            <div class="rounded-2xl bg-slate-50 p-3">
-                                <p class="text-slate-500">Tab Switch / Blur</p>
-                                <p class="mt-1 font-bold text-amber-600">{{ $sess->securityEvents->whereIn('event_type', ['TAB_SWITCH', 'WINDOW_BLUR'])->count() }} Kali</p>
                             </div>
                         </div>
 

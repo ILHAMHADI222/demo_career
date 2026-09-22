@@ -26,4 +26,20 @@ class Offer extends Model
     {
         return $this->belongsTo(Application::class);
     }
+
+    public function getStatusLabelAttribute(): string
+    {
+        $normalized = strtoupper(str_replace([' ', '-'], '_', $this->status ?? ''));
+
+        return match ($normalized) {
+            'DRAFT' => 'Draft',
+            'PREPARED' => 'Disiapkan',
+            'SENT' => 'Terkirim',
+            'ACCEPTED' => 'Diterima',
+            'REJECTED' => 'Ditolak',
+            'EXPIRED' => 'Kedaluwarsa',
+            'CANCELLED' => 'Dibatalkan',
+            default => str($this->status)->replace('_', ' ')->headline()->toString(),
+        };
+    }
 }

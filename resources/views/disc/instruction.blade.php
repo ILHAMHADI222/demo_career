@@ -16,26 +16,50 @@
                 </div>
 
                 {{-- 3 STAGES OVERVIEW --}}
+                @php
+                    $candidateUser = auth()->user();
+                @endphp
                 <div class="mt-6 grid gap-3 sm:grid-cols-3 text-xs">
-                    <div class="rounded-[20px] border border-blue-200 bg-blue-50/60 p-4">
-                        <span class="inline-flex rounded-full bg-blue-600 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase">Tahap 1</span>
-                        <h4 class="mt-2 font-bold text-blue-950">Deret Hitung</h4>
-                        <p class="mt-1 text-[11px] text-blue-900/80">25 Soal Deret Angka</p>
-                        <p class="mt-2 text-[11px] font-semibold text-blue-700">⏱ Waktu: {{ $assessment->duration_stage_1 ?: 10 }} Menit</p>
+                    <div class="rounded-[20px] border {{ $candidateUser->canTakeStage(1) ? 'border-blue-200 bg-blue-50/60' : 'border-slate-200 bg-slate-50 opacity-60' }} p-4">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex rounded-full {{ $candidateUser->canTakeStage(1) ? 'bg-blue-600' : 'bg-slate-500' }} px-2.5 py-0.5 text-[10px] font-bold text-white uppercase">Tahap 1</span>
+                            @if ($candidateUser->canTakeStage(1))
+                                <span class="text-[10px] font-semibold text-blue-700">Wajib ✓</span>
+                            @else
+                                <span class="text-[10px] font-medium text-slate-500">Dilewati</span>
+                            @endif
+                        </div>
+                        <h4 class="mt-2 font-bold {{ $candidateUser->canTakeStage(1) ? 'text-blue-950' : 'text-slate-700' }}">Deret Hitung</h4>
+                        <p class="mt-1 text-[11px] {{ $candidateUser->canTakeStage(1) ? 'text-blue-900/80' : 'text-slate-500' }}">25 Soal Deret Angka</p>
+                        <p class="mt-2 text-[11px] font-semibold {{ $candidateUser->canTakeStage(1) ? 'text-blue-700' : 'text-slate-500' }}">⏱ Waktu: {{ $assessment->duration_stage_1 ?: 10 }} Menit</p>
                     </div>
 
-                    <div class="rounded-[20px] border border-emerald-200 bg-emerald-50/60 p-4">
-                        <span class="inline-flex rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase">Tahap 2</span>
-                        <h4 class="mt-2 font-bold text-emerald-950">Analogi Verbal</h4>
-                        <p class="mt-1 text-[11px] text-emerald-900/80">50 Soal Pilihan Ganda</p>
-                        <p class="mt-2 text-[11px] font-semibold text-emerald-700">⏱ Waktu: {{ $assessment->duration_stage_2 ?: 10 }} Menit</p>
+                    <div class="rounded-[20px] border {{ $candidateUser->canTakeStage(2) ? 'border-emerald-200 bg-emerald-50/60' : 'border-slate-200 bg-slate-50 opacity-60' }} p-4">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex rounded-full {{ $candidateUser->canTakeStage(2) ? 'bg-emerald-600' : 'bg-slate-500' }} px-2.5 py-0.5 text-[10px] font-bold text-white uppercase">Tahap 2</span>
+                            @if ($candidateUser->canTakeStage(2))
+                                <span class="text-[10px] font-semibold text-emerald-700">Wajib ✓</span>
+                            @else
+                                <span class="text-[10px] font-medium text-slate-500">Dilewati</span>
+                            @endif
+                        </div>
+                        <h4 class="mt-2 font-bold {{ $candidateUser->canTakeStage(2) ? 'text-emerald-950' : 'text-slate-700' }}">Analogi Verbal</h4>
+                        <p class="mt-1 text-[11px] {{ $candidateUser->canTakeStage(2) ? 'text-emerald-900/80' : 'text-slate-500' }}">50 Soal Pilihan Ganda</p>
+                        <p class="mt-2 text-[11px] font-semibold {{ $candidateUser->canTakeStage(2) ? 'text-emerald-700' : 'text-slate-500' }}">⏱ Waktu: {{ $assessment->duration_stage_2 ?: 10 }} Menit</p>
                     </div>
 
-                    <div class="rounded-[20px] border border-purple-200 bg-purple-50/60 p-4">
-                        <span class="inline-flex rounded-full bg-purple-600 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase">Tahap 3</span>
-                        <h4 class="mt-2 font-bold text-purple-950">Tes Kepribadian</h4>
-                        <p class="mt-1 text-[11px] text-purple-900/80">24 Soal Most & Least</p>
-                        <p class="mt-2 text-[11px] font-semibold text-purple-700">✨ Tanpa Batas Waktu</p>
+                    <div class="rounded-[20px] border {{ $candidateUser->canTakeStage(3) ? 'border-purple-200 bg-purple-50/60' : 'border-slate-200 bg-slate-50 opacity-60' }} p-4">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex rounded-full {{ $candidateUser->canTakeStage(3) ? 'bg-purple-600' : 'bg-slate-500' }} px-2.5 py-0.5 text-[10px] font-bold text-white uppercase">Tahap 3</span>
+                            @if ($candidateUser->canTakeStage(3))
+                                <span class="text-[10px] font-semibold text-purple-700">Wajib ✓</span>
+                            @else
+                                <span class="text-[10px] font-medium text-slate-500">Dilewati</span>
+                            @endif
+                        </div>
+                        <h4 class="mt-2 font-bold {{ $candidateUser->canTakeStage(3) ? 'text-purple-950' : 'text-slate-700' }}">Tes Kepribadian</h4>
+                        <p class="mt-1 text-[11px] {{ $candidateUser->canTakeStage(3) ? 'text-purple-900/80' : 'text-slate-500' }}">24 Soal Most & Least</p>
+                        <p class="mt-2 text-[11px] font-semibold {{ $candidateUser->canTakeStage(3) ? 'text-purple-700' : 'text-slate-500' }}">✨ Tanpa Batas Waktu</p>
                     </div>
                 </div>
 

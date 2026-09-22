@@ -84,12 +84,13 @@ class AdminDiscQuestionBankController extends Controller
             'code' => ['required', 'string', 'max:50', 'unique:question_banks,code,' . $bank->id],
             'description' => ['nullable', 'string'],
             'version' => ['required', 'string', 'max:20'],
+            'status' => ['nullable', 'string', 'in:DRAFT,PUBLISHED,ARCHIVED'],
         ]);
 
         $bank->update($data + ['updated_by' => auth()->id()]);
         AuditLogger::log('UPDATE_QUESTION_BANK', 'PSIKOTES', $bank);
 
-        return redirect()->route('admin.disc.banks.edit', $bank)->with('success', 'Informasi Bank Soal Psikotes berhasil diperbarui.');
+        return back()->with('success', "Informasi Bank Soal '{$bank->name}' berhasil diperbarui.");
     }
 
     // --- MANAJEMEN SOAL SUB-TES 1 (DERET) & SUB-TES 2 (ANALOGI) ---
@@ -399,13 +400,15 @@ class AdminDiscQuestionBankController extends Controller
 
     public function destroy(QuestionBank $bank): RedirectResponse
     {
-        if ($bank->assessments()->exists()) {
-            return back()->withErrors(['error' => 'Bank Soal tidak dapat dihapus karena telah digunakan dalam asesmen aktif.']);
+        $assessmentsCount = $bank->assessments()->count();
+        if ($assessmentsCount > 0) {
+            return back()->withErrors(['error' => "Bank Soal '{$bank->name}' tidak dapat dihapus karena sedang digunakan pada {$assessmentsCount} jadwal asesmen."]);
         }
 
+        $bankName = $bank->name;
         $bank->delete();
         AuditLogger::log('DELETE_QUESTION_BANK', 'PSIKOTES', $bank);
 
-        return redirect()->route('admin.disc.banks.index')->with('success', 'Bank Soal Psikotes berhasil diarsipkan/dihapus.');
+        return redirect()->route('admin.disc.banks.index')->with('success', "Bank Soal '{$bankName}' berhasil dihapus.");
     }
 }

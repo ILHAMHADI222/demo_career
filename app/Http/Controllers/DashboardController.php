@@ -71,13 +71,14 @@ class DashboardController extends Controller
                 'statusOptions' => [
                     'DOCUMENT_REVIEW' => 'Review Berkas',
                     'ADMINISTRATIVE_REVIEW' => 'Lolos Administrasi',
-                    'TECHNICAL_TEST' => 'Psikotest / Test',
+                    'TECHNICAL_TEST' => 'Tes Teknis / Psikotes',
                     'HR_INTERVIEW' => 'Interview HRD',
                     'USER_INTERVIEW' => 'Interview User',
-                    'FINAL_INTERVIEW' => 'Final Interview',
-                    'OFFERING' => 'Offering',
-                    'HIRED' => 'Hired (Diterima)',
-                    'REJECTED' => 'Rejected (Ditolak)',
+                    'FINAL_INTERVIEW' => 'Interview Direksi (Final)',
+                    'MEDICAL_CHECK_UP' => 'Medical Check Up (MCU)',
+                    'OFFERING' => 'Offering (Penawaran Kerja)',
+                    'HIRED' => 'Diterima Bekerja',
+                    'REJECTED' => 'Tidak Lolos (Ditolak)',
                 ],
             ]);
         }

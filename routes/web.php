@@ -43,7 +43,9 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/assessment/disc/{assessment}/instruction', [ParticipantDiscAssessmentController::class, 'instruction'])->name('disc.assessment.instruction');
     Route::post('/assessment/disc/{assessment}/start', [ParticipantDiscAssessmentController::class, 'startSession'])->name('disc.assessment.start');
     Route::get('/assessment/disc/take/{token}', [ParticipantDiscAssessmentController::class, 'take'])->name('disc.assessment.take');
+    Route::post('/assessment/disc/take/{token}/stage-1-draft', [ParticipantDiscAssessmentController::class, 'saveStage1Draft'])->name('disc.assessment.stage1.draft');
     Route::post('/assessment/disc/take/{token}/stage-1', [ParticipantDiscAssessmentController::class, 'submitStage1'])->name('disc.assessment.stage1.submit');
+    Route::post('/assessment/disc/take/{token}/stage-2-draft', [ParticipantDiscAssessmentController::class, 'saveStage2Draft'])->name('disc.assessment.stage2.draft');
     Route::post('/assessment/disc/take/{token}/stage-2', [ParticipantDiscAssessmentController::class, 'submitStage2'])->name('disc.assessment.stage2.submit');
     Route::get('/assessment/disc/completed/{token}', [ParticipantDiscAssessmentController::class, 'completed'])->name('disc.assessment.completed');
 

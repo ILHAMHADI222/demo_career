@@ -11,6 +11,7 @@ use App\Models\QuestionBank;
 use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\DiscReportExporter;
+use App\Services\DiscScoringEngine;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +44,12 @@ class AdminDiscAssessmentController extends Controller
             'completed_sessions' => DiscAssessmentSession::where('status', 'COMPLETED')->count(),
         ];
 
-        return view('admin.disc.assessments.index', compact('assessments', 'stats', 'status', 'keyword'));
+        $questionBanks = QuestionBank::query()
+            ->where('status', 'PUBLISHED')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.disc.assessments.index', compact('assessments', 'questionBanks', 'stats', 'status', 'keyword'));
     }
 
     public function create(): View
@@ -157,6 +163,7 @@ class AdminDiscAssessmentController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', 'unique:disc_assessments,code,' . $assessment->id],
+            'question_bank_id' => ['nullable', 'exists:question_banks,id'],
             'duration_stage_1' => ['required', 'integer', 'min:1', 'max:120'],
             'duration_stage_2' => ['required', 'integer', 'min:1', 'max:120'],
             'duration_stage_3' => ['nullable', 'integer'],
@@ -170,7 +177,7 @@ class AdminDiscAssessmentController extends Controller
 
         $totalDuration = ($data['duration_stage_1'] ?? 10) + ($data['duration_stage_2'] ?? 10) + ($data['duration_stage_3'] ?? 0);
 
-        $assessment->update([
+        $payload = [
             'title' => $data['title'],
             'code' => $data['code'],
             'duration_minutes' => $totalDuration > 0 ? $totalDuration : 30,
@@ -183,11 +190,21 @@ class AdminDiscAssessmentController extends Controller
             'randomize_options' => !empty($data['randomize_options']),
             'result_visibility' => $data['result_visibility'],
             'status' => $data['status'],
-        ]);
+        ];
+
+        if (!empty($data['question_bank_id'])) {
+            $bank = QuestionBank::find($data['question_bank_id']);
+            if ($bank) {
+                $payload['question_bank_id'] = $bank->id;
+                $payload['question_bank_version'] = $bank->version;
+            }
+        }
+
+        $assessment->update($payload);
 
         AuditLogger::log('UPDATE_ASSESSMENT', 'PSIKOTES', $assessment);
 
-        return redirect()->route('admin.disc.assessments.show', $assessment)->with('success', 'Jadwal Asesmen Psikotes berhasil diperbarui.');
+        return back()->with('success', 'Jadwal Asesmen Psikotes berhasil diperbarui.');
     }
 
     public function assignParticipants(Request $request, DiscAssessment $assessment): RedirectResponse
@@ -241,6 +258,25 @@ class AdminDiscAssessmentController extends Controller
             'securityEvents',
         ]);
 
+        $scoringEngine = app(\App\Services\DiscScoringEngine::class);
+
+        // If candidate answered stage 3 questions but session is not completed yet, calculate live score snapshot
+        if ($session->answers->isNotEmpty() && (empty($session->disc_profile_code) || empty($session->raw_scores_json))) {
+            try {
+                $scoringResult = $scoringEngine->calculateSessionScore($session);
+                $session->update([
+                    'raw_scores_json' => $scoringResult['raw_scores'],
+                    'normalized_scores_json' => $scoringResult['normalized_scores'],
+                    'disc_profile_code' => $scoringResult['profile_code'] ?? ($scoringResult['profile']['code'] ?? null),
+                    'disc_profile_name' => $scoringResult['profile_name'] ?? ($scoringResult['profile']['name'] ?? null),
+                    'interpretation_json' => $scoringResult['interpretation'] ?? [],
+                ]);
+                $session->refresh();
+            } catch (\Throwable $e) {
+                // Keep existing values
+            }
+        }
+
         $bank = $session->assessment->questionBank;
         $deretQuestions = $bank && $bank->deretQuestions->isNotEmpty()
             ? $bank->deretQuestions
@@ -291,5 +327,23 @@ class AdminDiscAssessmentController extends Controller
     public function exportSessionCsv(DiscAssessmentSession $session, DiscReportExporter $exporter): StreamedResponse
     {
         return $exporter->exportSessionCsv($session);
+    }
+
+    public function destroy(DiscAssessment $assessment): RedirectResponse
+    {
+        if ($assessment->sessions()->exists()) {
+            return back()->withErrors([
+                'error' => "Asesmen '{$assessment->title}' tidak dapat dihapus karena sudah memiliki {$assessment->sessions()->count()} sesi pengerjaan oleh kandidat. Anda dapat mengubah statusnya menjadi 'CLOSED' untuk menghentikan pengerjaan."
+            ]);
+        }
+
+        DB::transaction(function () use ($assessment) {
+            $assessment->participants()->delete();
+            $assessment->delete();
+        });
+
+        AuditLogger::log('DELETE_ASSESSMENT', 'PSIKOTES', $assessment);
+
+        return redirect()->route('admin.disc.assessments.index')->with('success', "Asesmen '{$assessment->title}' berhasil dihapus.");
     }
 }

@@ -28,11 +28,17 @@
                     <div>
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="rounded-full bg-white/10 px-3.5 py-1 text-xs uppercase tracking-wider text-white backdrop-blur">
-                                Hasil Lengkap Psikotes & Profil DISC
+                                Hasil Psikotes & Evaluasi Sub-Tes
                             </span>
-                            <span class="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300">
-                                Status: {{ $session->status === 'COMPLETED' ? 'Selesai Dikerjakan' : $session->status }}
-                            </span>
+                            @if ($session->status === 'COMPLETED')
+                                <span class="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300">
+                                    ✓ Selesai Dikerjakan (3/3 Tahap)
+                                </span>
+                            @else
+                                <span class="rounded-full bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-200">
+                                    ⚡ Real-time: Sedang di Tahap {{ $session->current_stage ?? 1 }} ({{ ($session->current_stage ?? 1) == 1 ? 'Deret Hitung' : (($session->current_stage ?? 1) == 2 ? 'Analogi Verbal' : 'Kepribadian') }})
+                                </span>
+                            @endif
                         </div>
 
                         <h1 class="mt-4 text-2xl font-light tracking-tight sm:text-4xl text-white">
@@ -46,15 +52,15 @@
                             <span>•</span>
                             <span>Kode: <strong class="font-mono text-white/90">{{ $session->assessment->code }}</strong></span>
                             <span>•</span>
-                            <span>Selesai: <strong class="text-white/90">{{ $session->completed_at ? $session->completed_at->format('d M Y, H:i') : '-' }}</strong></span>
+                            <span>Waktu Selesai: <strong class="text-white/90">{{ $session->completed_at ? $session->completed_at->format('d M Y, H:i') : 'Belum Selesai (Proses Berjalan)' }}</strong></span>
                         </div>
                     </div>
 
                     {{-- BIG PROFILE BADGE --}}
                     <div class="flex flex-col items-center justify-center rounded-[28px] border border-white/15 bg-white/10 p-5 text-center backdrop-blur sm:min-w-[240px]">
                         <span class="text-[11px] font-bold uppercase tracking-widest text-[#f97316]">Profil Kepribadian</span>
-                        <span class="mt-1 font-mono text-5xl font-black text-white">{{ $session->disc_profile_code ?: '-' }}</span>
-                        <span class="mt-2 text-xs font-semibold text-amber-200">{{ $session->disc_profile_name ?: 'Hasil Psikotes' }}</span>
+                        <span class="mt-1 font-mono text-4xl sm:text-5xl font-black text-white">{{ $session->disc_profile_code ?: '-' }}</span>
+                        <span class="mt-2 text-xs font-semibold text-amber-200">{{ $session->disc_profile_name ?: ($session->isCompleted() ? 'Hasil Psikotes' : 'Menunggu Tahap 3') }}</span>
                     </div>
                 </div>
             </div>
@@ -101,8 +107,21 @@
                     </div>
                     <h3 class="mt-2 text-sm font-semibold text-[#322d2a]">Tes Kepribadian</h3>
                     <div class="mt-3 flex items-baseline justify-between">
-                        <span class="font-mono text-3xl font-black text-purple-700">{{ $session->disc_profile_code ?: '-' }}</span>
-                        <span class="text-xs font-semibold text-purple-900">{{ Str::limit($session->disc_profile_name ?: 'Selesai', 20) }}</span>
+                        <div>
+                            <span class="font-mono text-3xl font-black text-purple-700">{{ $session->disc_profile_code ?: '-' }}</span>
+                            @if($session->disc_profile_name)
+                                <span class="text-xs font-semibold text-purple-900 ml-1">{{ Str::limit($session->disc_profile_name, 16) }}</span>
+                            @endif
+                        </div>
+                        <span class="text-xs font-medium text-[#6f6b67]">
+                            @if ($session->isCompleted())
+                                <strong class="text-purple-700">Selesai (24/24)</strong>
+                            @elseif ($session->answers->count() > 0)
+                                <strong class="text-purple-700">{{ $session->answers->count() }} / 24 Soal</strong>
+                            @else
+                                <span class="text-slate-400">{{ ($session->current_stage ?? 1) == 3 ? 'Sedang Mengerjakan' : 'Menunggu Tahap 3' }}</span>
+                            @endif
+                        </span>
                     </div>
                 </div>
 

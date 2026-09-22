@@ -211,7 +211,7 @@
                                             </div>
                                             <span class="inline-flex w-fit items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-[#f97316] ring-1 ring-[#f97316]/20">
                                                 <span class="h-1.5 w-1.5 rounded-full bg-[#f97316]"></span>
-                                                {{ str($interview->status)->headline() }}
+                                                {{ $interview->status_label }}
                                             </span>
                                         </div>
 
@@ -378,9 +378,35 @@
                                                 {{ $application->application_number }}
                                             </p>
                                         </div>
-                                        <span class="inline-flex w-fit rounded-full bg-[#fff3e8] px-4 py-2 text-sm font-normal tracking-[0.14px] text-[#f97316] ring-1 ring-[#f97316]/20">
-                                            {{ str($application->status)->headline() }}
-                                        </span>
+                                        @php
+                                            $candNormStatus = strtoupper(str_replace([' ', '-'], '_', $application->status ?? ''));
+                                        @endphp
+                                        @if(in_array($candNormStatus, ['HIRED', 'ACCEPTED']))
+                                            <span class="inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-50 px-3.5 py-1.5 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200">
+                                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                                {{ $application->status_label }}
+                                            </span>
+                                        @elseif(in_array($candNormStatus, ['REJECTED', 'DECLINED', 'WITHDRAWN', 'CANCELLED']))
+                                            <span class="inline-flex w-fit items-center gap-1.5 rounded-full bg-red-50 px-3.5 py-1.5 text-xs font-medium text-red-600 ring-1 ring-red-200">
+                                                <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                                {{ $application->status_label }}
+                                            </span>
+                                        @elseif(in_array($candNormStatus, ['OFFERING', 'OFFER']))
+                                            <span class="inline-flex w-fit items-center gap-1.5 rounded-full bg-blue-50 px-3.5 py-1.5 text-xs font-medium text-blue-700 ring-1 ring-blue-200">
+                                                <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                                                {{ $application->status_label }}
+                                            </span>
+                                        @elseif(in_array($candNormStatus, ['HR_INTERVIEW', 'HRINTERVIEW', 'USER_INTERVIEW', 'USERINTERVIEW', 'FINAL_INTERVIEW', 'FINALINTERVIEW', 'TECHNICAL_TEST', 'TECHNICALTEST', 'MEDICAL_CHECK_UP', 'MEDICALCHECKUP']))
+                                            <span class="inline-flex w-fit items-center gap-1.5 rounded-full bg-violet-50 px-3.5 py-1.5 text-xs font-medium text-violet-700 ring-1 ring-violet-200">
+                                                <span class="h-1.5 w-1.5 rounded-full bg-violet-500"></span>
+                                                {{ $application->status_label }}
+                                            </span>
+                                        @else
+                                            <span class="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#fff3e8] px-3.5 py-1.5 text-xs font-medium text-[#f97316] ring-1 ring-[#f97316]/20">
+                                                <span class="h-1.5 w-1.5 rounded-full bg-[#f97316]"></span>
+                                                {{ $application->status_label }}
+                                            </span>
+                                        @endif
                                     </div>
                                     <div class="mt-5 flex items-center justify-between gap-4 border-t border-[#322d2a]/10 pt-4">
                                         <span class="text-xs font-normal leading-[1.5] text-[#6f6b67]">

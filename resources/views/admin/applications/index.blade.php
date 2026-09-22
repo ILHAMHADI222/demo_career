@@ -219,26 +219,33 @@
 
                             {{-- Status --}}
                             <div>
-                                @php $status = strtolower($application->status); @endphp
-                                @if(in_array($status, ['hired', 'accepted']))
-                                    <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-normal text-emerald-700 ring-1 ring-emerald-200">
-                                        {{ str($application->status)->headline() }}
+                                @php
+                                    $normalizedStatus = strtoupper(str_replace([' ', '-'], '_', $application->status ?? ''));
+                                @endphp
+                                @if(in_array($normalizedStatus, ['HIRED', 'ACCEPTED']))
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 ring-1 ring-emerald-200">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                        {{ $application->status_label }}
                                     </span>
-                                @elseif(in_array($status, ['rejected', 'declined']))
-                                    <span class="inline-flex rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-normal text-red-600 ring-1 ring-red-200">
-                                        {{ str($application->status)->headline() }}
+                                @elseif(in_array($normalizedStatus, ['REJECTED', 'DECLINED', 'WITHDRAWN', 'CANCELLED']))
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-600 ring-1 ring-red-200">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                        {{ $application->status_label }}
                                     </span>
-                                @elseif(in_array($status, ['interview', 'technical_test', 'test']))
-                                    <span class="inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-normal text-violet-700 ring-1 ring-violet-200">
-                                        {{ str($application->status)->headline() }}
+                                @elseif(in_array($normalizedStatus, ['HR_INTERVIEW', 'HRINTERVIEW', 'USER_INTERVIEW', 'USERINTERVIEW', 'FINAL_INTERVIEW', 'FINALINTERVIEW', 'TECHNICAL_TEST', 'TECHNICALTEST', 'MEDICAL_CHECK_UP', 'MEDICALCHECKUP']))
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-medium text-violet-700 ring-1 ring-violet-200">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-violet-500"></span>
+                                        {{ $application->status_label }}
                                     </span>
-                                @elseif(in_array($status, ['offering', 'offer']))
-                                    <span class="inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-normal text-blue-700 ring-1 ring-blue-200">
-                                        {{ str($application->status)->headline() }}
+                                @elseif(in_array($normalizedStatus, ['OFFERING', 'OFFER']))
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700 ring-1 ring-blue-200">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                                        {{ $application->status_label }}
                                     </span>
                                 @else
-                                    <span class="inline-flex rounded-full bg-[#fff3e8] px-2.5 py-1 text-[11px] font-normal text-[#f97316] ring-1 ring-[#f97316]/20">
-                                        {{ str($application->status)->headline() }}
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-[#fff3e8] px-2.5 py-1 text-[11px] font-medium text-[#f97316] ring-1 ring-[#f97316]/20">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-[#f97316]"></span>
+                                        {{ $application->status_label }}
                                     </span>
                                 @endif
                             </div>
@@ -268,7 +275,7 @@
                     @php
                         $candidateName = $application->candidateProfile?->full_name ?? 'Nama belum tersedia';
                         $candidateEmail = $application->candidateProfile?->email ?? '-';
-                        $status = strtolower($application->status);
+                        $normalizedStatus = strtoupper(str_replace([' ', '-'], '_', $application->status ?? ''));
                     @endphp
                     <div class="rounded-[22px] border border-white bg-white p-4 text-xs">
                         <div class="flex items-start justify-between gap-3">
@@ -286,17 +293,25 @@
                                 </div>
                             </div>
 
-                            @if(in_array($status, ['hired', 'accepted']))
-                                <span class="shrink-0 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-normal text-emerald-700">
-                                    {{ str($application->status)->headline() }}
+                            @if(in_array($normalizedStatus, ['HIRED', 'ACCEPTED']))
+                                <span class="shrink-0 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-200">
+                                    {{ $application->status_label }}
                                 </span>
-                            @elseif(in_array($status, ['rejected', 'declined']))
-                                <span class="shrink-0 rounded-full bg-red-50 px-2.5 py-0.5 text-[10px] font-normal text-red-600">
-                                    {{ str($application->status)->headline() }}
+                            @elseif(in_array($normalizedStatus, ['REJECTED', 'DECLINED', 'WITHDRAWN', 'CANCELLED']))
+                                <span class="shrink-0 rounded-full bg-red-50 px-2.5 py-0.5 text-[10px] font-medium text-red-600 ring-1 ring-red-200">
+                                    {{ $application->status_label }}
+                                </span>
+                            @elseif(in_array($normalizedStatus, ['HR_INTERVIEW', 'HRINTERVIEW', 'USER_INTERVIEW', 'USERINTERVIEW', 'FINAL_INTERVIEW', 'FINALINTERVIEW', 'TECHNICAL_TEST', 'TECHNICALTEST', 'MEDICAL_CHECK_UP', 'MEDICALCHECKUP']))
+                                <span class="shrink-0 rounded-full bg-violet-50 px-2.5 py-0.5 text-[10px] font-medium text-violet-700 ring-1 ring-violet-200">
+                                    {{ $application->status_label }}
+                                </span>
+                            @elseif(in_array($normalizedStatus, ['OFFERING', 'OFFER']))
+                                <span class="shrink-0 rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-medium text-blue-700 ring-1 ring-blue-200">
+                                    {{ $application->status_label }}
                                 </span>
                             @else
-                                <span class="shrink-0 rounded-full bg-[#fff3e8] px-2.5 py-0.5 text-[10px] font-normal text-[#f97316]">
-                                    {{ str($application->status)->headline() }}
+                                <span class="shrink-0 rounded-full bg-[#fff3e8] px-2.5 py-0.5 text-[10px] font-medium text-[#f97316] ring-1 ring-[#f97316]/20">
+                                    {{ $application->status_label }}
                                 </span>
                             @endif
                         </div>

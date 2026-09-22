@@ -37,25 +37,28 @@
                                         {{ $application->application_number }}
                                     </span>
 
-                                    @if(in_array($status, ['hired', 'accepted']))
+                                    @php
+                                        $normalizedStatus = strtoupper(str_replace([' ', '-'], '_', $application->status ?? ''));
+                                    @endphp
+                                    @if(in_array($normalizedStatus, ['HIRED', 'ACCEPTED']))
                                         <span class="rounded-full bg-emerald-500/20 px-3 py-1 text-[11px] font-medium text-emerald-300 border border-emerald-400/30">
-                                            ✓ {{ str($application->status)->headline() }}
+                                            ✓ {{ $application->status_label }}
                                         </span>
-                                    @elseif(in_array($status, ['rejected', 'declined']))
+                                    @elseif(in_array($normalizedStatus, ['REJECTED', 'DECLINED', 'WITHDRAWN', 'CANCELLED']))
                                         <span class="rounded-full bg-rose-500/20 px-3 py-1 text-[11px] font-medium text-rose-300 border border-rose-400/30">
-                                            ✕ {{ str($application->status)->headline() }}
+                                            ✕ {{ $application->status_label }}
                                         </span>
-                                    @elseif(in_array($status, ['offering', 'offer']))
+                                    @elseif(in_array($normalizedStatus, ['OFFERING', 'OFFER']))
                                         <span class="rounded-full bg-blue-500/20 px-3 py-1 text-[11px] font-medium text-blue-300 border border-blue-400/30">
-                                            💼 {{ str($application->status)->headline() }}
+                                            💼 {{ $application->status_label }}
                                         </span>
-                                    @elseif(in_array($status, ['hr_interview', 'user_interview', 'final_interview', 'technical_test']))
+                                    @elseif(in_array($normalizedStatus, ['HR_INTERVIEW', 'HRINTERVIEW', 'USER_INTERVIEW', 'USERINTERVIEW', 'FINAL_INTERVIEW', 'FINALINTERVIEW', 'TECHNICAL_TEST', 'TECHNICALTEST', 'MEDICAL_CHECK_UP', 'MEDICALCHECKUP']))
                                         <span class="rounded-full bg-amber-500/20 px-3 py-1 text-[11px] font-medium text-amber-300 border border-amber-400/30">
-                                            📅 {{ str($application->status)->headline() }}
+                                            📅 {{ $application->status_label }}
                                         </span>
                                     @else
                                         <span class="rounded-full bg-[#f97316]/20 px-3 py-1 text-[11px] font-medium text-[#f97316] border border-[#f97316]/30">
-                                            ● {{ str($application->status)->headline() }}
+                                            ● {{ $application->status_label }}
                                         </span>
                                     @endif
                                 </div>
@@ -144,7 +147,7 @@
                                             </div>
                                             <div class="flex items-center gap-1.5">
                                                 <span class="rounded-full bg-orange-100 px-2.5 py-0.5 text-[10px] font-medium text-[#f97316]">
-                                                    {{ str($interview->status)->headline() }}
+                                                    {{ $interview->status_label }}
                                                 </span>
 
                                                 <form method="POST" action="{{ route('admin.applications.interviews.destroy', [$application, $interview]) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jadwal interview {{ $interview->type }} ini?')">
@@ -521,9 +524,29 @@
                                 <p class="text-[11px] font-medium uppercase tracking-wider text-[#6f6b67]">Audit Trail Status:</p>
                                 <div class="mt-3 space-y-2">
                                     @foreach($statusHistories->sortByDesc('changed_at') as $history)
+                                        @php
+                                            $histNorm = strtoupper(str_replace([' ', '-'], '_', $history->to_status ?? ''));
+                                            $histLabel = match ($histNorm) {
+                                                'DRAFT' => 'Draft',
+                                                'SUBMITTED' => 'Lamaran Dikirim',
+                                                'DOCUMENT_REVIEW', 'DOCUMENTREVIEW' => 'Review Berkas',
+                                                'ADMINISTRATIVE_REVIEW', 'ADMINISTRATIVEREVIEW' => 'Lolos Administrasi',
+                                                'TECHNICAL_TEST', 'TECHNICALTEST' => 'Tes Teknis / Psikotes',
+                                                'HR_INTERVIEW', 'HRINTERVIEW' => 'Interview HRD',
+                                                'USER_INTERVIEW', 'USERINTERVIEW' => 'Interview User',
+                                                'FINAL_INTERVIEW', 'FINALINTERVIEW' => 'Interview Direksi',
+                                                'MEDICAL_CHECK_UP', 'MEDICALCHECKUP' => 'Medical Check Up (MCU)',
+                                                'OFFERING' => 'Offering (Penawaran Kerja)',
+                                                'HIRED', 'ACCEPTED' => 'Diterima Bekerja',
+                                                'REJECTED', 'DECLINED' => 'Tidak Lolos (Ditolak)',
+                                                'WITHDRAWN' => 'Mengundurkan Diri',
+                                                'CANCELLED' => 'Dibatalkan',
+                                                default => str($history->to_status)->replace('_', ' ')->headline()->toString(),
+                                            };
+                                        @endphp
                                         <div class="flex items-start justify-between gap-3 text-xs">
                                             <div>
-                                                <span class="font-medium text-[#322d2a]">{{ str($history->to_status)->headline() }}</span>
+                                                <span class="font-medium text-[#322d2a]">{{ $histLabel }}</span>
                                                 @if($history->note)
                                                     <p class="text-[11px] text-[#6f6b67]">{{ $history->note }}</p>
                                                 @endif
@@ -554,7 +577,7 @@
                                 </h2>
                             </div>
                             <span class="rounded-full bg-[#fff3e8] px-3 py-1 text-xs font-medium text-[#f97316]">
-                                {{ str($application->status)->headline() }}
+                                {{ $application->status_label }}
                             </span>
                         </div>
 

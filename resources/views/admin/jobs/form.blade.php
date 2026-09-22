@@ -194,8 +194,17 @@
 
                     <div>
                         <label class="{{ $labelClass }}">Batas Waktu Berakhir (Deadline)</label>
-                        <input name="deadline_at" type="datetime-local" value="{{ old('deadline_at', optional($job->deadline_at)->format('Y-m-d\TH:i')) }}" class="{{ $inputClass }} bg-white">
-                        <p class="mt-1 text-[10px] text-[#6f6b67]">Setelah tanggal ini lowongan ditutup otomatis.</p>
+                        <input id="form_deadline_at" name="deadline_at" type="datetime-local" value="{{ old('deadline_at', optional($job->deadline_at)->format('Y-m-d\TH:i')) }}" class="{{ $inputClass }} bg-white">
+                        
+                        <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                            <span class="text-[10px] text-[#6f6b67] w-full mb-0.5">Preset Masa Aktif:</span>
+                            <button type="button" onclick="setFormDeadline(7)" class="rounded-full border border-[#f97316]/30 bg-white px-2.5 py-1 text-[10px] font-medium text-[#f97316] hover:bg-[#fff3e8] transition">+7 Hari</button>
+                            <button type="button" onclick="setFormDeadline(14)" class="rounded-full border border-[#f97316]/30 bg-white px-2.5 py-1 text-[10px] font-medium text-[#f97316] hover:bg-[#fff3e8] transition">+14 Hari</button>
+                            <button type="button" onclick="setFormDeadline(30)" class="rounded-full border border-[#f97316]/30 bg-white px-2.5 py-1 text-[10px] font-medium text-[#f97316] hover:bg-[#fff3e8] transition">+30 Hari</button>
+                            <button type="button" onclick="setFormDeadline(60)" class="rounded-full border border-[#f97316]/30 bg-white px-2.5 py-1 text-[10px] font-medium text-[#f97316] hover:bg-[#fff3e8] transition">+60 Hari</button>
+                            <button type="button" onclick="setFormDeadline(0)" class="rounded-full border border-gray-300 bg-white px-2.5 py-1 text-[10px] font-medium text-gray-600 hover:bg-gray-100 transition">Tanpa Batas</button>
+                        </div>
+                        <p class="mt-1.5 text-[10px] text-[#6f6b67]">Setelah tanggal ini lowongan ditutup otomatis. Kosongkan jika tanpa batas waktu.</p>
                     </div>
                 </div>
             </div>
@@ -244,3 +253,20 @@
         </aside>
     </div>
 </div>
+
+<script>
+function setFormDeadline(days) {
+    const input = document.getElementById('form_deadline_at');
+    if (!input) return;
+    if (days === 0) {
+        input.value = '';
+        return;
+    }
+    const d = new Date();
+    d.setDate(d.getDate() + parseInt(days));
+    d.setHours(23, 59, 0, 0);
+    const pad = (n) => String(n).padStart(2, '0');
+    const formatted = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T23:59`;
+    input.value = formatted;
+}
+</script>

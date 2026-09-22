@@ -65,18 +65,18 @@ class AdminApplicationController extends Controller
         $statusOptions = [
             'DRAFT' => 'Draft',
             'SUBMITTED' => 'Lamaran Dikirim (Submitted)',
-            'DOCUMENT_REVIEW' => 'Review Berkas (Document Review)',
+            'DOCUMENT_REVIEW' => 'Review Berkas',
             'ADMINISTRATIVE_REVIEW' => 'Lolos Administrasi',
-            'TECHNICAL_TEST' => 'Psikotest / Technical Test',
+            'TECHNICAL_TEST' => 'Tes Teknis / Psikotes',
             'HR_INTERVIEW' => 'Interview HRD',
-            'USER_INTERVIEW' => 'Interview User / Technical',
-            'FINAL_INTERVIEW' => 'Final Interview Management',
+            'USER_INTERVIEW' => 'Interview User',
+            'FINAL_INTERVIEW' => 'Interview Direksi (Final)',
             'MEDICAL_CHECK_UP' => 'Medical Check Up (MCU)',
             'OFFERING' => 'Offering (Penawaran Kerja)',
-            'HIRED' => 'Hired (Diterima Bekerja)',
-            'REJECTED' => 'Rejected (Ditolak)',
-            'WITHDRAWN' => 'Withdrawn (Mengundurkan Diri)',
-            'CANCELLED' => 'Cancelled (Dibatalkan)',
+            'HIRED' => 'Diterima Bekerja (Hired)',
+            'REJECTED' => 'Tidak Lolos (Ditolak)',
+            'WITHDRAWN' => 'Mengundurkan Diri',
+            'CANCELLED' => 'Dibatalkan',
         ];
 
         return view('admin.applications.show', [
@@ -363,23 +363,31 @@ class AdminApplicationController extends Controller
     {
         return [
             'review' => [
-                'label' => 'Review',
-                'statuses' => ['DRAFT', 'SUBMITTED', 'DOCUMENT_REVIEW', 'ADMINISTRATIVE_REVIEW', 'HR_INTERVIEW', 'USER_INTERVIEW', 'FINAL_INTERVIEW', 'MEDICAL_CHECK_UP'],
+                'label' => 'Review Berkas',
+                'statuses' => ['DRAFT', 'SUBMITTED', 'DOCUMENT_REVIEW', 'ADMINISTRATIVE_REVIEW'],
+            ],
+            'interview' => [
+                'label' => 'Interview',
+                'statuses' => ['HR_INTERVIEW', 'USER_INTERVIEW', 'FINAL_INTERVIEW'],
             ],
             'test' => [
-                'label' => 'Psikotes / Test',
+                'label' => 'Tes Teknis / Psikotes',
                 'statuses' => ['TECHNICAL_TEST'],
             ],
+            'medical' => [
+                'label' => 'Medical Check Up (MCU)',
+                'statuses' => ['MEDICAL_CHECK_UP'],
+            ],
             'offering' => [
-                'label' => 'Offering',
+                'label' => 'Offering (Penawaran Kerja)',
                 'statuses' => ['OFFERING'],
             ],
             'hired' => [
-                'label' => 'Hired',
+                'label' => 'Diterima Bekerja',
                 'statuses' => ['HIRED'],
             ],
             'rejected' => [
-                'label' => 'Rejected',
+                'label' => 'Tidak Lolos / Dibatalkan',
                 'statuses' => ['REJECTED', 'WITHDRAWN', 'CANCELLED'],
             ],
         ];
@@ -409,7 +417,7 @@ class AdminApplicationController extends Controller
         $formattedBirthDate = $birthDate?->format('d-M-y');
         $age = $birthDate ? round($birthDate->diffInDays(now()) / 365, 2) : null;
 
-        $statusLabel = str($application->status)->headline()->toString();
+        $statusLabel = $application->status_label;
         $phoneWa = trim(($profile?->phone ?? '').' / '.($profile?->whatsapp ?? ''), ' /');
 
         $values = [

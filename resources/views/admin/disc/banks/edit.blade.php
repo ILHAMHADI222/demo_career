@@ -35,6 +35,12 @@
                             <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> PUBLISHED
                         </span>
                     @endif
+
+                    <button type="button"
+                            onclick="openDeleteModal()"
+                            class="rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-600 hover:text-white transition shadow-xs">
+                        ✕ Hapus Bank Soal
+                    </button>
                 </div>
             </div>
 
@@ -413,5 +419,56 @@
             </div>
 
         </div>
+
+        {{-- MODAL KONFIRMASI HAPUS --}}
+        <div id="deleteModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-delete-title" role="dialog" aria-modal="true">
+            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
+
+            <div class="flex min-h-full items-center justify-center p-4 text-center">
+                <div class="relative w-full max-w-md transform overflow-hidden rounded-[28px] border border-white bg-white p-6 text-left shadow-2xl transition-all">
+                    <div class="flex items-center gap-3.5">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 ring-1 ring-rose-200">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-semibold text-[#322d2a]" id="modal-delete-title">Hapus Bank Soal</h3>
+                            <p class="text-xs text-[#6f6b67]">Konfirmasi penghapusan data bank soal</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 rounded-2xl bg-rose-50/70 p-3.5 border border-rose-100 text-xs text-rose-900 leading-relaxed">
+                        Apakah Anda yakin ingin menghapus bank soal <strong>"{{ $bank->name }}"</strong>?
+                        <p class="mt-1 text-[11px] text-rose-700">Bank soal yang terhubung dengan jadwal asesmen tidak dapat dihapus demi keamanan data.</p>
+                    </div>
+
+                    <form method="POST" action="{{ route('admin.disc.banks.destroy', $bank) }}" class="mt-5 flex items-center justify-end gap-2.5">
+                        @csrf
+                        @method('DELETE')
+                        <button type="button" onclick="closeDeleteModal()" class="rounded-full bg-[#f0efe9] px-4 py-2 text-xs font-medium text-[#6f6b67] hover:bg-[#e4e2dc] hover:text-[#322d2a] transition">
+                            Batal
+                        </button>
+                        <button type="submit" class="rounded-full bg-rose-600 px-5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 transition">
+                            Ya, Hapus Bank Soal
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function openDeleteModal() {
+                document.getElementById('deleteModal').classList.remove('hidden');
+            }
+            function closeDeleteModal() {
+                document.getElementById('deleteModal').classList.add('hidden');
+            }
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closeDeleteModal();
+                }
+            });
+        </script>
     </section>
 </x-layouts.app>

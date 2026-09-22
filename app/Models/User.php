@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'registration_otp', 'registration_otp_expires_at'])]
+#[Fillable(['name', 'email', 'password', 'registration_otp', 'registration_otp_expires_at', 'allowed_stages'])]
 #[Hidden(['password', 'remember_token', 'registration_otp'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -35,6 +35,21 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'registration_otp_expires_at' => 'datetime',
             'password' => 'hashed',
+            'allowed_stages' => 'array',
         ];
+    }
+
+    public function getAllowedStages(): array
+    {
+        if (is_array($this->allowed_stages) && count($this->allowed_stages) > 0) {
+            return array_map('intval', $this->allowed_stages);
+        }
+
+        return [1, 2, 3];
+    }
+
+    public function canTakeStage(int $stage): bool
+    {
+        return in_array($stage, $this->getAllowedStages(), true);
     }
 }

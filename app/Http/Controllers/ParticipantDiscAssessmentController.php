@@ -126,6 +126,10 @@ class ParticipantDiscAssessmentController extends Controller
 
         $token = 'PSI-' . strtoupper(Str::random(12)) . '-' . time();
 
+        $user = auth()->user();
+        $allowedStages = $user->getAllowedStages();
+        $initialStage = min($allowedStages) ?: 1;
+
         $session = DiscAssessmentSession::create([
             'disc_assessment_id' => $assessment->id,
             'disc_assessment_participant_id' => $participant->id,
@@ -133,10 +137,12 @@ class ParticipantDiscAssessmentController extends Controller
             'attempt_number' => $completedAttempts + 1,
             'session_token' => $token,
             'status' => 'IN_PROGRESS',
-            'current_stage' => 1,
+            'current_stage' => $initialStage,
             'current_question_index' => 0,
             'started_at' => now(),
-            'stage_1_started_at' => now(),
+            'stage_1_started_at' => $initialStage === 1 ? now() : null,
+            'stage_2_started_at' => $initialStage === 2 ? now() : null,
+            'stage_3_started_at' => $initialStage === 3 ? now() : null,
             'last_activity_at' => now(),
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
@@ -166,6 +172,21 @@ class ParticipantDiscAssessmentController extends Controller
 
         $assessment = $session->assessment;
         $bank = $assessment->questionBank;
+        $user = auth()->user();
+
+        // Skip any stage not in user allowed stages
+        while ($session->current_stage <= 3 && !$user->canTakeStage($session->current_stage)) {
+            $session->current_stage++;
+        }
+
+        if ($session->current_stage > 3) {
+            $session->update([
+                'status' => 'COMPLETED',
+                'completed_at' => now(),
+                'last_activity_at' => now(),
+            ]);
+            return redirect()->route('disc.assessment.completed', $token);
+        }
 
         // Current Stage Dispatcher
         if ($session->current_stage == 1) {
@@ -212,6 +233,29 @@ class ParticipantDiscAssessmentController extends Controller
         return view('disc.take', compact('session', 'assessment'));
     }
 
+    public function saveStage1Draft(Request $request, string $token): JsonResponse
+    {
+        $session = DiscAssessmentSession::query()
+            ->where('session_token', $token)
+            ->where('participant_id', auth()->id())
+            ->firstOrFail();
+
+        if ($session->isCompleted()) {
+            return response()->json(['success' => false, 'message' => 'Sesi sudah selesai'], 400);
+        }
+
+        $incomingAnswers = $request->input('answers', []);
+        $existingAnswers = $session->stage_1_answers_json ?? [];
+        $mergedAnswers = array_replace_recursive($existingAnswers, $incomingAnswers);
+
+        $session->update([
+            'stage_1_answers_json' => $mergedAnswers,
+            'last_activity_at' => now(),
+        ]);
+
+        return response()->json(['success' => true, 'saved_at' => now()->toIso8601String()]);
+    }
+
     public function submitStage1(Request $request, string $token): RedirectResponse
     {
         $session = DiscAssessmentSession::query()
@@ -223,7 +267,10 @@ class ParticipantDiscAssessmentController extends Controller
             return redirect()->route('disc.assessment.completed', $token);
         }
 
-        $answers = $request->input('answers', []);
+        $incomingAnswers = $request->input('answers', []);
+        $existingAnswers = $session->stage_1_answers_json ?? [];
+        $answers = array_replace_recursive($existingAnswers, $incomingAnswers);
+
         $bank = $session->assessment->questionBank;
         $questions = $bank ? $bank->deretQuestions : collect();
         if ($questions->isEmpty()) {
@@ -240,27 +287,75 @@ class ParticipantDiscAssessmentController extends Controller
             $correctAns1 = trim(strtolower($q->correct_answer_1 ?? ''));
             $correctAns2 = trim(strtolower($q->correct_answer_2 ?? ''));
 
-            // Check if matches
-            if ($userAns1 === $correctAns1 && $userAns2 === $correctAns2) {
+            // Jawaban benar jika kedua input terisi dan sesuai dengan kunci jawaban
+            if ($userAns1 !== '' && $userAns2 !== '' && $userAns1 === $correctAns1 && $userAns2 === $correctAns2) {
                 $correctCount++;
             }
         }
 
         $score = $totalQuestions > 0 ? round(($correctCount / $totalQuestions) * 100, 2) : 0;
+        $user = auth()->user();
+
+        $nextStage = null;
+        if ($user->canTakeStage(2)) {
+            $nextStage = 2;
+        } elseif ($user->canTakeStage(3)) {
+            $nextStage = 3;
+        }
+
+        if ($nextStage) {
+            $session->update([
+                'stage_1_answers_json' => $answers,
+                'stage_1_score' => $score,
+                'stage_1_correct_count' => $correctCount,
+                'stage_1_completed_at' => now(),
+                'current_stage' => $nextStage,
+                "stage_{$nextStage}_started_at" => now(),
+                'last_activity_at' => now(),
+            ]);
+
+            AuditLogger::log('SUBMIT_STAGE_1', 'PSIKOTES', $session, ['score' => $score, 'correct_count' => $correctCount]);
+
+            $stageTitle = $nextStage === 2 ? 'Sub-Tes 2 (Analogi Verbal)' : 'Sub-Tes 3 (Tes Kepribadian)';
+            return redirect()->route('disc.assessment.take', $token)->with('stage_success', "Sub-Tes 1 (Deret Hitung) berhasil diselesaikan! Silakan lanjutkan ke {$stageTitle}.");
+        } else {
+            $session->update([
+                'stage_1_answers_json' => $answers,
+                'stage_1_score' => $score,
+                'stage_1_correct_count' => $correctCount,
+                'stage_1_completed_at' => now(),
+                'status' => 'COMPLETED',
+                'completed_at' => now(),
+                'last_activity_at' => now(),
+            ]);
+
+            AuditLogger::log('SUBMIT_STAGE_1', 'PSIKOTES', $session, ['score' => $score, 'correct_count' => $correctCount]);
+
+            return redirect()->route('disc.assessment.completed', $token);
+        }
+    }
+
+    public function saveStage2Draft(Request $request, string $token): JsonResponse
+    {
+        $session = DiscAssessmentSession::query()
+            ->where('session_token', $token)
+            ->where('participant_id', auth()->id())
+            ->firstOrFail();
+
+        if ($session->isCompleted()) {
+            return response()->json(['success' => false, 'message' => 'Sesi sudah selesai'], 400);
+        }
+
+        $incomingAnswers = $request->input('answers', []);
+        $existingAnswers = $session->stage_2_answers_json ?? [];
+        $mergedAnswers = array_replace($existingAnswers, $incomingAnswers);
 
         $session->update([
-            'stage_1_answers_json' => $answers,
-            'stage_1_score' => $score,
-            'stage_1_correct_count' => $correctCount,
-            'stage_1_completed_at' => now(),
-            'current_stage' => 2,
-            'stage_2_started_at' => now(),
+            'stage_2_answers_json' => $mergedAnswers,
             'last_activity_at' => now(),
         ]);
 
-        AuditLogger::log('SUBMIT_STAGE_1', 'PSIKOTES', $session, ['score' => $score, 'correct_count' => $correctCount]);
-
-        return redirect()->route('disc.assessment.take', $token)->with('stage_success', 'Sub-Tes 1 (Deret Hitung) berhasil diselesaikan! Silakan lanjutkan ke Sub-Tes 2 (Analogi Verbal).');
+        return response()->json(['success' => true, 'saved_at' => now()->toIso8601String()]);
     }
 
     public function submitStage2(Request $request, string $token): RedirectResponse
@@ -274,7 +369,10 @@ class ParticipantDiscAssessmentController extends Controller
             return redirect()->route('disc.assessment.completed', $token);
         }
 
-        $answers = $request->input('answers', []);
+        $incomingAnswers = $request->input('answers', []);
+        $existingAnswers = $session->stage_2_answers_json ?? [];
+        $answers = array_replace($existingAnswers, $incomingAnswers);
+
         $bank = $session->assessment->questionBank;
         $questions = $bank ? $bank->analogiQuestions : collect();
         if ($questions->isEmpty()) {
@@ -294,20 +392,37 @@ class ParticipantDiscAssessmentController extends Controller
         }
 
         $score = $totalQuestions > 0 ? round(($correctCount / $totalQuestions) * 100, 2) : 0;
+        $user = auth()->user();
 
-        $session->update([
-            'stage_2_answers_json' => $answers,
-            'stage_2_score' => $score,
-            'stage_2_correct_count' => $correctCount,
-            'stage_2_completed_at' => now(),
-            'current_stage' => 3,
-            'stage_3_started_at' => now(),
-            'last_activity_at' => now(),
-        ]);
+        if ($user->canTakeStage(3)) {
+            $session->update([
+                'stage_2_answers_json' => $answers,
+                'stage_2_score' => $score,
+                'stage_2_correct_count' => $correctCount,
+                'stage_2_completed_at' => now(),
+                'current_stage' => 3,
+                'stage_3_started_at' => now(),
+                'last_activity_at' => now(),
+            ]);
 
-        AuditLogger::log('SUBMIT_STAGE_2', 'PSIKOTES', $session, ['score' => $score, 'correct_count' => $correctCount]);
+            AuditLogger::log('SUBMIT_STAGE_2', 'PSIKOTES', $session, ['score' => $score, 'correct_count' => $correctCount]);
 
-        return redirect()->route('disc.assessment.take', $token)->with('stage_success', 'Sub-Tes 2 (Analogi Verbal) berhasil diselesaikan! Silakan selesaikan Sub-Tes 3 (Tes Kepribadian) tanpa batasan waktu.');
+            return redirect()->route('disc.assessment.take', $token)->with('stage_success', 'Sub-Tes 2 (Analogi Verbal) berhasil diselesaikan! Silakan selesaikan Sub-Tes 3 (Tes Kepribadian) tanpa batasan waktu.');
+        } else {
+            $session->update([
+                'stage_2_answers_json' => $answers,
+                'stage_2_score' => $score,
+                'stage_2_correct_count' => $correctCount,
+                'stage_2_completed_at' => now(),
+                'status' => 'COMPLETED',
+                'completed_at' => now(),
+                'last_activity_at' => now(),
+            ]);
+
+            AuditLogger::log('SUBMIT_STAGE_2', 'PSIKOTES', $session, ['score' => $score, 'correct_count' => $correctCount]);
+
+            return redirect()->route('disc.assessment.completed', $token);
+        }
     }
 
     /**
@@ -444,7 +559,22 @@ class ParticipantDiscAssessmentController extends Controller
             ]
         );
 
-        $session->update(['last_activity_at' => now()]);
+        $sessionUpdates = ['last_activity_at' => now()];
+
+        // Live calculation of DISC profile & scores
+        try {
+            $scoringEngine = app(DiscScoringEngine::class);
+            $scoringResult = $scoringEngine->calculateSessionScore($session);
+            $sessionUpdates['raw_scores_json'] = $scoringResult['raw_scores'];
+            $sessionUpdates['normalized_scores_json'] = $scoringResult['normalized_scores'];
+            $sessionUpdates['disc_profile_code'] = $scoringResult['profile_code'] ?? ($scoringResult['profile']['code'] ?? null);
+            $sessionUpdates['disc_profile_name'] = $scoringResult['profile_name'] ?? ($scoringResult['profile']['name'] ?? null);
+            $sessionUpdates['interpretation_json'] = $scoringResult['interpretation'] ?? [];
+        } catch (\Throwable $e) {
+            // Ignore if calculation fails on partial data
+        }
+
+        $session->update($sessionUpdates);
 
         return response()->json([
             'success' => true,
@@ -453,7 +583,7 @@ class ParticipantDiscAssessmentController extends Controller
         ]);
     }
 
-    public function submitSessionApi(string $token, Request $request, DiscScoringEngine $scoringEngine): JsonResponse|RedirectResponse
+    public function submitSessionApi(string $token, Request $request): JsonResponse|RedirectResponse
     {
         $session = DiscAssessmentSession::query()
             ->where('session_token', $token)
@@ -466,6 +596,8 @@ class ParticipantDiscAssessmentController extends Controller
                 ? response()->json(['success' => true, 'redirect' => $redirectUrl, 'redirect_url' => $redirectUrl])
                 : redirect()->route('disc.assessment.completed', $token);
         }
+
+        $scoringEngine = app(DiscScoringEngine::class);
 
         DB::transaction(function () use ($session, $scoringEngine) {
             $scoringResult = $scoringEngine->calculateSessionScore($session);
@@ -520,7 +652,7 @@ class ParticipantDiscAssessmentController extends Controller
         ]);
 
         $penalty = match ($data['event_type']) {
-            'TAB_SWITCH', 'WINDOW_BLUR' => 5,
+            'TAB_SWITCH', 'WINDOW_BLUR' => 3,
             'FULLSCREEN_EXIT' => 10,
             'DEVTOOLS_OPEN' => 20,
             default => 2,
@@ -529,7 +661,7 @@ class ParticipantDiscAssessmentController extends Controller
         $newScore = max(0, $session->security_score - $penalty);
         $session->update(['security_score' => $newScore, 'last_activity_at' => now()]);
 
-        return response()->json(['success' => true, 'security_score' => $newScore]);
+        return response()->json(['success' => true, 'recorded' => true, 'security_score' => $newScore]);
     }
 
     public function completed(string $token): View

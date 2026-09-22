@@ -31,4 +31,19 @@ class Interview extends Model
     {
         return $this->hasMany(InterviewEvaluation::class);
     }
+
+    public function getStatusLabelAttribute(): string
+    {
+        $normalized = strtoupper(str_replace([' ', '-'], '_', $this->status ?? ''));
+
+        return match ($normalized) {
+            'SCHEDULED' => 'Terjadwal',
+            'CONFIRMED' => 'Terkonfirmasi',
+            'COMPLETED' => 'Selesai',
+            'CANCELLED' => 'Dibatalkan',
+            'RESCHEDULED' => 'Jadwal Ulang',
+            'NO_SHOW' => 'Tidak Hadir',
+            default => str($this->status)->replace('_', ' ')->headline()->toString(),
+        };
+    }
 }

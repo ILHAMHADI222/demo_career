@@ -71,11 +71,42 @@ class AdminJobController extends Controller
         return redirect()->route('admin.jobs.index')->with('success', 'Lowongan berhasil diperbarui.');
     }
 
-    public function publish(Job $job): RedirectResponse
+    public function publish(Request $request, Job $job): RedirectResponse
     {
-        $job->update(['status' => 'PUBLISHED']);
+        $updateData = ['status' => 'PUBLISHED'];
 
-        return back()->with('success', 'Lowongan berhasil dipublikasikan.');
+        if ($request->filled('active_days')) {
+            $days = (int) $request->input('active_days');
+            if ($days > 0) {
+                $updateData['registration_start_at'] = now();
+                $updateData['deadline_at'] = now()->addDays($days)->endOfDay();
+            } elseif ($days === -1) {
+                $updateData['registration_start_at'] = now();
+                $updateData['deadline_at'] = null;
+            }
+        } elseif ($request->filled('deadline_at')) {
+            $updateData['registration_start_at'] = ($job->registration_start_at && $job->registration_start_at->isPast())
+                ? $job->registration_start_at
+                : now();
+            $updateData['deadline_at'] = \Carbon\Carbon::parse($request->input('deadline_at'));
+        } elseif ($request->boolean('no_deadline')) {
+            $updateData['registration_start_at'] = now();
+            $updateData['deadline_at'] = null;
+        } else {
+            // Jika deadline di database sudah lampau atau kosong, default aktifkan 30 hari ke depan
+            if (!$job->deadline_at || $job->deadline_at->isPast()) {
+                $updateData['registration_start_at'] = now();
+                $updateData['deadline_at'] = now()->addDays(30)->endOfDay();
+            }
+        }
+
+        $job->update($updateData);
+
+        $deadlineMsg = $job->deadline_at
+            ? 'aktif s/d ' . $job->deadline_at->format('d M Y')
+            : 'aktif tanpa batas waktu';
+
+        return back()->with('success', "Lowongan '{$job->title}' berhasil dipublikasikan ({$deadlineMsg}).");
     }
 
     public function close(Job $job): RedirectResponse
