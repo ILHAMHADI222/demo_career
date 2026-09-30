@@ -116,6 +116,42 @@ class DiscAssessmentSession extends Model
         return $this->status === 'IN_PROGRESS';
     }
 
+    public function getActualStartedAtAttribute(): ?\Carbon\Carbon
+    {
+        return $this->started_at ?? $this->stage_1_started_at ?? $this->created_at;
+    }
+
+    public function getActualCompletedAtAttribute(): ?\Carbon\Carbon
+    {
+        return $this->completed_at ?? $this->stage_3_completed_at;
+    }
+
+    public function getStartedAtWibAttribute(): ?\Carbon\Carbon
+    {
+        return $this->actual_started_at?->copy()->setTimezone('Asia/Jakarta');
+    }
+
+    public function getCompletedAtWibAttribute(): ?\Carbon\Carbon
+    {
+        return $this->actual_completed_at?->copy()->setTimezone('Asia/Jakarta');
+    }
+
+    public function getFormattedTimeRangeWibAttribute(): string
+    {
+        $start = $this->started_at_wib;
+        $end = $this->completed_at_wib;
+
+        if ($start && $end) {
+            return $start->format('H:i:s') . ' s/d ' . $end->format('H:i:s') . ' WIB';
+        }
+
+        if ($start) {
+            return $start->format('H:i:s') . ' WIB (Sedang Berjalan)';
+        }
+
+        return '-';
+    }
+
     public function getRemainingSecondsAttribute(): int
     {
         if ($this->isCompleted()) {
@@ -123,11 +159,12 @@ class DiscAssessmentSession extends Model
         }
 
         $durationSeconds = ((int) ($this->assessment?->duration_minutes ?: 10)) * 60;
-        if (!$this->started_at) {
+        $started = $this->actual_started_at;
+        if (!$started) {
             return $durationSeconds;
         }
 
-        $elapsed = max(0, now()->timestamp - $this->started_at->timestamp);
+        $elapsed = max(0, now()->timestamp - $started->timestamp);
         return max(0, $durationSeconds - $elapsed);
     }
 }

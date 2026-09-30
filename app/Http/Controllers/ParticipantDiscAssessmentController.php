@@ -11,6 +11,7 @@ use App\Models\DiscQuestion;
 use App\Models\DiscQuestionOption;
 use App\Models\PsikotesStageQuestion;
 use App\Services\AuditLogger;
+use App\Services\DiscReportExporter;
 use App\Services\DiscScoringEngine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -18,6 +19,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ParticipantDiscAssessmentController extends Controller
 {
@@ -48,9 +51,11 @@ class ParticipantDiscAssessmentController extends Controller
             ->count();
 
         $maxAttempts = (int) ($participant->max_attempts ?: 1);
-        $canStartNew = $completedAttempts < $maxAttempts;
+        $isExpired = $participant->isInvitationExpired();
+        $canStartNew = $completedAttempts < $maxAttempts && !$isExpired;
+        $expiresAt = $participant->invitation_expires_at;
 
-        return view('disc.instruction', compact('assessment', 'participant', 'latestSession', 'completedAttempts', 'maxAttempts', 'canStartNew'));
+        return view('disc.instruction', compact('assessment', 'participant', 'latestSession', 'completedAttempts', 'maxAttempts', 'canStartNew', 'isExpired', 'expiresAt'));
     }
 
     public function startSession(DiscAssessment $assessment): RedirectResponse
@@ -71,6 +76,11 @@ class ParticipantDiscAssessmentController extends Controller
 
         if ($activeSession) {
             return redirect()->route('disc.assessment.take', $activeSession->session_token);
+        }
+
+        // Check 24-hour invitation validity
+        if ($participant->isInvitationExpired()) {
+            return back()->withErrors(['error' => 'Batas waktu 24 jam untuk mengakses tes ini telah berakhir sejak undangan dikirimkan. Silakan hubungi HRD jika memerlukan perpanjangan waktu.']);
         }
 
         // Check attempts
@@ -173,6 +183,11 @@ class ParticipantDiscAssessmentController extends Controller
         $assessment = $session->assessment;
         $bank = $assessment->questionBank;
         $user = auth()->user();
+
+        if (!$session->started_at) {
+            $session->update(['started_at' => now()]);
+            $session->refresh();
+        }
 
         // Skip any stage not in user allowed stages
         while ($session->current_stage <= 3 && !$user->canTakeStage($session->current_stage)) {
@@ -675,5 +690,25 @@ class ParticipantDiscAssessmentController extends Controller
         $assessment = $session->assessment;
 
         return view('disc.completed', compact('session', 'assessment'));
+    }
+
+    public function exportSessionExcel(string $token, DiscReportExporter $exporter): BinaryFileResponse
+    {
+        $session = DiscAssessmentSession::query()
+            ->where('session_token', $token)
+            ->where('participant_id', auth()->id())
+            ->firstOrFail();
+
+        return $exporter->exportSessionExcel($session);
+    }
+
+    public function exportSessionCsv(string $token, DiscReportExporter $exporter): StreamedResponse
+    {
+        $session = DiscAssessmentSession::query()
+            ->where('session_token', $token)
+            ->where('participant_id', auth()->id())
+            ->firstOrFail();
+
+        return $exporter->exportSessionCsv($session);
     }
 }

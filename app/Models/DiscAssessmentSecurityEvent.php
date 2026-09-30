@@ -29,4 +29,10 @@ class DiscAssessmentSecurityEvent extends Model
     {
         return $this->belongsTo(DiscAssessmentSession::class, 'disc_assessment_session_id');
     }
+
+    public function getOccurredAtWibAttribute(): ?\Carbon\Carbon
+    {
+        $time = $this->occurred_at ?? $this->created_at;
+        return $time?->copy()->setTimezone('Asia/Jakarta');
+    }
 }

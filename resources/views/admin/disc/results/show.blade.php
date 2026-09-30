@@ -12,9 +12,17 @@
                 </a>
 
                 <div class="flex flex-wrap items-center gap-3">
+                    <a href="{{ route('admin.disc.sessions.export-excel', $session) }}"
+                       class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2 text-xs font-semibold text-white shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700">
+                        📊 Unduh Hasil DISC (.xlsx)
+                    </a>
+                    <button type="button" onclick="printOfficialSheet()"
+                            class="inline-flex items-center gap-2 rounded-full border border-[#322d2a]/20 bg-white px-4 py-2 text-xs font-semibold text-[#322d2a] shadow-xs transition hover:bg-[#f0efe9]">
+                        🖨️ Cetak / Simpan PDF
+                    </button>
                     <a href="{{ route('admin.disc.sessions.export-csv', $session) }}"
-                       class="inline-flex items-center gap-2 rounded-full bg-[#322d2a] px-5 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-black">
-                        📥 Unduh Laporan CSV
+                       class="inline-flex items-center gap-2 rounded-full bg-[#322d2a] px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-black">
+                        📥 Unduh CSV
                     </a>
                 </div>
             </div>
@@ -52,7 +60,7 @@
                             <span>•</span>
                             <span>Kode: <strong class="font-mono text-white/90">{{ $session->assessment->code }}</strong></span>
                             <span>•</span>
-                            <span>Waktu Selesai: <strong class="text-white/90">{{ $session->completed_at ? $session->completed_at->format('d M Y, H:i') : 'Belum Selesai (Proses Berjalan)' }}</strong></span>
+                            <span>Waktu Selesai: <strong class="text-white/90">{{ $session->completed_at_wib ? $session->completed_at_wib->format('d M Y, H:i') . ' WIB' : 'Belum Selesai (Proses Berjalan)' }}</strong></span>
                         </div>
                     </div>
 
@@ -177,159 +185,299 @@
                     </button>
                 </div>
 
-                {{-- TAB CONTENT 1: DISC CHARTS & INTERPRETATION --}}
-                <div id="disc-tab" class="tab-pane mt-6 space-y-8">
+                {{-- TAB CONTENT 1: DISC CHARTS & INTERPRETATION (EXACT MASTER EXCEL FORMAT) --}}
+                @php
+                    $candidateUser = $session->participant?->user;
+                    $candProfile = $session->participant?->candidateProfile;
+                    $candName = $candidateUser?->name ?? ($session->candidate_name ?? 'Peserta');
+                    $birthDate = $candProfile?->birth_date;
+                    $ageText = $birthDate ? \Carbon\Carbon::parse($birthDate)->age . ' TAHUN' : '-';
+                    $genderVal = $candProfile?->gender;
+                    $genderText = match(strtoupper($genderVal ?? '')) {
+                        'MALE', 'L', 'LAKI-LAKI' => 'LAKI-LAKI',
+                        'FEMALE', 'P', 'PEREMPUAN' => 'PEREMPUAN',
+                        default => $genderVal ?: '-',
+                    };
+                    $testDateText = $session->completed_at_wib ? $session->completed_at_wib->format('d-M-y') : ($session->started_at_wib ? $session->started_at_wib->format('d-M-y') : now()->setTimezone('Asia/Jakarta')->format('d-M-y'));
 
-                    {{-- DISC SCORE SUMMARY TABLE --}}
-                    <div class="overflow-hidden rounded-[32px] border border-white bg-white p-6 sm:p-8 shadow-sm">
-                        <div class="border-b border-slate-100 pb-4">
-                            <h2 class="text-xl font-light text-[#322d2a]">
-                                Tabel Skor Mentah & Normalisasi DISC
-                            </h2>
-                            <p class="text-xs text-slate-500 mt-1">
-                                Graph 1 (Mask / Respon Lingkungan), Graph 2 (Core / Respon Tekanan), Graph 3 (Perceived Mirror: Most - Least).
-                            </p>
+                    $charProfiles = $scoringResult['character_profiles'] ?? [];
+                    $maskProfile = $charProfiles['mask'] ?? null;
+                    $coreProfile = $charProfiles['core'] ?? null;
+                    $mirrorProfile = $charProfiles['mirror'] ?? null;
+
+                    if (empty($maskProfile) && !empty($norm['graph1'])) {
+                        $mIdx = \App\Data\DiscReferenceData::matchPattern($norm['graph1']['D'] ?? 0, $norm['graph1']['I'] ?? 0, $norm['graph1']['S'] ?? 0, $norm['graph1']['C'] ?? 0);
+                        $maskProfile = \App\Data\DiscReferenceData::getProfile($mIdx);
+                    }
+                    if (empty($coreProfile) && !empty($norm['graph2'])) {
+                        $cIdx = \App\Data\DiscReferenceData::matchPattern($norm['graph2']['D'] ?? 0, $norm['graph2']['I'] ?? 0, $norm['graph2']['S'] ?? 0, $norm['graph2']['C'] ?? 0);
+                        $coreProfile = \App\Data\DiscReferenceData::getProfile($cIdx);
+                    }
+                    if (empty($mirrorProfile) && !empty($norm['graph3'])) {
+                        $mrIdx = \App\Data\DiscReferenceData::matchPattern($norm['graph3']['D'] ?? 0, $norm['graph3']['I'] ?? 0, $norm['graph3']['S'] ?? 0, $norm['graph3']['C'] ?? 0);
+                        $mirrorProfile = \App\Data\DiscReferenceData::getProfile($mrIdx);
+                    }
+                @endphp
+
+                <div id="disc-tab" class="tab-pane mt-6 space-y-6">
+
+                    {{-- PRINTABLE OFFICIAL DISC SHEET CONTAINER --}}
+                    <div id="official-disc-sheet" class="rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 shadow-sm print:p-0 print:border-none print:shadow-none font-sans text-slate-800">
+                        
+                        {{-- SHEET HEADER --}}
+                        <div class="border-b-2 border-slate-800 pb-3 mb-6">
+                            <h1 class="text-3xl font-extrabold tracking-widest text-slate-900 uppercase">D I S C</h1>
+                            <p class="text-sm font-semibold tracking-wider text-slate-600 italic">Personality System Graph Page</p>
                         </div>
 
-                        <div class="mt-6 overflow-x-auto">
-                            <table class="w-full text-center text-xs sm:text-sm text-slate-700">
-                                <thead class="bg-slate-50 text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-600">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left">Faktor / Dimensi</th>
-                                        <th class="px-4 py-3 text-center">Graph 1 Raw (Most)</th>
-                                        <th class="px-4 py-3 text-center">Graph 2 Raw (Least)</th>
-                                        <th class="px-4 py-3 text-center">Graph 3 Raw (Change)</th>
-                                        <th class="px-4 py-3 text-center text-[#f97316]">Norm. G1 (Mask)</th>
-                                        <th class="px-4 py-3 text-center text-blue-600">Norm. G2 (Core)</th>
-                                        <th class="px-4 py-3 text-center text-purple-600 font-bold">Norm. G3 (Mirror)</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-100 font-mono">
-                                    @foreach (['D' => 'Dominance (D)', 'I' => 'Influence (I)', 'S' => 'Steadiness (S)', 'C' => 'Conscientiousness (C)'] as $dim => $label)
-                                        <tr class="transition hover:bg-slate-50/50">
-                                            <td class="px-4 py-3 text-left font-sans font-bold text-[#322d2a]">{{ $label }}</td>
-                                            <td class="px-4 py-3">{{ $raw['graph1_most'][$dim] ?? 0 }}</td>
-                                            <td class="px-4 py-3">{{ $raw['graph2_least'][$dim] ?? 0 }}</td>
-                                            <td class="px-4 py-3 font-semibold {{ ($raw['graph3_change'][$dim] ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
-                                                {{ ($raw['graph3_change'][$dim] ?? 0) > 0 ? '+' : '' }}{{ $raw['graph3_change'][$dim] ?? 0 }}
-                                            </td>
-                                            <td class="px-4 py-3 font-bold text-[#f97316]">{{ number_format($norm['graph1'][$dim] ?? 0, 1) }}</td>
-                                            <td class="px-4 py-3 font-bold text-blue-600">{{ number_format($norm['graph2'][$dim] ?? 0, 1) }}</td>
-                                            <td class="px-4 py-3 font-extrabold text-purple-700 bg-purple-50/50">{{ number_format($norm['graph3'][$dim] ?? 0, 1) }}</td>
+                        {{-- METADATA & SCORE TABLE ROW --}}
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-6 border-b border-slate-200">
+                            {{-- PARTICIPANT INFO (Cols 1-5) --}}
+                            <div class="lg:col-span-5 bg-slate-50/80 rounded-2xl p-4 border border-slate-100 space-y-2 text-xs sm:text-sm">
+                                <div class="flex items-baseline">
+                                    <span class="w-24 font-bold text-slate-700">Name</span>
+                                    <span class="w-4 font-bold text-slate-400">:</span>
+                                    <span class="font-bold text-slate-900 uppercase">{{ $candName }}</span>
+                                </div>
+                                <div class="flex items-baseline">
+                                    <span class="w-24 font-bold text-slate-700">Age</span>
+                                    <span class="w-4 font-bold text-slate-400">:</span>
+                                    <span class="font-semibold text-slate-800 uppercase">{{ $ageText }}</span>
+                                </div>
+                                <div class="flex items-baseline">
+                                    <span class="w-24 font-bold text-slate-700">Gender</span>
+                                    <span class="w-4 font-bold text-slate-400">:</span>
+                                    <span class="font-semibold text-slate-800 uppercase">{{ $genderText }}</span>
+                                </div>
+                                <div class="flex items-baseline">
+                                    <span class="w-24 font-bold text-slate-700">Tgl. Tes</span>
+                                    <span class="w-4 font-bold text-slate-400">:</span>
+                                    <span class="font-semibold text-slate-800">{{ $testDateText }}</span>
+                                </div>
+                            </div>
+
+                            {{-- RAW SCORE MATRIX TABLE (Cols 6-12) --}}
+                            <div class="lg:col-span-7 overflow-x-auto">
+                                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                                    <span>Tabel Skor Mentah DISC (24 Soal)</span>
+                                    <span class="text-[10px] font-normal text-slate-400">Total jawaban per baris = 24</span>
+                                </div>
+                                <table class="w-full border-collapse border border-slate-300 text-center text-xs font-mono">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-700 font-bold">
+                                            <th class="border border-slate-300 px-3 py-1.5 font-sans">Line</th>
+                                            <th class="border border-slate-300 px-3 py-1.5 font-sans">D</th>
+                                            <th class="border border-slate-300 px-3 py-1.5 font-sans">I</th>
+                                            <th class="border border-slate-300 px-3 py-1.5 font-sans">S</th>
+                                            <th class="border border-slate-300 px-3 py-1.5 font-sans">C</th>
+                                            <th class="border border-slate-300 px-3 py-1.5 font-sans">*</th>
+                                            <th class="border border-slate-300 px-3 py-1.5 font-sans bg-rose-50 text-rose-900">tot</th>
                                         </tr>
-                                    @endforeach
-                                    <tr class="bg-slate-50/70 font-sans text-xs text-slate-500">
-                                        <td class="px-4 py-2 text-left font-semibold">* (Star / Neutral)</td>
-                                        <td class="px-4 py-2 font-mono">{{ $raw['graph1_most']['*'] ?? 0 }}</td>
-                                        <td class="px-4 py-2 font-mono">{{ $raw['graph2_least']['*'] ?? 0 }}</td>
-                                        <td class="px-4 py-2 font-mono">-</td>
-                                        <td class="px-4 py-2 font-mono">-</td>
-                                        <td class="px-4 py-2 font-mono">-</td>
-                                        <td class="px-4 py-2 font-mono">-</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {{-- DISC GRAPHS SECTION (Chart.js) --}}
-                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-
-                        {{-- COMBINED DISC GRAPH --}}
-                        <div class="rounded-[32px] border border-white bg-white p-6 sm:p-8 shadow-sm lg:col-span-2">
-                            <div class="border-b border-slate-100 pb-4">
-                                <h2 class="text-xl font-light text-[#322d2a]">
-                                    Grafik Gabungan <span class="font-normal text-[#f97316]">Combined DISC Graph</span>
-                                </h2>
-                                <p class="text-xs text-slate-500 mt-1">
-                                    Perbandingan Graph 1 (Mask), Graph 2 (Core), dan Graph 3 (Perceived) pada satu visualisasi linier dengan baseline 0.
-                                </p>
-                            </div>
-                            <div class="mt-6 h-[340px] w-full">
-                                <canvas id="combinedChart"></canvas>
-                            </div>
-                        </div>
-
-                        {{-- GRAPH 1: MOST / MASK --}}
-                        <div class="rounded-[32px] border border-white bg-white p-6 shadow-sm">
-                            <div class="border-b border-slate-100 pb-3">
-                                <h3 class="text-base font-semibold text-[#f97316]">Graph 1: Mask / Public Behavior (Most)</h3>
-                                <p class="text-xs text-slate-500">Respon perilaku yang ditampilkan di lingkungan sosial/kerja.</p>
-                            </div>
-                            <div class="mt-4 h-[240px] w-full">
-                                <canvas id="graph1Chart"></canvas>
-                            </div>
-                        </div>
-
-                        {{-- GRAPH 2: LEAST / CORE --}}
-                        <div class="rounded-[32px] border border-white bg-white p-6 shadow-sm">
-                            <div class="border-b border-slate-100 pb-3">
-                                <h3 class="text-base font-semibold text-blue-600">Graph 2: Core / Under Pressure Behavior (Least)</h3>
-                                <p class="text-xs text-slate-500">Karakter dasar alami saat menghadapi tekanan berat.</p>
-                            </div>
-                            <div class="mt-4 h-[240px] w-full">
-                                <canvas id="graph2Chart"></canvas>
+                                    </thead>
+                                    <tbody class="text-slate-800">
+                                        <tr>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold bg-slate-50 text-left font-sans">1 (Most)</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold">{{ $raw['graph1_most']['D'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold">{{ $raw['graph1_most']['I'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold">{{ $raw['graph1_most']['S'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold">{{ $raw['graph1_most']['C'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-semibold text-slate-500">{{ $raw['graph1_most']['*'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-extrabold bg-[#ffc7ce] text-[#9c0006]">
+                                                {{ array_sum($raw['graph1_most'] ?? []) }}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold bg-slate-50 text-left font-sans">2 (Least)</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold">{{ $raw['graph2_least']['D'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold">{{ $raw['graph2_least']['I'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold">{{ $raw['graph2_least']['S'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold">{{ $raw['graph2_least']['C'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-semibold text-slate-500">{{ $raw['graph2_least']['*'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-extrabold bg-[#ffc7ce] text-[#9c0006]">
+                                                {{ array_sum($raw['graph2_least'] ?? []) }}
+                                            </td>
+                                        </tr>
+                                        <tr class="bg-slate-50/50">
+                                            <td class="border border-slate-300 px-2 py-1 font-bold bg-slate-100 text-left font-sans">3 (Change)</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold text-blue-700">{{ $raw['graph3_change']['D'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold text-blue-700">{{ $raw['graph3_change']['I'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold text-blue-700">{{ $raw['graph3_change']['S'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold text-blue-700">{{ $raw['graph3_change']['C'] ?? 0 }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 text-slate-400">-</td>
+                                            <td class="border border-slate-300 px-2 py-1 text-slate-400 font-sans">-</td>
+                                        </tr>
+                                        <tr class="bg-amber-50/60 font-sans text-[11px]">
+                                            <td class="border border-slate-300 px-2 py-1 font-bold text-amber-900 text-left">Norm Skor</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold text-amber-900">{{ number_format($norm['graph1']['D'] ?? 0, 1) }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold text-amber-900">{{ number_format($norm['graph1']['I'] ?? 0, 1) }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold text-amber-900">{{ number_format($norm['graph1']['S'] ?? 0, 1) }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 font-bold text-amber-900">{{ number_format($norm['graph1']['C'] ?? 0, 1) }}</td>
+                                            <td colspan="2" class="border border-slate-300 px-2 py-1 text-slate-500 italic">Skor Terstandarisasi G1..G3</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
-                    </div>
+                        {{-- 3 SEPARATE DISC GRAPHS (EXACT EXCEL MASTER LAYOUT) --}}
+                        <div class="mt-8">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                
+                                {{-- GRAPH 1: MOST (MASK PUBLIC SELF) --}}
+                                <div class="rounded-2xl border border-slate-300 bg-white p-4 shadow-2xs">
+                                    <div class="text-center pb-2 border-b border-slate-100">
+                                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Graph 1 Most</h3>
+                                        <p class="text-[11px] font-medium text-slate-500">Mask Public Self</p>
+                                    </div>
+                                    <div class="mt-2 h-[340px] w-full relative">
+                                        <canvas id="graph1OfficialChart"></canvas>
+                                    </div>
+                                    <div class="mt-2 flex justify-between text-[11px] font-mono font-bold text-slate-600 px-3 bg-slate-50 rounded-lg py-1">
+                                        <span>D: {{ number_format($norm['graph1']['D'] ?? 0, 1) }}</span>
+                                        <span>I: {{ number_format($norm['graph1']['I'] ?? 0, 1) }}</span>
+                                        <span>S: {{ number_format($norm['graph1']['S'] ?? 0, 1) }}</span>
+                                        <span>C: {{ number_format($norm['graph1']['C'] ?? 0, 1) }}</span>
+                                    </div>
+                                </div>
 
-                    {{-- DETAILED PROFILE INTERPRETATION --}}
-                    <div class="rounded-[32px] border border-white bg-white p-6 sm:p-8 shadow-sm">
-                        <div class="border-b border-slate-100 pb-4">
-                            <span class="rounded-full bg-orange-50 px-3.5 py-1 text-xs font-semibold text-[#f97316]">
-                                Psychometric Diagnostic
-                            </span>
-                            <h2 class="mt-2 text-2xl font-light text-[#322d2a]">
-                                Interpretasi Komprehensif Profil: <span class="font-normal text-[#f97316]">{{ $session->disc_profile_name }}</span>
+                                {{-- GRAPH 2: LEAST (CORE PRIVATE SELF) --}}
+                                <div class="rounded-2xl border border-slate-300 bg-white p-4 shadow-2xs">
+                                    <div class="text-center pb-2 border-b border-slate-100">
+                                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Graph 2 Least</h3>
+                                        <p class="text-[11px] font-medium text-slate-500">Core Private Self</p>
+                                    </div>
+                                    <div class="mt-2 h-[340px] w-full relative">
+                                        <canvas id="graph2OfficialChart"></canvas>
+                                    </div>
+                                    <div class="mt-2 flex justify-between text-[11px] font-mono font-bold text-slate-600 px-3 bg-slate-50 rounded-lg py-1">
+                                        <span>D: {{ number_format($norm['graph2']['D'] ?? 0, 1) }}</span>
+                                        <span>I: {{ number_format($norm['graph2']['I'] ?? 0, 1) }}</span>
+                                        <span>S: {{ number_format($norm['graph2']['S'] ?? 0, 1) }}</span>
+                                        <span>C: {{ number_format($norm['graph2']['C'] ?? 0, 1) }}</span>
+                                    </div>
+                                </div>
+
+                                {{-- GRAPH 3: CHANGE (MIRROR PERCEIVED SELF) --}}
+                                <div class="rounded-2xl border-2 border-blue-400 bg-white p-4 shadow-sm relative">
+                                    <span class="absolute -top-2.5 right-4 bg-blue-600 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">Primary Profile</span>
+                                    <div class="text-center pb-2 border-b border-blue-100">
+                                        <h3 class="text-xs font-bold text-blue-900 uppercase tracking-wider">Graph 3 Change</h3>
+                                        <p class="text-[11px] font-medium text-blue-700">Mirror Perceived Self</p>
+                                    </div>
+                                    <div class="mt-2 h-[340px] w-full relative">
+                                        <canvas id="graph3OfficialChart"></canvas>
+                                    </div>
+                                    <div class="mt-2 flex justify-between text-[11px] font-mono font-bold text-blue-900 px-3 bg-blue-50/60 rounded-lg py-1">
+                                        <span>D: {{ number_format($norm['graph3']['D'] ?? 0, 1) }}</span>
+                                        <span>I: {{ number_format($norm['graph3']['I'] ?? 0, 1) }}</span>
+                                        <span>S: {{ number_format($norm['graph3']['S'] ?? 0, 1) }}</span>
+                                        <span>C: {{ number_format($norm['graph3']['C'] ?? 0, 1) }}</span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {{-- GAMBARAN KARAKTER SECTION (3 COLUMNS LIKE EXCEL) --}}
+                        <div class="mt-10 pt-6 border-t-2 border-slate-800">
+                            <h2 class="text-lg font-extrabold uppercase tracking-wider text-slate-900 mb-5">
+                                Gambaran Karakter
                             </h2>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                
+                                {{-- 1. MASK PUBLIC SELF --}}
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50/40 p-4">
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                        Mask Public Self
+                                    </span>
+                                    <div class="rounded-xl bg-slate-800 text-white font-extrabold px-3 py-2 text-center text-sm uppercase tracking-wide shadow-xs mb-3">
+                                        {{ $maskProfile['name'] ?? 'LOGICAL THINKER' }}
+                                    </div>
+                                    <ul class="space-y-1.5 text-xs text-slate-700">
+                                        @forelse(($maskProfile['traits'] ?? []) as $t)
+                                            @if($t !== '0' && trim($t) !== '')
+                                                <li class="flex items-start gap-1.5">
+                                                    <span class="text-blue-500 font-bold shrink-0">•</span>
+                                                    <span>{{ $t }}</span>
+                                                </li>
+                                            @endif
+                                        @empty
+                                            <li class="text-slate-400 italic text-[11px]">Karakteristk Mask tidak tersedia</li>
+                                        @endforelse
+                                    </ul>
+                                </div>
+
+                                {{-- 2. CORE PRIVATE SELF --}}
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50/40 p-4">
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                        Core Private Self
+                                    </span>
+                                    <div class="rounded-xl bg-slate-800 text-white font-extrabold px-3 py-2 text-center text-sm uppercase tracking-wide shadow-xs mb-3">
+                                        {{ $coreProfile['name'] ?? 'PRECISIONIST' }}
+                                    </div>
+                                    <ul class="space-y-1.5 text-xs text-slate-700">
+                                        @forelse(($coreProfile['traits'] ?? []) as $t)
+                                            @if($t !== '0' && trim($t) !== '')
+                                                <li class="flex items-start gap-1.5">
+                                                    <span class="text-blue-500 font-bold shrink-0">•</span>
+                                                    <span>{{ $t }}</span>
+                                                </li>
+                                            @endif
+                                        @empty
+                                            <li class="text-slate-400 italic text-[11px]">Karakteristk Core tidak tersedia</li>
+                                        @endforelse
+                                    </ul>
+                                </div>
+
+                                {{-- 3. MIRROR PERCEIVED SELF --}}
+                                <div class="rounded-2xl border border-blue-200 bg-blue-50/20 p-4">
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700 block mb-1">
+                                        Mirror Perceived Self (Utama)
+                                    </span>
+                                    <div class="rounded-xl bg-blue-700 text-white font-extrabold px-3 py-2 text-center text-sm uppercase tracking-wide shadow-xs mb-3">
+                                        {{ $mirrorProfile['name'] ?? 'PERFECTIONIST' }}
+                                    </div>
+                                    <ul class="space-y-1.5 text-xs text-slate-800">
+                                        @forelse(($mirrorProfile['traits'] ?? []) as $t)
+                                            @if($t !== '0' && trim($t) !== '')
+                                                <li class="flex items-start gap-1.5">
+                                                    <span class="text-blue-700 font-bold shrink-0">•</span>
+                                                    <span>{{ $t }}</span>
+                                                </li>
+                                            @endif
+                                        @empty
+                                            <li class="text-slate-400 italic text-[11px]">Karakteristk Mirror tidak tersedia</li>
+                                        @endforelse
+                                    </ul>
+                                </div>
+
+                            </div>
                         </div>
 
-                        <div class="mt-6 space-y-6">
-                            <div class="rounded-3xl bg-slate-50 p-6">
-                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">Ringkasan & Karakteristik Umum</h3>
-                                <p class="mt-2 text-sm leading-relaxed text-slate-700">
-                                    {{ $interp['description'] ?? 'Belum ada deskripsi profil.' }}
-                                </p>
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                <div class="rounded-3xl border border-emerald-100 bg-emerald-50/40 p-6">
-                                    <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-800">🌟 Kekuatan Utama (Key Strengths)</h3>
-                                    <p class="mt-2 text-xs leading-relaxed text-slate-700">
-                                        {{ $interp['strengths'] ?? '-' }}
-                                    </p>
-                                </div>
-
-                                <div class="rounded-3xl border border-rose-100 bg-rose-50/40 p-6">
-                                    <h3 class="text-xs font-bold uppercase tracking-wider text-rose-800">⚠️ Potensi Keterbatasan (Potential Limitations)</h3>
-                                    <p class="mt-2 text-xs leading-relaxed text-slate-700">
-                                        {{ $interp['potential_limitations'] ?? '-' }}
-                                    </p>
-                                </div>
-
-                                <div class="rounded-3xl border border-blue-100 bg-blue-50/40 p-6">
-                                    <h3 class="text-xs font-bold uppercase tracking-wider text-blue-800">💬 Gaya Komunikasi (Communication Style)</h3>
-                                    <p class="mt-2 text-xs leading-relaxed text-slate-700">
-                                        {{ $interp['communication_style'] ?? '-' }}
-                                    </p>
-                                </div>
-
-                                <div class="rounded-3xl border border-purple-100 bg-purple-50/40 p-6">
-                                    <h3 class="text-xs font-bold uppercase tracking-wider text-purple-800">💼 Gaya Bekerja & Manajemen Tugas</h3>
-                                    <p class="mt-2 text-xs leading-relaxed text-slate-700">
-                                        {{ $interp['work_style'] ?? '-' }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="rounded-3xl border border-amber-100 bg-amber-50/50 p-6">
-                                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-800">🎯 Rekomendasi Area Pengembangan (Development Suggestions)</h3>
-                                <p class="mt-2 text-xs leading-relaxed text-slate-700">
-                                    {{ $interp['development_suggestions'] ?? '-' }}
-                                </p>
+                        {{-- DESKRIPSI KEPRIBADIAN (PARAGRAPH LIKE EXCEL ROW 76-77) --}}
+                        <div class="mt-8 pt-6 border-t border-slate-200">
+                            <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-2 flex items-center gap-2">
+                                <span>📄 Deskripsi Kepribadian</span>
+                                <span class="text-[11px] font-normal text-slate-500">(Berdasarkan Pola Mirror: {{ $mirrorProfile['name'] ?? 'DISC' }})</span>
+                            </h3>
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 text-xs sm:text-sm leading-relaxed text-slate-700 text-justify">
+                                {{ $mirrorProfile['description'] ?? ($interp['description'] ?? 'Belum ada uraian deskripsi kepribadian untuk tipe ini.') }}
                             </div>
                         </div>
+
+                        {{-- REKOMENDASI AREA PROFESI / JABATAN (JOB MATCH) --}}
+                        @if(!empty($mirrorProfile['jobs']) || !empty($interp['development_suggestions']))
+                            <div class="mt-6 pt-5 border-t border-slate-100">
+                                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-2">
+                                    💼 Rekomendasi Area Profesi / Jabatan (Job Match)
+                                </h3>
+                                <div class="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 text-xs sm:text-sm text-slate-800 leading-relaxed">
+                                    {{ $mirrorProfile['jobs'] ?? ($interp['development_suggestions'] ?? '-') }}
+                                </div>
+                            </div>
+                        @endif
+
                     </div>
 
                 </div>
@@ -627,7 +775,7 @@
                             <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                                 <span class="block text-[11px] text-slate-500">Waktu Mulai - Selesai</span>
                                 <span class="text-xs font-bold text-slate-800">
-                                    {{ $session->started_at ? $session->started_at->format('H:i:s') : '-' }} s/d {{ $session->completed_at ? $session->completed_at->format('H:i:s') : '-' }}
+                                    {{ $session->formatted_time_range_wib }}
                                 </span>
                             </div>
                             <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
@@ -650,7 +798,7 @@
                                         <div class="flex-1">
                                             <div class="flex items-center justify-between">
                                                 <span class="font-bold text-slate-800">{{ $event->event_type ?? 'SECURITY_ALERT' }}</span>
-                                                <span class="font-mono text-[11px] text-slate-500">{{ $event->created_at->format('H:i:s') }}</span>
+                                                <span class="font-mono text-[11px] text-slate-500">{{ $event->occurred_at_wib ? $event->occurred_at_wib->format('H:i:s') . ' WIB' : '-' }}</span>
                                             </div>
                                             <p class="mt-1 text-slate-600">{{ $event->description ?? 'Terdeteksi aktivitas berpindah tab atau keluar dari layar tes.' }}</p>
                                         </div>
@@ -670,7 +818,41 @@
         </div>
     </section>
 
-    {{-- TAB SWITCHER & CHART JS SCRIPT --}}
+    {{-- PRINT STYLING & SCRIPT --}}
+    <style>
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            header, nav, aside, footer, #result-tabs-container > div:first-child, .no-print, [onclick*="switchTab"], a[href*="admin.disc"], .tab-btn {
+                display: none !important;
+            }
+            .min-h-screen {
+                min-height: auto !important;
+                padding: 0 !important;
+                background: transparent !important;
+            }
+            #disc-tab {
+                display: block !important;
+                margin-top: 0 !important;
+            }
+            #official-disc-sheet {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+            #official-disc-sheet > div {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+
     <script>
         function switchTab(tabId) {
             // Hide all tab panes
@@ -693,8 +875,15 @@
             }
         }
 
+        function printOfficialSheet() {
+            switchTab('disc-tab');
+            setTimeout(() => {
+                window.print();
+            }, 180);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            const labels = ['Dominance (D)', 'Influence (I)', 'Steadiness (S)', 'Conscientiousness (C)'];
+            const labels = ['D', 'I', 'S', 'C'];
             const g1Data = [
                 {{ $norm['graph1']['D'] ?? 0 }},
                 {{ $norm['graph1']['I'] ?? 0 }},
@@ -714,102 +903,113 @@
                 {{ $norm['graph3']['C'] ?? 0 }}
             ];
 
-            const chartOptions = (minVal = -8, maxVal = 8) => ({
+            const officialChartOptions = (chartTitle) => ({
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        min: minVal,
-                        max: maxVal,
-                        grid: {
-                            color: (context) => context.tick.value === 0 ? '#322d2a' : '#f1f5f9',
-                            lineWidth: (context) => context.tick.value === 0 ? 2 : 1,
-                        },
-                        ticks: { stepSize: 2 }
-                    },
-                    x: {
-                        grid: { color: '#f8fafc' }
+                animation: { duration: 600 },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => ` Skor: ${ctx.parsed.y}`
+                        }
                     }
                 },
-                plugins: {
-                    legend: { position: 'top' }
+                scales: {
+                    y: {
+                        min: -8,
+                        max: 8,
+                        grid: {
+                            color: (context) => (context.tick && context.tick.value === 0) ? '#0f172a' : '#e2e8f0',
+                            lineWidth: (context) => (context.tick && context.tick.value === 0) ? 2 : 1,
+                        },
+                        ticks: {
+                            stepSize: 2,
+                            font: { family: 'ui-monospace, monospace', size: 11, weight: 'bold' },
+                            color: '#475569',
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: '#f1f5f9',
+                            lineWidth: 1,
+                        },
+                        ticks: {
+                            font: { family: 'sans-serif', size: 13, weight: 'bold' },
+                            color: '#0f172a',
+                        }
+                    }
                 }
             });
 
-            // 1. Combined Chart
-            new Chart(document.getElementById('combinedChart'), {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [
-                        {
-                            label: 'Graph 1: Mask (Most)',
+            // 1. Graph 1 Most (Mask)
+            const g1El = document.getElementById('graph1OfficialChart');
+            if (g1El) {
+                new Chart(g1El, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
                             data: g1Data,
-                            borderColor: '#f97316',
-                            backgroundColor: 'rgba(249, 115, 22, 0.1)',
-                            borderWidth: 3,
-                            tension: 0.2,
-                            pointRadius: 6,
-                        },
-                        {
-                            label: 'Graph 2: Core (Least)',
+                            borderColor: '#2e5b88',
+                            backgroundColor: '#2e5b88',
+                            borderWidth: 2.5,
+                            tension: 0,
+                            pointRadius: 5.5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#2e5b88',
+                            fill: false,
+                        }]
+                    },
+                    options: officialChartOptions('Graph 1 Most (Mask Public Self)')
+                });
+            }
+
+            // 2. Graph 2 Least (Core)
+            const g2El = document.getElementById('graph2OfficialChart');
+            if (g2El) {
+                new Chart(g2El, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
                             data: g2Data,
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                            borderWidth: 3,
-                            tension: 0.2,
-                            pointRadius: 6,
-                        },
-                        {
-                            label: 'Graph 3: Mirror (Change)',
+                            borderColor: '#2e5b88',
+                            backgroundColor: '#2e5b88',
+                            borderWidth: 2.5,
+                            tension: 0,
+                            pointRadius: 5.5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#2e5b88',
+                            fill: false,
+                        }]
+                    },
+                    options: officialChartOptions('Graph 2 Least (Core Private Self)')
+                });
+            }
+
+            // 3. Graph 3 Change (Mirror)
+            const g3El = document.getElementById('graph3OfficialChart');
+            if (g3El) {
+                new Chart(g3El, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
                             data: g3Data,
-                            borderColor: '#9333ea',
-                            backgroundColor: 'rgba(147, 51, 234, 0.15)',
-                            borderWidth: 4,
-                            borderDash: [5, 5],
-                            tension: 0.2,
-                            pointRadius: 7,
-                        }
-                    ]
-                },
-                options: chartOptions(-8, 8)
-            });
-
-            // 2. Graph 1
-            new Chart(document.getElementById('graph1Chart'), {
-                type: 'line',
-                data: {
-                    labels: ['D', 'I', 'S', 'C'],
-                    datasets: [{
-                        label: 'Graph 1 (Most / Mask)',
-                        data: g1Data,
-                        borderColor: '#f97316',
-                        backgroundColor: 'rgba(249, 115, 22, 0.2)',
-                        borderWidth: 3,
-                        pointRadius: 5,
-                        tension: 0.2,
-                    }]
-                },
-                options: chartOptions(-8, 8)
-            });
-
-            // 3. Graph 2
-            new Chart(document.getElementById('graph2Chart'), {
-                type: 'line',
-                data: {
-                    labels: ['D', 'I', 'S', 'C'],
-                    datasets: [{
-                        label: 'Graph 2 (Least / Core)',
-                        data: g2Data,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
-                        borderWidth: 3,
-                        pointRadius: 5,
-                        tension: 0.2,
-                    }]
-                },
-                options: chartOptions(-8, 8)
-            });
+                            borderColor: '#1d4ed8',
+                            backgroundColor: '#1d4ed8',
+                            borderWidth: 3,
+                            tension: 0,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            pointBackgroundColor: '#1d4ed8',
+                            fill: false,
+                        }]
+                    },
+                    options: officialChartOptions('Graph 3 Change (Mirror Perceived Self)')
+                });
+            }
         });
     </script>
 </x-layouts.app>

@@ -228,13 +228,13 @@
                                                 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
                                             ];
 
-                                            $nowDt = now();
+                                            $nowDt = now()->setTimezone('Asia/Jakarta');
                                             $dayIndo = $daysMap[$nowDt->format('l')] ?? $nowDt->format('l');
                                             $monthIndo = $monthsMap[(int)$nowDt->format('n')] ?? $nowDt->format('F');
                                             $hariTanggal = "{$dayIndo}, " . $nowDt->format('d') . " {$monthIndo} " . $nowDt->format('Y');
 
                                             $assessmentUrl = route('disc.assessment.instruction', $assessment);
-                                            $waktuTeks = "Batas waktu 5 jam sejak undangan ini dikirim (Waktu pengerjaan: Sub-Tes 1 & 2 masing-masing 10 menit)";
+                                            $waktuTeks = "Batas waktu 24 jam sejak undangan ini dikirim";
 
                                             $waMessage = "Yth. " . $candidateName . ",\n\nSelamat! 🎉\n\nKami dari PT Indodata Solusi Persada menginformasikan bahwa Anda lolos ke tahap Psikotes.\n\nSilakan mengerjakan soal yang telah kami siapkan dengan detail sebagai berikut:\n\n📅 Hari/Tanggal: " . $hariTanggal . "\n⏰ Waktu: " . $waktuTeks . "\n🔗 Link Akses Soal: " . $assessmentUrl . "\n\nMohon mengerjakan soal sesuai dengan waktu dan ketentuan yang telah ditentukan.\n\nApabila terdapat kendala dalam mengakses soal, silakan menghubungi kami.\n\nTerima kasih atas perhatian dan kerja samanya.\n\nHormat kami,\nPT Indodata Solusi Persada";
 
@@ -247,9 +247,20 @@
                                         @endphp
 
                                         <div class="flex flex-col gap-1.5">
-                                            <span class="text-xs font-semibold {{ $completedSessionsCount >= $maxAttempts ? 'text-slate-600' : 'text-emerald-700' }}">
-                                                {{ $completedSessionsCount }}/{{ $maxAttempts }} Selesai
-                                            </span>
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                <span class="text-xs font-semibold {{ $completedSessionsCount >= $maxAttempts ? 'text-slate-600' : 'text-emerald-700' }}">
+                                                    {{ $completedSessionsCount }}/{{ $maxAttempts }} Selesai
+                                                </span>
+                                                @if ($part->isInvitationExpired())
+                                                    <span class="rounded-full bg-rose-50 border border-rose-200 px-1.5 py-0.2 text-[9px] font-bold text-rose-700">
+                                                        Kadaluwarsa (>24 jam)
+                                                    </span>
+                                                @elseif ($completedSessionsCount < $maxAttempts && $part->remaining_invitation_hours > 0)
+                                                    <span class="rounded-full bg-amber-50 border border-amber-200 px-1.5 py-0.2 text-[9px] font-semibold text-amber-700" title="Sisa batas waktu akses 24 jam">
+                                                        Sisa {{ $part->remaining_invitation_hours }} jam
+                                                    </span>
+                                                @endif
+                                            </div>
                                             <form action="{{ route('admin.disc.assessments.participants.attempts', [$assessment, $part]) }}" method="POST" class="flex items-center gap-1">
                                                 @csrf
                                                 @method('PUT')
@@ -261,8 +272,8 @@
                                                 </button>
                                             </form>
 
-                                            {{-- BROADCAST BUTTONS --}}
-                                            <div class="flex items-center gap-1 pt-1 border-t border-slate-100">
+                                            {{-- BROADCAST & RENEW BUTTONS --}}
+                                            <div class="flex items-center gap-1 pt-1 border-t border-slate-100 flex-wrap">
                                                 <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer"
                                                    class="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 transition hover:bg-emerald-600 hover:text-white shadow-xs"
                                                    title="Kirim Undangan via WhatsApp">
@@ -273,6 +284,14 @@
                                                    title="Kirim Undangan via Gmail">
                                                     <span>✉️ Mail</span>
                                                 </a>
+                                                <form action="{{ route('admin.disc.assessments.participants.renew', [$assessment, $part]) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit"
+                                                            class="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-700 transition hover:bg-blue-600 hover:text-white shadow-xs"
+                                                            title="Perbarui / Reset Batas Waktu Akses 24 Jam Mulai dari Sekarang">
+                                                        <span>🔄 24 Jam</span>
+                                                    </button>
+                                                </form>
                                             </div>
                                         </div>
                                     </td>

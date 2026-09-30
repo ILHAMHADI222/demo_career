@@ -72,7 +72,7 @@
                             </div>
                             <div class="rounded-2xl bg-slate-50 p-3">
                                 <p class="text-slate-500">Waktu Mulai</p>
-                                <p class="mt-1 font-semibold text-slate-800">{{ $sess->started_at ? $sess->started_at->format('H:i:s') : '-' }}</p>
+                                <p class="mt-1 font-semibold text-slate-800">{{ $sess->started_at_wib ? $sess->started_at_wib->format('H:i:s') . ' WIB' : '-' }}</p>
                             </div>
                             <div class="rounded-2xl bg-slate-50 p-3">
                                 <p class="text-slate-500">Aktivitas Terakhir</p>
@@ -86,7 +86,7 @@
                                 <div class="flex flex-wrap gap-2">
                                     @foreach ($sess->securityEvents->take(5) as $ev)
                                         <span class="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-mono text-slate-700">
-                                            ⚠️ {{ $ev->event_type }} ({{ $ev->occurred_at ? $ev->occurred_at->format('H:i:s') : '' }})
+                                            ⚠️ {{ $ev->event_type }} ({{ $ev->occurred_at_wib ? $ev->occurred_at_wib->format('H:i:s') . ' WIB' : '' }})
                                         </span>
                                     @endforeach
                                 </div>

@@ -36,7 +36,7 @@
                 </div>
 
                 <div class="mt-5 inline-flex flex-col sm:flex-row items-center gap-3 rounded-[20px] bg-[#f0efe9] p-4 text-xs text-[#6f6b67]">
-                    <div>Waktu Selesai: <strong>{{ $session->completed_at ? $session->completed_at->format('d M Y, H:i') : now()->format('d M Y, H:i') }} WIB</strong></div>
+                    <div>Waktu Selesai: <strong>{{ $session->completed_at_wib ? $session->completed_at_wib->format('d M Y, H:i') : now()->setTimezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB</strong></div>
                     <div class="hidden sm:block text-[#6f6b67]/40">•</div>
                     <div>Kode Sesi: <strong class="font-mono text-[#322d2a]">{{ $session->session_token }}</strong></div>
                 </div>
@@ -45,7 +45,15 @@
                     Hasil evaluasi psikotes dan tahapan seleksi selanjutnya akan ditinjau langsung oleh tim HRD PT Indodata Solusi Persada. Status lamaran Anda akan diperbarui melalui sistem dan notifikasi email resmi.
                 </div>
 
-                <div class="mt-6">
+                <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+                    <a href="{{ route('disc.assessment.export-excel', $session->session_token) }}"
+                       class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-2.5 text-xs font-semibold text-white shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700">
+                        📊 Unduh Hasil Psikotes (.xlsx)
+                    </a>
+                    <a href="{{ route('disc.assessment.export-csv', $session->session_token) }}"
+                       class="inline-flex items-center gap-2 rounded-full border border-[#322d2a]/20 bg-white px-5 py-2.5 text-xs font-semibold text-[#322d2a] shadow-xs transition hover:bg-[#f0efe9]">
+                        📥 Unduh CSV
+                    </a>
                     <a href="{{ route('dashboard') }}"
                        class="inline-flex items-center gap-2 rounded-full bg-[#322d2a] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#f97316]">
                         Kembali ke Dashboard Utama →

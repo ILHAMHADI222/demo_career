@@ -298,9 +298,10 @@
                                             ->where('status', 'COMPLETED')
                                             ->count();
                                         $maxAttempts = (int) ($discPart->max_attempts ?: 1);
-                                        $canTake = $completedCount < $maxAttempts;
+                                        $isExpired = $discPart->isInvitationExpired();
+                                        $canTake = $completedCount < $maxAttempts && !$isExpired;
                                     @endphp
-                                    <div class="rounded-[28px] border {{ !$canTake ? 'border-emerald-200 bg-emerald-50/50' : 'border-[#f97316]/30 bg-[#fff3e8]' }} p-5">
+                                    <div class="rounded-[28px] border {{ $isExpired ? 'border-rose-200 bg-rose-50/40' : (!$canTake ? 'border-emerald-200 bg-emerald-50/50' : 'border-[#f97316]/30 bg-[#fff3e8]') }} p-5">
                                         <div class="flex items-start justify-between gap-4">
                                             <div>
                                                 <div class="flex items-center gap-2">
@@ -308,28 +309,45 @@
                                                     <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
                                                         Kesempatan: {{ $completedCount }}/{{ $maxAttempts }} Selesai
                                                     </span>
+                                                    @if ($isExpired)
+                                                        <span class="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700">
+                                                            Kadaluwarsa (>24 Jam)
+                                                        </span>
+                                                    @endif
                                                 </div>
                                                 <p class="mt-2 font-normal tracking-[0.16px] text-[#322d2a]">
                                                     {{ $assess->title }}
                                                 </p>
                                                 <p class="mt-1 text-xs text-[#6f6b67]">
                                                     Durasi: {{ $assess->duration_minutes }} Menit • Status: 
-                                                    <strong class="{{ !$canTake ? 'text-emerald-700' : 'text-[#f97316]' }}">
-                                                        {{ !$canTake ? 'SELESAI (COMPLETED)' : ($session && $session->isInProgress() ? 'SEDANG DIKERJAKAN' : 'SIAP DIKERJAKAN') }}
+                                                    <strong class="{{ $isExpired ? 'text-rose-600' : (!$canTake ? 'text-emerald-700' : 'text-[#f97316]') }}">
+                                                        {{ $isExpired ? 'KADALUWARSA (LEBIH DARI 24 JAM)' : (!$canTake ? 'SELESAI (COMPLETED)' : ($session && $session->isInProgress() ? 'SEDANG DIKERJAKAN' : 'SIAP DIKERJAKAN')) }}
                                                     </strong>
                                                 </p>
 
                                                 <div class="mt-4 flex flex-wrap items-center gap-2">
                                                     @if ($canTake)
                                                         <a href="{{ route('disc.assessment.instruction', $assess) }}"
-                                                           class="inline-flex rounded-full bg-[#f97316] px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-orange-500/20 transition hover:bg-[#ea580c]">
+                                                            class="inline-flex rounded-full bg-[#f97316] px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-orange-500/20 transition hover:bg-[#ea580c]">
                                                             {{ $completedCount > 0 ? "Mulai Percobaan ke-" . ($completedCount + 1) . " →" : ($session && $session->isInProgress() ? 'Lanjutkan Tes Psikotes →' : 'Mulai Kerjakan Tes Psikotes →') }}
                                                         </a>
+                                                    @elseif ($isExpired)
+                                                        <span class="inline-flex rounded-full bg-rose-100 border border-rose-200 px-4 py-2 text-xs font-semibold text-rose-700">
+                                                            ⛔ Masa Akses 24 Jam Berakhir
+                                                        </span>
                                                     @else
                                                         @if ($session)
                                                             <a href="{{ route('disc.assessment.completed', $session->session_token) }}"
                                                                class="inline-flex rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700">
                                                                 Lihat Konfirmasi Selesai ✓
+                                                            </a>
+                                                            <a href="{{ route('disc.assessment.export-excel', $session->session_token) }}"
+                                                               class="inline-flex items-center gap-1.5 rounded-full border border-emerald-600/30 bg-emerald-50 px-3.5 py-2 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100">
+                                                                📊 Unduh (.xlsx)
+                                                            </a>
+                                                            <a href="{{ route('disc.assessment.export-csv', $session->session_token) }}"
+                                                               class="inline-flex items-center gap-1.5 rounded-full border border-[#322d2a]/20 bg-white px-3.5 py-2 text-xs font-semibold text-[#322d2a] transition hover:bg-[#f0efe9]">
+                                                                📥 Unduh (.csv)
                                                             </a>
                                                         @endif
                                                     @endif

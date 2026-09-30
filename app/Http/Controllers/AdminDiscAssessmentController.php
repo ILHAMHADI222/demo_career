@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminDiscAssessmentController extends Controller
@@ -259,19 +260,21 @@ class AdminDiscAssessmentController extends Controller
         ]);
 
         $scoringEngine = app(\App\Services\DiscScoringEngine::class);
+        $scoringResult = null;
 
-        // If candidate answered stage 3 questions but session is not completed yet, calculate live score snapshot
-        if ($session->answers->isNotEmpty() && (empty($session->disc_profile_code) || empty($session->raw_scores_json))) {
+        if ($session->answers->isNotEmpty()) {
             try {
                 $scoringResult = $scoringEngine->calculateSessionScore($session);
-                $session->update([
-                    'raw_scores_json' => $scoringResult['raw_scores'],
-                    'normalized_scores_json' => $scoringResult['normalized_scores'],
-                    'disc_profile_code' => $scoringResult['profile_code'] ?? ($scoringResult['profile']['code'] ?? null),
-                    'disc_profile_name' => $scoringResult['profile_name'] ?? ($scoringResult['profile']['name'] ?? null),
-                    'interpretation_json' => $scoringResult['interpretation'] ?? [],
-                ]);
-                $session->refresh();
+                if (empty($session->disc_profile_code) || empty($session->raw_scores_json) || empty($session->normalized_scores_json)) {
+                    $session->update([
+                        'raw_scores_json' => $scoringResult['raw_scores'],
+                        'normalized_scores_json' => $scoringResult['normalized_scores'],
+                        'disc_profile_code' => $scoringResult['profile_code'] ?? ($scoringResult['profile']['code'] ?? null),
+                        'disc_profile_name' => $scoringResult['profile_name'] ?? ($scoringResult['profile']['name'] ?? null),
+                        'interpretation_json' => $scoringResult['interpretation'] ?? [],
+                    ]);
+                    $session->refresh();
+                }
             } catch (\Throwable $e) {
                 // Keep existing values
             }
@@ -286,7 +289,12 @@ class AdminDiscAssessmentController extends Controller
             ? $bank->analogiQuestions
             : PsikotesStageQuestion::where('stage', 'STAGE_2_ANALOGI')->where('active', true)->orderBy('question_number')->get();
 
-        return view('admin.disc.results.show', compact('session', 'deretQuestions', 'analogiQuestions'));
+        return view('admin.disc.results.show', compact('session', 'deretQuestions', 'analogiQuestions', 'scoringResult'));
+    }
+
+    public function exportSessionExcel(DiscAssessmentSession $session, DiscReportExporter $exporter): BinaryFileResponse
+    {
+        return $exporter->exportSessionExcel($session);
     }
 
     public function publish(DiscAssessment $assessment): RedirectResponse
@@ -317,11 +325,24 @@ class AdminDiscAssessmentController extends Controller
         $participant->update([
             'max_attempts' => $data['max_attempts'],
             'status' => 'ASSIGNED',
+            'invited_at' => now(),
         ]);
 
         AuditLogger::log('UPDATE_PARTICIPANT_ATTEMPTS', 'DISC', $assessment, ['old_max_attempts' => $oldAttempts], ['new_max_attempts' => $data['max_attempts']]);
 
-        return back()->with('success', "Batas kesempatan tes untuk peserta '{$participant->user->name}' berhasil diubah menjadi {$data['max_attempts']} kali.");
+        return back()->with('success', "Batas kesempatan tes untuk peserta '{$participant->user->name}' berhasil diubah menjadi {$data['max_attempts']} kali dan masa akses 24 jam diperbarui.");
+    }
+
+    public function renewParticipantInvitation(DiscAssessment $assessment, DiscAssessmentParticipant $participant): RedirectResponse
+    {
+        $participant->update([
+            'invited_at' => now(),
+            'status' => 'ASSIGNED',
+        ]);
+
+        AuditLogger::log('RENEW_PARTICIPANT_INVITATION', 'DISC', $assessment, ['participant_id' => $participant->id]);
+
+        return back()->with('success', "Akses 24 jam untuk peserta '{$participant->user->name}' berhasil diperbarui mulai dari sekarang.");
     }
 
     public function exportSessionCsv(DiscAssessmentSession $session, DiscReportExporter $exporter): StreamedResponse

@@ -52,4 +52,30 @@ class DiscAssessmentParticipant extends Model
     {
         return $this->hasOne(DiscAssessmentSession::class)->latestOfMany();
     }
+
+    public function isInvitationExpired(): bool
+    {
+        $invitedAt = $this->invited_at ?? $this->created_at;
+        if (!$invitedAt) {
+            return false;
+        }
+
+        return now()->greaterThan($invitedAt->copy()->addHours(24));
+    }
+
+    public function getInvitationExpiresAtAttribute(): ?\Carbon\Carbon
+    {
+        $invitedAt = $this->invited_at ?? $this->created_at;
+        return $invitedAt ? $invitedAt->copy()->addHours(24) : null;
+    }
+
+    public function getRemainingInvitationHoursAttribute(): int
+    {
+        $expiresAt = $this->invitation_expires_at;
+        if (!$expiresAt || now()->greaterThan($expiresAt)) {
+            return 0;
+        }
+
+        return (int) ceil(now()->diffInMinutes($expiresAt, false) / 60);
+    }
 }

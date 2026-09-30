@@ -13,24 +13,28 @@ class PsikotesOfficialQuestionSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Dapatkan atau buat Bank Soal Standar Psikotes ISP
-        $bank = QuestionBank::firstOrCreate(
-            ['code' => 'PSIKOTES-ISP-V1'],
-            [
+        // 1. Dapatkan Bank Soal Standar (utamakan Bank ID 1 yang sedang aktif digunakan, atau kode PSIKOTES-ISP-V1)
+        $bank = QuestionBank::find(1) 
+            ?? QuestionBank::withTrashed()->where('code', 'PSIKOTES-ISP-V1')->first();
+
+        if ($bank) {
+            if (method_exists($bank, 'trashed') && $bank->trashed()) {
+                $bank->restore();
+            }
+            $bank->update([
+                'assessment_type' => 'PSIKOTES_3_STAGE',
+                'status' => 'PUBLISHED',
+            ]);
+        } else {
+            $bank = QuestionBank::create([
+                'code' => 'PSIKOTES-ISP-V1',
                 'name' => 'Bank Soal Psikotes Standar PT Indodata Solusi Persada',
                 'description' => 'Paket lengkap 3 Sub-Tes Psikotes Hallonet: Sub-Tes 1 Deret Hitung (25 Soal), Sub-Tes 2 Analogi Verbal (50 Soal), dan Sub-Tes 3 Karakteristik Kepribadian (24 Soal).',
                 'assessment_type' => 'PSIKOTES_3_STAGE',
                 'version' => '1.0',
                 'status' => 'PUBLISHED',
-            ]
-        );
-
-        // Update semua bank soal lain jika status published
-        $bank->update([
-            'name' => 'Bank Soal Psikotes Standar PT Indodata Solusi Persada',
-            'assessment_type' => 'PSIKOTES_3_STAGE',
-            'status' => 'PUBLISHED',
-        ]);
+            ]);
+        }
 
         // Bersihkan soal stage 1 dan stage 2 untuk bank ini agar idempotent
         PsikotesStageQuestion::where('question_bank_id', $bank->id)->delete();

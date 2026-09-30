@@ -109,19 +109,56 @@ class DiscScoringEngine
             'graph3' => $this->normalizeGraph3($rawScores['graph3_change']),
         ];
 
-        // Classify Profile Pattern
-        $profileData = $this->classifyProfile($normalizedScores['graph3'], $normalizedScores['graph1']);
+        // Classify 3 graphs matching Excel DISC system
+        $maskIndex = \App\Data\DiscReferenceData::matchPattern(
+            $normalizedScores['graph1']['D'],
+            $normalizedScores['graph1']['I'],
+            $normalizedScores['graph1']['S'],
+            $normalizedScores['graph1']['C']
+        );
+        $coreIndex = \App\Data\DiscReferenceData::matchPattern(
+            $normalizedScores['graph2']['D'],
+            $normalizedScores['graph2']['I'],
+            $normalizedScores['graph2']['S'],
+            $normalizedScores['graph2']['C']
+        );
+        $mirrorIndex = \App\Data\DiscReferenceData::matchPattern(
+            $normalizedScores['graph3']['D'],
+            $normalizedScores['graph3']['I'],
+            $normalizedScores['graph3']['S'],
+            $normalizedScores['graph3']['C']
+        );
+
+        $maskProfile = \App\Data\DiscReferenceData::getProfile($maskIndex);
+        $coreProfile = \App\Data\DiscReferenceData::getProfile($coreIndex);
+        $mirrorProfile = \App\Data\DiscReferenceData::getProfile($mirrorIndex);
 
         return [
             'raw_scores' => $rawScores,
             'normalized_scores' => $normalizedScores,
-            'profile_code' => $profileData['code'],
-            'profile_name' => $profileData['name'],
+            'profile_code' => $mirrorProfile['code'] ?? 'DISC',
+            'profile_name' => $mirrorProfile['name'] ?? 'DISC Profile',
             'profile' => [
-                'code' => $profileData['code'],
-                'name' => $profileData['name'],
+                'code' => $mirrorProfile['code'] ?? 'DISC',
+                'name' => $mirrorProfile['name'] ?? 'DISC Profile',
             ],
-            'interpretation' => $profileData['interpretation'],
+            'character_profiles' => [
+                'mask' => $maskProfile,
+                'core' => $coreProfile,
+                'mirror' => $mirrorProfile,
+            ],
+            'interpretation' => [
+                'description' => $mirrorProfile['description'] ?? '',
+                'strengths' => implode(', ', array_slice($mirrorProfile['traits'] ?? [], 0, 4)),
+                'potential_limitations' => implode(', ', array_slice($mirrorProfile['traits'] ?? [], 4)),
+                'communication_style' => ($maskProfile['name'] ?? '') . ': ' . implode(', ', array_slice($maskProfile['traits'] ?? [], 0, 3)),
+                'work_style' => ($coreProfile['name'] ?? '') . ': ' . implode(', ', array_slice($coreProfile['traits'] ?? [], 0, 3)),
+                'development_suggestions' => $mirrorProfile['jobs'] ?? '-',
+                'jobs' => $mirrorProfile['jobs'] ?? '',
+                'mask_traits' => $maskProfile['traits'] ?? [],
+                'core_traits' => $coreProfile['traits'] ?? [],
+                'mirror_traits' => $mirrorProfile['traits'] ?? [],
+            ],
         ];
     }
 
@@ -137,70 +174,30 @@ class DiscScoringEngine
     {
         $result = [];
         foreach (['D', 'I', 'S', 'C'] as $dim) {
-            $raw = max(0, min(24, (int) ($rawMost[$dim] ?? 0)));
-            $dbNorm = DiscNormalizationTable::query()
-                ->where('chart_type', 'GRAPH_1_MOST')
-                ->where('raw_score', $raw)
-                ->where('is_active', true)
-                ->first();
-
-            if ($dbNorm) {
-                $col = strtolower($dim) . '_score';
-                $result[$dim] = (float) $dbNorm->$col;
-            } else {
-                $result[$dim] = (float) (self::NORM_TABLE_GRAPH_1[$raw][$dim] ?? round(($raw - 6) * 1.2, 1));
-            }
+            $raw = max(0, min(20, (int) ($rawMost[$dim] ?? 0)));
+            $result[$dim] = (float) (\App\Data\DiscReferenceData::NORM_GRAPH_1[$raw][$dim] ?? 0.0);
         }
 
         return $result;
     }
 
-    /**
-     * Normalize Graph 2 (Least / Core)
-     */
     public function normalizeGraph2(array $rawLeast): array
     {
         $result = [];
         foreach (['D', 'I', 'S', 'C'] as $dim) {
-            $raw = max(0, min(24, (int) ($rawLeast[$dim] ?? 0)));
-            $dbNorm = DiscNormalizationTable::query()
-                ->where('chart_type', 'GRAPH_2_LEAST')
-                ->where('raw_score', $raw)
-                ->where('is_active', true)
-                ->first();
-
-            if ($dbNorm) {
-                $col = strtolower($dim) . '_score';
-                $result[$dim] = (float) $dbNorm->$col;
-            } else {
-                $result[$dim] = (float) (self::NORM_TABLE_GRAPH_2[$raw][$dim] ?? round((6 - $raw) * 1.2, 1));
-            }
+            $raw = max(0, min(20, (int) ($rawLeast[$dim] ?? 0)));
+            $result[$dim] = (float) (\App\Data\DiscReferenceData::NORM_GRAPH_2[$raw][$dim] ?? 0.0);
         }
 
         return $result;
     }
 
-    /**
-     * Normalize Graph 3 (Change / Mirror)
-     */
     public function normalizeGraph3(array $rawChange): array
     {
         $result = [];
         foreach (['D', 'I', 'S', 'C'] as $dim) {
-            $raw = (int) ($rawChange[$dim] ?? 0);
-            $dbNorm = DiscNormalizationTable::query()
-                ->where('chart_type', 'GRAPH_3_CHANGE')
-                ->where('raw_score', $raw)
-                ->where('is_active', true)
-                ->first();
-
-            if ($dbNorm) {
-                $col = strtolower($dim) . '_score';
-                $result[$dim] = (float) $dbNorm->$col;
-            } else {
-                // Scale change from -24..+24 into standardized scale -8.0 .. +8.0
-                $result[$dim] = (float) round(($raw / 24) * 8.0, 1);
-            }
+            $raw = max(-22, min(22, (int) ($rawChange[$dim] ?? 0)));
+            $result[$dim] = (float) (\App\Data\DiscReferenceData::NORM_GRAPH_3[$raw][$dim] ?? 0.0);
         }
 
         return $result;

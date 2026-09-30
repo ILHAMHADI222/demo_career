@@ -48,6 +48,8 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/assessment/disc/take/{token}/stage-2-draft', [ParticipantDiscAssessmentController::class, 'saveStage2Draft'])->name('disc.assessment.stage2.draft');
     Route::post('/assessment/disc/take/{token}/stage-2', [ParticipantDiscAssessmentController::class, 'submitStage2'])->name('disc.assessment.stage2.submit');
     Route::get('/assessment/disc/completed/{token}', [ParticipantDiscAssessmentController::class, 'completed'])->name('disc.assessment.completed');
+    Route::get('/assessment/disc/completed/{token}/export-excel', [ParticipantDiscAssessmentController::class, 'exportSessionExcel'])->name('disc.assessment.export-excel');
+    Route::get('/assessment/disc/completed/{token}/export-csv', [ParticipantDiscAssessmentController::class, 'exportSessionCsv'])->name('disc.assessment.export-csv');
 
     // Secure Participant API Endpoints
     Route::prefix('api/disc/session/{token}')->name('api.disc.')->group(function (): void {
@@ -117,8 +119,10 @@ Route::middleware('auth')->group(function (): void {
             Route::post('assessments/{assessment}/close', [AdminDiscAssessmentController::class, 'close'])->name('assessments.close');
             Route::post('assessments/{assessment}/assign', [AdminDiscAssessmentController::class, 'assignParticipants'])->name('assessments.assign');
             Route::put('assessments/{assessment}/participants/{participant}/attempts', [AdminDiscAssessmentController::class, 'updateParticipantAttempts'])->name('assessments.participants.attempts');
+            Route::post('assessments/{assessment}/participants/{participant}/renew', [AdminDiscAssessmentController::class, 'renewParticipantInvitation'])->name('assessments.participants.renew');
             Route::get('assessments/{assessment}/monitor', [AdminDiscAssessmentController::class, 'monitor'])->name('assessments.monitor');
             Route::get('results/{session}', [AdminDiscAssessmentController::class, 'resultShow'])->name('results.show');
+            Route::get('sessions/{session}/export-excel', [AdminDiscAssessmentController::class, 'exportSessionExcel'])->name('sessions.export-excel');
             Route::get('sessions/{session}/export-csv', [AdminDiscAssessmentController::class, 'exportSessionCsv'])->name('sessions.export-csv');
         });
     });
