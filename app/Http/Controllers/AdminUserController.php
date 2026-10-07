@@ -15,7 +15,7 @@ class AdminUserController extends Controller
     public function index(Request $request): View
     {
         $users = User::query()
-            ->with('roles')
+            ->with(['roles', 'candidateProfile'])
             ->when($request->string('keyword')->toString(), fn ($query, $keyword) => $query->where(fn ($q) => $q->where('name', 'like', "%{$keyword}%")->orWhere('email', 'like', "%{$keyword}%")))
             ->when($request->string('role')->toString(), fn ($query, $role) => $query->whereHas('roles', fn ($q) => $q->where('name', $role)))
             ->latest()

@@ -151,14 +151,30 @@
                                         @method('PUT')
 
                                         <td class="px-4 py-3.5 align-top">
-                                            @if ($canEditRow)
-                                                <input name="name" value="{{ $user->name }}" class="w-full min-w-[150px] rounded-[10px] border border-[#322d2a]/15 bg-[#f0efe9] px-3 py-1.5 text-xs text-[#322d2a] outline-none focus:border-[#f97316] focus:bg-white" required>
-                                            @else
-                                                <div class="font-medium text-[#322d2a]">{{ $user->name }}</div>
-                                            @endif
-                                            @if ($isSelf)
-                                                <span class="inline-block mt-1 text-[10px] text-emerald-700 font-semibold">(Akun Anda)</span>
-                                            @endif
+                                            <div class="flex items-start gap-3">
+                                                <div class="shrink-0 pt-0.5">
+                                                    @if($user->photo_url)
+                                                        <img src="{{ $user->photo_url }}" alt="Foto {{ $user->name }}" class="h-9 w-9 rounded-[12px] object-cover ring-1 ring-[#322d2a]/10 shadow-xs" onerror="this.onerror=null; this.src='{{ $user->avatar_url }}';">
+                                                    @else
+                                                        <img src="{{ $user->avatar_url }}" alt="Avatar {{ $user->name }}" class="h-9 w-9 rounded-[12px] object-cover ring-1 ring-[#322d2a]/10 shadow-xs">
+                                                    @endif
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    @if ($canEditRow)
+                                                        <input name="name" value="{{ $user->name }}" class="w-full min-w-[150px] rounded-[10px] border border-[#322d2a]/15 bg-[#f0efe9] px-3 py-1.5 text-xs text-[#322d2a] outline-none focus:border-[#f97316] focus:bg-white" required>
+                                                    @else
+                                                        <div class="font-medium text-[#322d2a]">{{ $user->name }}</div>
+                                                    @endif
+                                                    @if ($isSelf)
+                                                        <span class="inline-block mt-1 text-[10px] text-emerald-700 font-semibold">(Akun Anda)</span>
+                                                    @endif
+                                                    @if($user->candidateProfile && $user->candidateProfile->full_name !== $user->name)
+                                                        <div class="mt-0.5 text-[10px] text-[#6f6b67]">
+                                                            Kandidat: {{ $user->candidateProfile->full_name }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         </td>
 
                                         <td class="px-4 py-3.5 align-top">

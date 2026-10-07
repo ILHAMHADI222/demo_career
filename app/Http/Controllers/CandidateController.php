@@ -87,6 +87,9 @@ class CandidateController extends Controller
                 Storage::disk('public')->delete($profile->photo);
             }
             $data['photo'] = $request->file('photo')->store('candidate-photos/'.$profile->id, 'public');
+        } elseif (! filled($data['photo_capture'] ?? null)) {
+            // Jangan timpa foto yang sudah ada dengan null jika user tidak mengunggah foto baru
+            unset($data['photo']);
         }
 
         unset($data['photo_capture']);

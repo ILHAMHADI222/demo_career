@@ -112,9 +112,11 @@
 
                         {{-- Candidate Snapshot --}}
                         <div class="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:items-center rounded-[28px] bg-[#f0efe9] p-5">
-                            <div class="h-20 w-16 shrink-0 overflow-hidden rounded-[18px] border border-[#322d2a]/10 bg-white shadow-sm">
-                                @if($profile?->photo)
-                                    <img src="{{ asset('storage/'.$profile->photo) }}" alt="Foto {{ $profile->full_name }}" class="h-full w-full object-cover">
+                            <div class="h-20 w-16 shrink-0 overflow-hidden rounded-[18px] border border-[#322d2a]/10 bg-white shadow-sm flex items-center justify-center">
+                                @if($profile?->photo_url)
+                                    <img src="{{ $profile->photo_url }}" alt="Foto {{ $profile->full_name }}" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='{{ $profile->avatar_url }}';">
+                                @elseif($profile?->avatar_url)
+                                    <img src="{{ $profile->avatar_url }}" alt="Foto {{ $profile->full_name }}" class="h-full w-full object-cover">
                                 @else
                                     <div class="flex h-full w-full items-center justify-center bg-[#fff3e8] text-lg font-bold text-[#f97316]">
                                         {{ strtoupper(substr($profile?->full_name ?? auth()->user()->name, 0, 1)) }}
@@ -341,14 +343,16 @@
                                                                class="inline-flex rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700">
                                                                 Lihat Konfirmasi Selesai ✓
                                                             </a>
-                                                            <a href="{{ route('disc.assessment.export-excel', $session->session_token) }}"
-                                                               class="inline-flex items-center gap-1.5 rounded-full border border-emerald-600/30 bg-emerald-50 px-3.5 py-2 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100">
-                                                                📊 Unduh (.xlsx)
-                                                            </a>
-                                                            <a href="{{ route('disc.assessment.export-csv', $session->session_token) }}"
-                                                               class="inline-flex items-center gap-1.5 rounded-full border border-[#322d2a]/20 bg-white px-3.5 py-2 text-xs font-semibold text-[#322d2a] transition hover:bg-[#f0efe9]">
-                                                                📥 Unduh (.csv)
-                                                            </a>
+                                                            @if(auth()->user()->hasAnyRole(['SUPERADMIN', 'ADMIN']))
+                                                                <a href="{{ route('disc.assessment.export-excel', $session->session_token) }}"
+                                                                   class="inline-flex items-center gap-1.5 rounded-full border border-emerald-600/30 bg-emerald-50 px-3.5 py-2 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100">
+                                                                    📊 Unduh (.xlsx)
+                                                                </a>
+                                                                <a href="{{ route('disc.assessment.export-csv', $session->session_token) }}"
+                                                                   class="inline-flex items-center gap-1.5 rounded-full border border-[#322d2a]/20 bg-white px-3.5 py-2 text-xs font-semibold text-[#322d2a] transition hover:bg-[#f0efe9]">
+                                                                    📥 Unduh (.csv)
+                                                                </a>
+                                                            @endif
                                                         @endif
                                                     @endif
                                                 </div>

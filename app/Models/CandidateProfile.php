@@ -25,6 +25,33 @@ class CandidateProfile extends Model
     public function documents(): HasMany { return $this->hasMany(CandidateDocument::class); }
     public function applications(): HasMany { return $this->hasMany(Application::class); }
 
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (! $this->photo) {
+            return null;
+        }
+
+        if (str_starts_with($this->photo, 'http://') || str_starts_with($this->photo, 'https://') || str_starts_with($this->photo, 'data:image/')) {
+            return $this->photo;
+        }
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($this->photo)) {
+            return asset('storage/' . $this->photo);
+        }
+
+        return null;
+    }
+
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->photo_url) {
+            return $this->photo_url;
+        }
+
+        $name = urlencode($this->full_name ?: ($this->user?->name ?: 'Kandidat'));
+        return "https://ui-avatars.com/api/?name={$name}&background=f97316&color=ffffff&size=256&bold=true";
+    }
+
     public function recalculateCompletion(): int
     {
         $fields = [

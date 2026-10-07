@@ -46,14 +46,16 @@
                 </div>
 
                 <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
-                    <a href="{{ route('disc.assessment.export-excel', $session->session_token) }}"
-                       class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-2.5 text-xs font-semibold text-white shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700">
-                        📊 Unduh Hasil Psikotes (.xlsx)
-                    </a>
-                    <a href="{{ route('disc.assessment.export-csv', $session->session_token) }}"
-                       class="inline-flex items-center gap-2 rounded-full border border-[#322d2a]/20 bg-white px-5 py-2.5 text-xs font-semibold text-[#322d2a] shadow-xs transition hover:bg-[#f0efe9]">
-                        📥 Unduh CSV
-                    </a>
+                    @if(auth()->user()->hasAnyRole(['SUPERADMIN', 'ADMIN']))
+                        <a href="{{ route('disc.assessment.export-excel', $session->session_token) }}"
+                           class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-2.5 text-xs font-semibold text-white shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700">
+                            📊 Unduh Hasil Psikotes (.xlsx)
+                        </a>
+                        <a href="{{ route('disc.assessment.export-csv', $session->session_token) }}"
+                           class="inline-flex items-center gap-2 rounded-full border border-[#322d2a]/20 bg-white px-5 py-2.5 text-xs font-semibold text-[#322d2a] shadow-xs transition hover:bg-[#f0efe9]">
+                            📥 Unduh CSV
+                        </a>
+                    @endif
                     <a href="{{ route('dashboard') }}"
                        class="inline-flex items-center gap-2 rounded-full bg-[#322d2a] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#f97316]">
                         Kembali ke Dashboard Utama →

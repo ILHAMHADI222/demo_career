@@ -250,8 +250,10 @@
                                 <tr class="transition hover:bg-[#fff8f3]">
                                     <td class="px-5 py-3.5">
                                         <div class="flex items-center gap-3">
-                                            @if($profile?->photo)
-                                                <img src="{{ asset('storage/'.$profile->photo) }}" alt="Foto {{ $profile->full_name }}" class="h-9 w-9 rounded-[12px] object-cover ring-1 ring-[#322d2a]/10 shrink-0">
+                                            @if($profile?->photo_url)
+                                                <img src="{{ $profile->photo_url }}" alt="Foto {{ $profile->full_name }}" class="h-9 w-9 rounded-[12px] object-cover ring-1 ring-[#322d2a]/10 shrink-0" onerror="this.onerror=null; this.src='{{ $profile->avatar_url }}';">
+                                            @elseif($profile?->avatar_url)
+                                                <img src="{{ $profile->avatar_url }}" alt="Foto {{ $profile->full_name }}" class="h-9 w-9 rounded-[12px] object-cover ring-1 ring-[#322d2a]/10 shrink-0">
                                             @else
                                                 <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-[#fff3e8] text-xs font-bold text-[#f97316] ring-1 ring-[#f97316]/20">
                                                     {{ strtoupper(substr($profile?->full_name ?? 'K', 0, 1)) }}
@@ -312,8 +314,10 @@
                         @endphp
                         <div class="rounded-[22px] border border-[#322d2a]/10 bg-[#f0efe9] p-4 text-xs">
                             <div class="flex items-start gap-3">
-                                @if($profile?->photo)
-                                    <img src="{{ asset('storage/'.$profile->photo) }}" alt="Foto {{ $profile->full_name }}" class="h-10 w-10 rounded-[14px] object-cover ring-1 ring-[#322d2a]/10 shrink-0">
+                                @if($profile?->photo_url)
+                                    <img src="{{ $profile->photo_url }}" alt="Foto {{ $profile->full_name }}" class="h-10 w-10 rounded-[14px] object-cover ring-1 ring-[#322d2a]/10 shrink-0" onerror="this.onerror=null; this.src='{{ $profile->avatar_url }}';">
+                                @elseif($profile?->avatar_url)
+                                    <img src="{{ $profile->avatar_url }}" alt="Foto {{ $profile->full_name }}" class="h-10 w-10 rounded-[14px] object-cover ring-1 ring-[#322d2a]/10 shrink-0">
                                 @else
                                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[#fff3e8] text-xs font-bold text-[#f97316] ring-1 ring-[#f97316]/20">
                                         {{ strtoupper(substr($profile?->full_name ?? 'K', 0, 1)) }}

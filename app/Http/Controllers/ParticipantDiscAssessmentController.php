@@ -10,6 +10,7 @@ use App\Models\DiscAssessmentSession;
 use App\Models\DiscQuestion;
 use App\Models\DiscQuestionOption;
 use App\Models\PsikotesStageQuestion;
+use App\Models\QuestionBank;
 use App\Services\AuditLogger;
 use App\Services\DiscReportExporter;
 use App\Services\DiscScoringEngine;
@@ -211,7 +212,8 @@ class ParticipantDiscAssessmentController extends Controller
             }
             $questions = $bank ? $bank->deretQuestions : collect();
             if ($questions->isEmpty()) {
-                $questions = PsikotesStageQuestion::where('stage', 'STAGE_1_DERET')->where('active', true)->orderBy('question_number')->get();
+                $targetBankId = $bank?->id ?? QuestionBank::where('status', 'PUBLISHED')->value('id') ?? 1;
+                $questions = PsikotesStageQuestion::where('question_bank_id', $targetBankId)->where('stage', 'STAGE_1_DERET')->where('active', true)->orderBy('question_number')->get();
             }
             $durationMinutes = (int) ($assessment->duration_stage_1 ?: 10);
             $targetEndAt = $session->stage_1_started_at->copy()->addMinutes($durationMinutes);
@@ -229,7 +231,8 @@ class ParticipantDiscAssessmentController extends Controller
 
             $questions = $bank ? $bank->analogiQuestions : collect();
             if ($questions->isEmpty()) {
-                $questions = PsikotesStageQuestion::where('stage', 'STAGE_2_ANALOGI')->where('active', true)->orderBy('question_number')->get();
+                $targetBankId = $bank?->id ?? QuestionBank::where('status', 'PUBLISHED')->value('id') ?? 1;
+                $questions = PsikotesStageQuestion::where('question_bank_id', $targetBankId)->where('stage', 'STAGE_2_ANALOGI')->where('active', true)->orderBy('question_number')->get();
             }
             $durationMinutes = (int) ($assessment->duration_stage_2 ?: 10);
             $targetEndAt = $session->stage_2_started_at->copy()->addMinutes($durationMinutes);
@@ -289,7 +292,8 @@ class ParticipantDiscAssessmentController extends Controller
         $bank = $session->assessment->questionBank;
         $questions = $bank ? $bank->deretQuestions : collect();
         if ($questions->isEmpty()) {
-            $questions = PsikotesStageQuestion::where('stage', 'STAGE_1_DERET')->where('active', true)->orderBy('question_number')->get();
+            $targetBankId = $bank?->id ?? QuestionBank::where('status', 'PUBLISHED')->value('id') ?? 1;
+            $questions = PsikotesStageQuestion::where('question_bank_id', $targetBankId)->where('stage', 'STAGE_1_DERET')->where('active', true)->orderBy('question_number')->get();
         }
 
         $correctCount = 0;
@@ -391,7 +395,8 @@ class ParticipantDiscAssessmentController extends Controller
         $bank = $session->assessment->questionBank;
         $questions = $bank ? $bank->analogiQuestions : collect();
         if ($questions->isEmpty()) {
-            $questions = PsikotesStageQuestion::where('stage', 'STAGE_2_ANALOGI')->where('active', true)->orderBy('question_number')->get();
+            $targetBankId = $bank?->id ?? QuestionBank::where('status', 'PUBLISHED')->value('id') ?? 1;
+            $questions = PsikotesStageQuestion::where('question_bank_id', $targetBankId)->where('stage', 'STAGE_2_ANALOGI')->where('active', true)->orderBy('question_number')->get();
         }
 
         $correctCount = 0;
@@ -694,9 +699,10 @@ class ParticipantDiscAssessmentController extends Controller
 
     public function exportSessionExcel(string $token, DiscReportExporter $exporter): BinaryFileResponse
     {
+        abort_unless(auth()->user()->hasAnyRole(['SUPERADMIN', 'ADMIN']), 403, 'Hanya HRD/Admin yang berhak mengunduh berkas hasil psikotes.');
+
         $session = DiscAssessmentSession::query()
             ->where('session_token', $token)
-            ->where('participant_id', auth()->id())
             ->firstOrFail();
 
         return $exporter->exportSessionExcel($session);
@@ -704,9 +710,10 @@ class ParticipantDiscAssessmentController extends Controller
 
     public function exportSessionCsv(string $token, DiscReportExporter $exporter): StreamedResponse
     {
+        abort_unless(auth()->user()->hasAnyRole(['SUPERADMIN', 'ADMIN']), 403, 'Hanya HRD/Admin yang berhak mengunduh berkas hasil psikotes.');
+
         $session = DiscAssessmentSession::query()
             ->where('session_token', $token)
-            ->where('participant_id', auth()->id())
             ->firstOrFail();
 
         return $exporter->exportSessionCsv($session);

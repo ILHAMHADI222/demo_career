@@ -54,10 +54,10 @@
                         {{-- Pass Foto Box --}}
                         <div class="flex flex-col items-center sm:items-start">
                             <div class="h-52 w-40 overflow-hidden rounded-[20px] border border-[#322d2a]/10 bg-[#f0efe9] shadow-sm">
-                                @if($profile->photo)
-                                    <img src="{{ asset('storage/'.$profile->photo) }}" alt="Pass Foto" class="h-full w-full object-cover">
+                                @if($profile->photo_url)
+                                    <img src="{{ $profile->photo_url }}" alt="Pass Foto {{ $profile->full_name }}" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='{{ $profile->avatar_url }}';">
                                 @else
-                                    <div class="flex h-full w-full items-center justify-center text-xs text-[#6f6b67]">Belum ada foto</div>
+                                    <img src="{{ $profile->avatar_url }}" alt="Avatar {{ $profile->full_name }}" class="h-full w-full object-cover">
                                 @endif
                             </div>
                             <span class="mt-2 text-center sm:text-left text-[11px] font-normal uppercase tracking-[0.12em] text-[#6f6b67]">Pass Foto Resmi</span>
@@ -211,9 +211,9 @@
                         <div>
                             <span class="text-xs sm:text-sm font-normal tracking-[0.14px] text-[#322d2a]">Pass Foto <span class="text-[#f97316]">*</span></span>
                             <div class="mt-3 flex flex-col gap-4 md:flex-row md:items-center">
-                                <div class="h-28 w-24 shrink-0 overflow-hidden rounded-[18px] border border-white bg-white shadow-sm">
-                                    <img id="photoPreview" src="{{ $profile->photo ? asset('storage/'.$profile->photo) : '' }}" alt="Preview pass foto" class="{{ $profile->photo ? '' : 'hidden' }} h-full w-full object-cover">
-                                    <div id="photoEmpty" class="{{ $profile->photo ? 'hidden' : '' }} flex h-full w-full items-center justify-center text-center text-[11px] font-normal text-[#6f6b67]">Belum ada foto</div>
+                                <div class="h-28 w-24 shrink-0 overflow-hidden rounded-[18px] border border-white bg-white shadow-sm flex items-center justify-center">
+                                    <img id="photoPreview" src="{{ $profile->photo_url ?? $profile->avatar_url }}" alt="Preview pass foto" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='{{ $profile->avatar_url }}';">
+                                    <div id="photoEmpty" class="hidden flex h-full w-full items-center justify-center text-center text-[11px] font-normal text-[#6f6b67]">Belum ada foto</div>
                                 </div>
                                 <div class="flex-1 space-y-2.5">
                                     <div class="flex flex-wrap items-center gap-2">

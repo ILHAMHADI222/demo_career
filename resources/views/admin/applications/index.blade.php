@@ -192,8 +192,10 @@
                         <div class="grid grid-cols-[1.25fr_1.1fr_0.9fr_0.8fr_auto] items-center gap-4 px-5 py-3.5 transition duration-150 hover:bg-[#fff8f3]">
                             {{-- Candidate --}}
                             <div class="flex min-w-0 items-center gap-3">
-                                @if($application->candidateProfile?->photo)
-                                    <img src="{{ asset('storage/'.$application->candidateProfile->photo) }}" alt="Foto {{ $candidateName }}" class="h-9 w-9 shrink-0 rounded-[12px] object-cover ring-1 ring-[#322d2a]/10">
+                                @if($application->candidateProfile?->photo_url)
+                                    <img src="{{ $application->candidateProfile->photo_url }}" alt="Foto {{ $candidateName }}" class="h-9 w-9 shrink-0 rounded-[12px] object-cover ring-1 ring-[#322d2a]/10" onerror="this.onerror=null; this.src='{{ $application->candidateProfile->avatar_url }}';">
+                                @elseif($application->candidateProfile?->avatar_url)
+                                    <img src="{{ $application->candidateProfile->avatar_url }}" alt="Foto {{ $candidateName }}" class="h-9 w-9 shrink-0 rounded-[12px] object-cover ring-1 ring-[#322d2a]/10">
                                 @else
                                     <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-[#fff3e8] text-xs font-bold text-[#f97316] ring-1 ring-[#f97316]/20">
                                         {{ strtoupper(substr($candidateName, 0, 1)) }}
@@ -280,8 +282,10 @@
                     <div class="rounded-[22px] border border-white bg-white p-4 text-xs">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex min-w-0 items-center gap-3">
-                                @if($application->candidateProfile?->photo)
-                                    <img src="{{ asset('storage/'.$application->candidateProfile->photo) }}" alt="Foto {{ $candidateName }}" class="h-9 w-9 shrink-0 rounded-[12px] object-cover ring-1 ring-[#322d2a]/10">
+                                @if($application->candidateProfile?->photo_url)
+                                    <img src="{{ $application->candidateProfile->photo_url }}" alt="Foto {{ $candidateName }}" class="h-9 w-9 shrink-0 rounded-[12px] object-cover ring-1 ring-[#322d2a]/10" onerror="this.onerror=null; this.src='{{ $application->candidateProfile->avatar_url }}';">
+                                @elseif($application->candidateProfile?->avatar_url)
+                                    <img src="{{ $application->candidateProfile->avatar_url }}" alt="Foto {{ $candidateName }}" class="h-9 w-9 shrink-0 rounded-[12px] object-cover ring-1 ring-[#322d2a]/10">
                                 @else
                                     <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-[#fff3e8] text-xs font-bold text-[#f97316] ring-1 ring-[#f97316]/20">
                                         {{ strtoupper(substr($candidateName, 0, 1)) }}

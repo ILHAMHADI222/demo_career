@@ -22,8 +22,10 @@
                 <div class="relative z-10 p-6 sm:p-7 md:p-8">
                     <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                            @if($profile?->photo)
-                                <img src="{{ asset('storage/'.$profile->photo) }}" alt="Foto {{ $profile->full_name }}" class="h-16 w-16 sm:h-20 sm:w-20 rounded-[22px] object-cover ring-2 ring-white/20 shadow-md">
+                            @if($profile?->photo_url)
+                                <img src="{{ $profile->photo_url }}" alt="Foto {{ $profile->full_name }}" class="h-16 w-16 sm:h-20 sm:w-20 rounded-[22px] object-cover ring-2 ring-white/20 shadow-md" onerror="this.onerror=null; this.src='{{ $profile->avatar_url }}';">
+                            @elseif($profile?->avatar_url)
+                                <img src="{{ $profile->avatar_url }}" alt="Foto {{ $profile->full_name }}" class="h-16 w-16 sm:h-20 sm:w-20 rounded-[22px] object-cover ring-2 ring-white/20 shadow-md">
                             @else
                                 <div class="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-[22px] bg-[#fff3e8] text-2xl sm:text-3xl font-light text-[#f97316] ring-2 ring-white/20">
                                     {{ strtoupper(substr($profile?->full_name ?? 'K', 0, 1)) }}

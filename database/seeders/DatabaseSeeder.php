@@ -104,6 +104,9 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $this->call(DiscMasterSeeder::class);
+        $this->call([
+            DiscMasterSeeder::class,
+            PsikotesOfficialQuestionSeeder::class,
+        ]);
     }
 }

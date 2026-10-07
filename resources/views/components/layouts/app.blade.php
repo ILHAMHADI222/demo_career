@@ -89,10 +89,20 @@
             {{-- Auth --}}
             <div class="flex shrink-0 items-center gap-2">
                 @auth
+                    @php
+                        $navProfile = auth()->user()->candidateProfile;
+                    @endphp
                     <a href="{{ route('dashboard') }}"
-                       class="hidden rounded-2xl border border-slate-200 bg-white px-3.5 py-2 text-xs xl:text-sm font-bold text-slate-700 shadow-sm transition hover:border-orange-200 hover:text-orange-500 sm:inline-flex"
+                       class="hidden items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs xl:text-sm font-bold text-slate-700 shadow-sm transition hover:border-orange-200 hover:text-orange-500 sm:inline-flex"
                        title="{{ auth()->user()->name }}">
-                        {{ \Illuminate\Support\Str::before(auth()->user()->name, ' ') }}
+                        @if($navProfile?->photo_url)
+                            <img src="{{ $navProfile->photo_url }}" alt="Avatar" class="h-6 w-6 rounded-full object-cover ring-1 ring-orange-200" onerror="this.onerror=null; this.src='{{ $navProfile->avatar_url }}';">
+                        @else
+                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-600">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </span>
+                        @endif
+                        <span>{{ \Illuminate\Support\Str::before(auth()->user()->name, ' ') }}</span>
                     </a>
 
                     <form method="POST" action="{{ route('logout') }}" class="shrink-0">

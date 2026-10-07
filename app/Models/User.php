@@ -24,6 +24,21 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(CandidateProfile::class);
     }
 
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return $this->candidateProfile?->photo_url;
+    }
+
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->photo_url) {
+            return $this->photo_url;
+        }
+
+        $name = urlencode($this->name ?: 'User');
+        return "https://ui-avatars.com/api/?name={$name}&background=f97316&color=ffffff&size=256&bold=true";
+    }
+
     /**
      * Get the attributes that should be cast.
      *

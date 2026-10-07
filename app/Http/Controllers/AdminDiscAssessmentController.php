@@ -281,13 +281,15 @@ class AdminDiscAssessmentController extends Controller
         }
 
         $bank = $session->assessment->questionBank;
+        $defaultBankId = $bank?->id ?? QuestionBank::where('status', 'PUBLISHED')->value('id') ?? 1;
+
         $deretQuestions = $bank && $bank->deretQuestions->isNotEmpty()
             ? $bank->deretQuestions
-            : PsikotesStageQuestion::where('stage', 'STAGE_1_DERET')->where('active', true)->orderBy('question_number')->get();
+            : PsikotesStageQuestion::where('question_bank_id', $defaultBankId)->where('stage', 'STAGE_1_DERET')->where('active', true)->orderBy('question_number')->get();
 
         $analogiQuestions = $bank && $bank->analogiQuestions->isNotEmpty()
             ? $bank->analogiQuestions
-            : PsikotesStageQuestion::where('stage', 'STAGE_2_ANALOGI')->where('active', true)->orderBy('question_number')->get();
+            : PsikotesStageQuestion::where('question_bank_id', $defaultBankId)->where('stage', 'STAGE_2_ANALOGI')->where('active', true)->orderBy('question_number')->get();
 
         return view('admin.disc.results.show', compact('session', 'deretQuestions', 'analogiQuestions', 'scoringResult'));
     }

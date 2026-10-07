@@ -406,6 +406,11 @@ class AdminDiscQuestionBankController extends Controller
         }
 
         $bankName = $bank->name;
+        $bank->stageQuestions()->delete();
+        foreach ($bank->questions as $q) {
+            $q->options()->delete();
+            $q->delete();
+        }
         $bank->delete();
         AuditLogger::log('DELETE_QUESTION_BANK', 'PSIKOTES', $bank);
 
